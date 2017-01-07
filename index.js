@@ -2,5 +2,5 @@
 'use strict';
 
 module.exports = {
-  name: 'ember-data-change-tracking'
+  name: 'ember-data-change-tracker'
 };

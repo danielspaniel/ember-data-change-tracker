@@ -1,5 +1,5 @@
 import {make, manualSetup}  from 'ember-data-factory-guy';
-import {initializer} from 'ember-data-change-tracking';
+import {initializer} from 'ember-data-change-tracker';
 import {test, moduleForModel} from 'ember-qunit';
 
 moduleForModel('user', 'Unit | Model | user', {
