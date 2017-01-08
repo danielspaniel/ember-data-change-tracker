@@ -6,6 +6,7 @@ export default Model.extend({
   name: attr('string'),
   style: attr('string'),
   info: attr('object'),
-  company: belongsTo('company', { async: true, inverse: 'users', polymorphic: true }),
+  company: belongsTo('company', { async: false, inverse: 'users', polymorphic: true }),
+//  company: belongsTo('company', { async: true, inverse: 'users', polymorphic: true }),
 //  projects: hasMany('project', { async: false }),
 });

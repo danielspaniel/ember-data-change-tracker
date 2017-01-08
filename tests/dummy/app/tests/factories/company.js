@@ -3,7 +3,8 @@ import FactoryGuy from 'ember-data-factory-guy';
 FactoryGuy.define("company", {
   default: {
     type: 'Company',
-    name: 'Silly corp'
+    name: 'Silly corp',
+    info: {style: 'ok'}
   },
 
   traits: {
