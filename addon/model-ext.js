@@ -5,19 +5,34 @@ const { dasherize } = Ember.String;
 
 Model.reopen({
 
+  /**
+   * An custom attribute should have a transform function associated with it.
+   * If not, use object transform
+   *
+   * @param key
+   * @returns {*}
+   * @private
+   */
   _transformFn(key) {
     let container = Ember.getOwner ? Ember.getOwner(this.store) : this.store.container;
     return container.lookup('transform:' + key);
   },
 
   /**
-   * Return string or undefined
+   * Serializing the value to be able to tell if the value changed.
+   * For attributes, using the transform function that each custom
+   * attribute should have.
+   * For belongsTo using object with {type, id}
+   * For hasMany using array of objects with {type, id}
    *
-   * @param key
+   * @param key attribute or relationship key
+   * @param info extra attribute or relationship information
+   * @private
    */
-  _serializedExtraAttributeValue(value, info) {
+  _serializedExtraAttributeValue(key, info) {
+    let value = this.get(key);
     if (info.type === 'belongsTo') {
-      return value && JSON.stringify(value.toJSON({ includeId: true }));
+      return { type: info.modelName, id: this.belongsTo(key).id() };
     }
     return info.transform.serialize(value);
   },
@@ -25,7 +40,6 @@ Model.reopen({
   _deserializedExtraAttributeValue(value, info) {
     if (info.type === 'belongsTo') {
       return value;
-//      return this.store.peekRecord(info.modelName, value.id);
     }
     return info.transform.deserialize(value);
   },
@@ -40,10 +54,10 @@ Model.reopen({
   },
 
   saveExtraAttribute(key, info) {
-//    console.log('saveExtraAttribute', 'modelName:',this.constructor.modelName, 'key:',key, this._saveValueKey(key), this._serializedExtraAttributeValue(this.get(key), info));
+    //    console.log('saveExtraAttribute', 'modelName:',this.constructor.modelName, 'key:',key, this._saveValueKey(key), this._serializedExtraAttributeValue(this.get(key), info));
     this.set(
       this._saveValueKey(key),
-      this._serializedExtraAttributeValue(this.get(key), info)
+      this._serializedExtraAttributeValue(key, info)
     );
   },
 
@@ -57,14 +71,15 @@ Model.reopen({
   },
 
   didAttributeChange(key, info) {
-//    console.log('didAttributeChange', key, 'info',info, "this._serializedExtraAttributeValue(this.get(key), info)",this._serializedExtraAttributeValue(this.get(key), info),"_lastExtraAttributeValue(key)",this._lastExtraAttributeValue(key));
+//    console.log('didAttributeChange', key, 'info', info, "this._serializedExtraAttributeValue(key, info)", this._serializedExtraAttributeValue(key, info), "_lastExtraAttributeValue(key)", this._lastExtraAttributeValue(key));
+    let current = this._serializedExtraAttributeValue(key, info);
+    let last = this._lastExtraAttributeValue(key)
+
     if (info.type === 'belongsTo') {
-//      return isEmpty(Object.keys(this.get(key).changed()));
+      console.log('current', current, 'last', last);
+      return !(current.type === last.type && current.id === last.id);
     }
-    return this.valuesChanged(
-      this._serializedExtraAttributeValue(this.get(key), info),
-      this._lastExtraAttributeValue(key)
-    );
+    return this.valuesChanged(current, last);
   },
 
   changed() {
@@ -73,9 +88,9 @@ Model.reopen({
     for (let key in extraAttributeChecks) {
       if (extraAttributeChecks.hasOwnProperty(key)) {
         if (this.didAttributeChange(key, extraAttributeChecks[key])) {
-//          changed[key] = true;
-          let last = this._deserializedExtraAttributeValue(this._lastExtraAttributeValue(key), extraAttributeChecks[key]);
-          changed[key] = [this.get(key), last];
+          changed[key] = true;
+          //          let last = this._deserializedExtraAttributeValue(this._lastExtraAttributeValue(key), extraAttributeChecks[key]);
+          //          changed[key] = [this.get(key), last];
         }
       }
     }
@@ -83,7 +98,7 @@ Model.reopen({
   },
 
   saveChanges() {
-//    console.log('=> saveChanges', this.constructor.modelName);
+    //    console.log('=> saveChanges', this.constructor.modelName);
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
       if (extraAttributeChecks.hasOwnProperty(key)) {

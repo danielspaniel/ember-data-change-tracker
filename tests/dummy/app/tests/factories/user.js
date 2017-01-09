@@ -17,6 +17,9 @@ FactoryGuy.define('user', {
     withCompany: {
       company: {}
     },
+    withProfile: {
+      profile: {}
+    },
     withProjects: {
 //      projects: FactoryGuy.hasMany('project', 2)
     }
