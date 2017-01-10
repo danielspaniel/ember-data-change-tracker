@@ -101,13 +101,15 @@ test('save resets changed', function(assert) {
 test('belongsTo async:true replacing model', function(assert) {
   let done = assert.async();
   mockSetup({ logLevel: 1 });
-  let user = make('user', 'withProfile');
-  mockFindRecord('profile').returns({ json: build('profile') });
-
+  let profile1 = build('profile');
+  let profile2 = make('profile');
+  mockFindRecord('profile').returns({ json: profile1 });
+  let user = make('user', {profile: profile1.get('id')});
   Ember.run(()=> {
-    user.belongsTo('profile').reload().then((profile)=> {
-      console.log('profile', profile);
-      console.log(user.belongsTo('profile').value());
+    user.get('profile').then((profile)=> {
+      user.set('profile',profile2);
+      console.log('profile', profile+'');
+      console.log('B', user.belongsTo('profile').value()+'');
       assert.ok(user.changed().profile);
       done();
       mockTeardown();

@@ -30,10 +30,13 @@ Model.reopen({
    * @private
    */
   _serializedExtraAttributeValue(key, info) {
-    let value = this.get(key);
+    let value;
     if (info.type === 'belongsTo') {
-      return { type: info.modelName, id: this.belongsTo(key).id() };
+      value = this.belongsTo(key).value();
+      return { type: value && value.constructor.modelName, id: value && value.id };
+//      return { type: info.modelName, id: this.belongsTo(key).id() };
     }
+    value = this.get(key);
     return info.transform.serialize(value);
   },
 
@@ -122,7 +125,7 @@ Model.reopen({
         extraChecks[key] = { type: relationship.kind, modelName: relationship.type };
       }
     });
-    console.log('extraChecks', extraChecks);
+    console.log('extraChecks', this.constructor.modelName, extraChecks);
     this.constructor.extraAttributeChecks = extraChecks;
   },
 
