@@ -5,7 +5,8 @@
   "keywords": [
     "ember-addon",
     "ember-data",
-    "change tracking"
+    "change tracking",
+    "dirty tracking"
   ],
   "license": "MIT",
   "author": "Daniel Sudol <dansudol@yahoo.com>",
