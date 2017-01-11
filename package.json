@@ -1,11 +1,11 @@
 {
   "name": "ember-data-change-tracker",
   "version": "0.0.1",
-  "description": "The default blueprint for ember-cli addons.",
+  "description": "Track all changes in ember data models including object attributes and relationships",
   "keywords": [
     "ember-addon",
     "ember-data",
-    "change tracker"
+    "change tracking"
   ],
   "license": "MIT",
   "author": "",
