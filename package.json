@@ -8,12 +8,16 @@
     "change tracking"
   ],
   "license": "MIT",
-  "author": "",
+  "author": "Daniel Sudol <dansudol@yahoo.com>",
   "directories": {
     "doc": "doc",
     "test": "tests"
   },
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielspaniel/ember-data-change-tracker"
+  },
+  "homepage": "https://github.com/danielspaniel/ember-data-change-tracker",
   "scripts": {
     "build": "ember build",
     "start": "ember server",
