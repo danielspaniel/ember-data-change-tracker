@@ -14,35 +14,55 @@ moduleForModel('user', 'Unit | Model | user', {
 });
 
 test('sets alreadySetupExtraAttributes to true after extracting extraAttributes', function(assert) {
-  let user = make('user');
+  let user = this.subject();
   assert.ok(user.constructor.alreadySetupExtraAttributes);
 });
 
 test('extractExtraAtttibutes sets correct extraAttributeChecks on constructor', function(assert) {
   let user = make('user');
   let extraChecks = user.constructor.extraAttributeChecks;
+
   assert.deepEqual(Object.keys(extraChecks), ['info', 'company', 'profile']);
+
   assert.equal(extraChecks.info.type, 'attribute');
   assert.equal(typeof extraChecks.info.transform.serialize, 'function');
   assert.equal(typeof extraChecks.info.transform.deserialize, 'function');
-  assert.deepEqual(extraChecks.company, { type: 'belongsTo', modelName: 'company' });
+
+  assert.deepEqual(extraChecks.company, { type: 'belongsTo' });
 });
 
-//test('_serializedtExtraAttibuteValue for object attribute', function(assert) {
-//  let info = { dude: 1 };
-//  let user = make('user', { info });
-//  info.dude = 2;
-//  let currentValue = user._serializedExtraAttributeValue(user.get('info'));
-//  assert.equal(currentValue, '{"dude":2}');
-//});
+test('_serializedExtraAttributeValue for object attribute', function(assert) {
+  let user = make('user');
+  let company = make('small-company');
+
+  let tests = [
+    ['info', null, "{}"],
+    ['info', { dude: 1 }, '{"dude":1}'],
+    ['company', null, {id: null, type: null}],
+    ['company', company, {id: company.id, type: company.constructor.modelName}],
+  ];
+
+  let setUser = (attr, value)=> {
+    Ember.run(()=>user.set(attr, value));
+  };
+
+  for (let test of tests) {
+    let [key, value, expected] = test;
+    setUser(key, value);
+    let serializedValue = user._serializedExtraAttributeValue(key);
+    assert.deepEqual(serializedValue, expected);
+  }
+});
 
 test('changing object attributes instance values', function(assert) {
   let info = { dude: 1 };
   let user = make('user', { info });
   info.dude = 3;
-  assert.ok(user.changed().info);
-  //  assert.deepEqual(changedInfo[0], { dude: 3 }, 'shows current value at index 0 of changed array');
-  //  assert.deepEqual(changedInfo[1], { dude: 1 }, 'shows last value at index 1 of changed array');
+
+  let changed = (user.changed().info);
+
+  assert.deepEqual(changed[0], { dude: 3 }, 'shows current value at index 0 of changed array');
+  assert.deepEqual(changed[1], { dude: 1 }, 'shows last value at index 1 of changed array');
 });
 
 test('changing object attribute entirely', function(assert) {
@@ -50,29 +70,69 @@ test('changing object attribute entirely', function(assert) {
   let info2 = { dude: 3 };
   let user = make('user', { info });
   Ember.run(()=>user.set('info', info2));
-  //  let changedInfo = user.changed().info;
-  assert.ok(user.changed().info);
-  //  assert.deepEqual(changedInfo[0], info2);
-  //  assert.deepEqual(changedInfo[1], info);
+
+  let changed = user.changed().info;
+
+  assert.deepEqual(changed[0], info2);
+  assert.deepEqual(changed[1], info);
 });
 
 test('belongsTo async:false replacing model', function(assert) {
   let company = make('company');
   let company2 = make('company');
 
-
   let tests = [
-    [null, company, true],
-    [company, company2, true],
-    [company, null, true],
+    [null, company, [company, null]],
+    [company, company2, [company2, company]],
+    [company, null, [null, company]],
     [company, company, undefined],
   ];
+
+  let setUser = (user, nextCompany)=> {
+    Ember.run(()=>user.set('company', nextCompany));
+  };
 
   for (let test of tests) {
     let [firstCompany, nextCompany, expectedChanged] = test;
     let user = make('user', { company: firstCompany });
+    setUser(user, nextCompany);
+    let changed = user.changed().company;
+    if (expectedChanged) {
+      assert.deepEqual(changed[0], expectedChanged[0]);
+      assert.deepEqual(changed[1], expectedChanged[1]);
+    } else {
+      assert.ok(!changed);
+    }
+  }
+});
+
+test('belongsTo async:false replacing (polymorphic) model', function(assert) {
+  let company = make('small-company');
+  let company2 = make('big-company');
+
+  let tests = [
+    [null, company, [company, null]],
+    [company, company2, [company2, company]],
+    [company, null, [null, company]],
+    [company, company, undefined],
+  ];
+
+  let setUser = (user, nextCompany)=> {
     Ember.run(()=>user.set('company', nextCompany));
-    assert.equal(user.changed().company, expectedChanged);
+  };
+
+  for (let test of tests) {
+    let [firstCompany, nextCompany, expectedChanged] = test;
+    let user = make('user', { company: firstCompany });
+    setUser(user, nextCompany);
+
+    let changed = user.changed().company;
+    if (expectedChanged) {
+      assert.deepEqual(changed[0], expectedChanged[0]);
+      assert.deepEqual(changed[1], expectedChanged[1]);
+    } else {
+      assert.ok(!changed);
+    }
   }
 });
 
@@ -104,30 +164,15 @@ test('belongsTo async:true replacing model', function(assert) {
   let profile1 = build('profile');
   let profile2 = make('profile');
   mockFindRecord('profile').returns({ json: profile1 });
-  let user = make('user', {profile: profile1.get('id')});
+
+  let user = make('user', { profile: profile1.get('id') });
+
   Ember.run(()=> {
     user.get('profile').then((profile)=> {
-      user.set('profile',profile2);
-      console.log('profile', profile+'');
-      console.log('B', user.belongsTo('profile').value()+'');
+      user.set('profile', profile2);
       assert.ok(user.changed().profile);
       done();
       mockTeardown();
     });
   });
-
-
-  //  const done = assert.async();
-  //  let user = make('user');
-  //  mockSetup({logLevel:1});
-  //  mockFindRecord('profile').returns({model: make('profile')});
-  //
-  //  user.get('profile').then((profile)=> {
-  //    console.log('profile', profile);
-  //    console.log(user.get('profile')+'',user.belongsTo('profile').id());
-  //    console.log(user.belongsTo('profile').value());
-  //    assert.ok(user.changed().profile);
-  //    done();
-  //    mockTeardown();
-  //  });
 });

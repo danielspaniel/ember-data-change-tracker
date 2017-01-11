@@ -18,6 +18,10 @@ Model.reopen({
     return container.lookup('transform:' + key);
   },
 
+  _extraAttributeCheckInfo(key)  {
+    return (this.constructor.extraAttributeChecks || {})[key];
+  },
+
   /**
    * Serializing the value to be able to tell if the value changed.
    * For attributes, using the transform function that each custom
@@ -29,22 +33,25 @@ Model.reopen({
    * @param info extra attribute or relationship information
    * @private
    */
-  _serializedExtraAttributeValue(key, info) {
-    let value;
-    if (info.type === 'belongsTo') {
-      value = this.belongsTo(key).value();
-      return { type: value && value.constructor.modelName, id: value && value.id };
-//      return { type: info.modelName, id: this.belongsTo(key).id() };
+  _serializedExtraAttributeValue(key) {
+    let info = this._extraAttributeCheckInfo(key);
+    switch (info.type) {
+      case 'belongsTo':
+        let value = this.belongsTo(key).value();
+        return { type: value && value.constructor.modelName, id: value && value.id };
+      case 'attribute':
+        return info.transform.serialize(this.get(key));
     }
-    value = this.get(key);
-    return info.transform.serialize(value);
   },
 
-  _deserializedExtraAttributeValue(value, info) {
-    if (info.type === 'belongsTo') {
-      return value;
+  _deserializedExtraAttributeValue(key, value) {
+    let info = this._extraAttributeCheckInfo(key);
+    switch (info.type) {
+      case 'belongsTo':
+        return value.id ? this.store.peekRecord(value.type, value.id) : null;
+      case 'attribute':
+        return info.transform.deserialize(value);
     }
-    return info.transform.deserialize(value);
   },
 
   _lastExtraAttributeValue(key) {
@@ -73,16 +80,16 @@ Model.reopen({
     return !(valuesBlank || this.valuesEqual(value1, value2));
   },
 
-  didAttributeChange(key, info) {
-//    console.log('didAttributeChange', key, 'info', info, "this._serializedExtraAttributeValue(key, info)", this._serializedExtraAttributeValue(key, info), "_lastExtraAttributeValue(key)", this._lastExtraAttributeValue(key));
+  didExtraAttributeChange(key, info) {
     let current = this._serializedExtraAttributeValue(key, info);
-    let last = this._lastExtraAttributeValue(key)
+    let last = this._lastExtraAttributeValue(key);
 
-    if (info.type === 'belongsTo') {
-      console.log('current', current, 'last', last);
-      return !(current.type === last.type && current.id === last.id);
+    switch (info.type) {
+      case 'belongsTo':
+        return !(current.type === last.type && current.id === last.id);
+      case 'attribute':
+        return this.valuesChanged(current, last);
     }
-    return this.valuesChanged(current, last);
   },
 
   changed() {
@@ -90,10 +97,9 @@ Model.reopen({
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
       if (extraAttributeChecks.hasOwnProperty(key)) {
-        if (this.didAttributeChange(key, extraAttributeChecks[key])) {
-          changed[key] = true;
-          //          let last = this._deserializedExtraAttributeValue(this._lastExtraAttributeValue(key), extraAttributeChecks[key]);
-          //          changed[key] = [this.get(key), last];
+        if (this.didExtraAttributeChange(key, extraAttributeChecks[key])) {
+          let last = this._deserializedExtraAttributeValue(key, this._lastExtraAttributeValue(key));
+          changed[key] = [this.get(key), last];
         }
       }
     }
@@ -101,51 +107,40 @@ Model.reopen({
   },
 
   saveChanges() {
-    //    console.log('=> saveChanges', this.constructor.modelName);
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
       if (extraAttributeChecks.hasOwnProperty(key)) {
-        this.saveExtraAttribute(key, extraAttributeChecks[key]);
+        this.saveExtraAttribute(key);
       }
     }
   },
 
-  extractExtraAtttibutes() {
-    //    console.log('extractExtraAtttibutes', this.constructor.modelName);
+  _extractExtraAtttibutes() {
     this.constructor.alreadySetupExtraAttributes = true;
     let extraChecks = {};
     this.constructor.eachAttribute((attribute, meta)=> {
-      //      console.log('attribute:',attribute, 'meta:',meta);
       if (!(/string|boolean|date|number/.test(meta.type))) {
         extraChecks[attribute] = { type: 'attribute', transform: this._transformFn(meta.type) };
       }
     });
     this.constructor.eachRelationship(function(key, relationship) {
       if (relationship.kind === 'belongsTo') {
-        extraChecks[key] = { type: relationship.kind, modelName: relationship.type };
+        extraChecks[key] = { type: relationship.kind };
       }
     });
-    console.log('extraChecks', this.constructor.modelName, extraChecks);
     this.constructor.extraAttributeChecks = extraChecks;
   },
 
   setupExtraAttributes: Ember.on('ready', function() {
-    //    console.log('Top/ setupExtraAttributes', this.constructor.alreadySetupExtraAttributes, this.constructor.modelName+'');
     if (!this.constructor.alreadySetupExtraAttributes) {
-      this.extractExtraAtttibutes();
-      //      console.log('Done/ setupExtraAttributes', this.constructor.modelName);
+      this._extractExtraAtttibutes();
     }
     this.saveChanges();
   }),
 
-  //  saveIntialerChanges: Ember.on('didLoad', function() {
-  //    console.log('didLoad');
-  //  }),
-
   //  resetAttributes: Ember.on('didUpdate', function() {
   //    this.saveChanges();
   //  })
-
   // I think this is more efficient than the on.didUpdate
   save() {
     return this._super().then(this.saveChanges());
