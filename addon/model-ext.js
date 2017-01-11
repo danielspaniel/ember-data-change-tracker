@@ -15,7 +15,7 @@ Model.reopen({
    */
   _transformFn(key) {
     let container = Ember.getOwner ? Ember.getOwner(this.store) : this.store.container;
-    return container.lookup('transform:' + key);
+    return container.lookup(`transform:${key}`);
   },
 
   _extraAttributeCheckInfo(key)  {
@@ -29,8 +29,7 @@ Model.reopen({
    * For belongsTo using object with {type, id}
    * For hasMany using array of objects with {type, id}
    *
-   * @param key attribute or relationship key
-   * @param info extra attribute or relationship information
+   * @param {String} key attribute or relationship key
    * @private
    */
   _serializedExtraAttributeValue(key) {
@@ -64,7 +63,6 @@ Model.reopen({
   },
 
   saveExtraAttribute(key, info) {
-    //    console.log('saveExtraAttribute', 'modelName:',this.constructor.modelName, 'key:',key, this._saveValueKey(key), this._serializedExtraAttributeValue(this.get(key), info));
     this.set(
       this._saveValueKey(key),
       this._serializedExtraAttributeValue(key, info)
@@ -138,10 +136,17 @@ Model.reopen({
     this.saveChanges();
   }),
 
-  //  resetAttributes: Ember.on('didUpdate', function() {
-  //    this.saveChanges();
-  //  })
-  // I think this is more efficient than the on.didUpdate
+  /**
+   * Overriding save to reset saved attributes
+   *
+   * I think this is more efficient than using on.didUpdate:
+   *
+   *   resetAttributes: Ember.on('didUpdate', function() {
+   *     this.saveChanges();
+   *   })
+   *
+   * @returns {*}
+   */
   save() {
     return this._super().then(this.saveChanges());
   }
