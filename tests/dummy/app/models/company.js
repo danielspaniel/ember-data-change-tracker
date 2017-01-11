@@ -6,7 +6,6 @@ export default Model.extend({
   type: attr('string', { defaultValue: 'Company' }),
   name: attr('string'),
   info: attr('object'),
-//  profile: belongsTo('profile', { async: false }),
   users: hasMany('user', { async: true, inverse: 'company' }),
 //  projects: hasMany('project', { async: true })
 });

@@ -168,7 +168,7 @@ test('belongsTo async:true replacing model', function(assert) {
   let user = make('user', { profile: profile1.get('id') });
 
   Ember.run(()=> {
-    user.get('profile').then((profile)=> {
+    user.get('profile').then(()=> {
       user.set('profile', profile2);
       assert.ok(user.changed().profile);
       done();
