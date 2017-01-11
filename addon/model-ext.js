@@ -43,6 +43,14 @@ Model.reopen({
     }
   },
 
+  /**
+   * Deserialze value
+   *
+   * @param {String} key
+   * @param {String|Object} value
+   * @returns {*}
+   * @private
+   */
   _deserializedExtraAttributeValue(key, value) {
     let info = this._extraAttributeCheckInfo(key);
     switch (info.type) {
@@ -70,23 +78,27 @@ Model.reopen({
   },
 
   valuesEqual(value1, value2) {
-    return (value1 && value1.toString()) === (value2 && value2.toString());
+    return (value1 === value2);
+    //    return (value1 && value1.toString()) === (value2 && value2.toString());
   },
 
-  valuesChanged(value1, value2) {
+  _valuesChanged(value1, value2) {
     let valuesBlank = isEmpty(value1) && isEmpty(value2);
+    //    console.log('_valuesChanged',value1, value2,'valuesBlank',valuesBlank,"this.valuesEqual(value1, value2)",this.valuesEqual(value1, value2));
     return !(valuesBlank || this.valuesEqual(value1, value2));
   },
 
-  didExtraAttributeChange(key, info) {
-    let current = this._serializedExtraAttributeValue(key, info);
+  didExtraAttributeChange(key) {
+    let current = this._serializedExtraAttributeValue(key);
     let last = this._lastExtraAttributeValue(key);
 
+    let info = this._extraAttributeCheckInfo(key);
     switch (info.type) {
       case 'belongsTo':
         return !(current.type === last.type && current.id === last.id);
       case 'attribute':
-        return this.valuesChanged(current, last);
+        //        console.trace(key, current, last,"this._valuesChanged(current, last)",this._valuesChanged(current, last));
+        return this._valuesChanged(current, last);
     }
   },
 
@@ -95,9 +107,10 @@ Model.reopen({
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
       if (extraAttributeChecks.hasOwnProperty(key)) {
-        if (this.didExtraAttributeChange(key, extraAttributeChecks[key])) {
+        if (this.didExtraAttributeChange(key)) {
+          //          console.log('this.didExtraAttributeChange(key)',key, this.didExtraAttributeChange(key));
           let last = this._deserializedExtraAttributeValue(key, this._lastExtraAttributeValue(key));
-          changed[key] = [this.get(key), last];
+          changed[key] = [last, this.get(key)];
         }
       }
     }
@@ -118,7 +131,8 @@ Model.reopen({
     let extraChecks = {};
     this.constructor.eachAttribute((attribute, meta)=> {
       if (!(/string|boolean|date|number/.test(meta.type))) {
-        extraChecks[attribute] = { type: 'attribute', transform: this._transformFn(meta.type) };
+        let transform = this._transformFn(meta.type || 'object');
+        extraChecks[attribute] = { type: 'attribute', transform };
       }
     });
     this.constructor.eachRelationship(function(key, relationship) {

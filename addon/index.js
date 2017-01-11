@@ -1,2 +1,4 @@
 import {initializer} from './initializer';
-export {initializer};
+import keepOnlyChanged from './mixins/keep-only-changed';
+
+export {keepOnlyChanged, initializer};
