@@ -1,17 +1,19 @@
 import Ember from 'ember';
 
 export default Ember.Mixin.create({
-//  serializeBelongsTo: function(snapshot, json, relationship) {
-//    let key = relationship.key;
-//    if (snapshot.record.didExtraAttributeChange(key) || snapshot.record.get('isNew')) {
-//      return this._super(snapshot, json, relationship);
-//    }
-//  },
+  keepValue(record, key) {
+    return record.didAttributeChange(key) || record.get('isNew');
+  },
 
-  serializeAttribute: function(snapshot, json, key, attributes) {
-    console.log('sa changed',key, snapshot.record.changed()[key]);
-    if (snapshot.record.changed()[key] || snapshot.record.get('isNew')) {
-      return this._super(snapshot, json, key, attributes);
+  serializeBelongsTo: function(snapshot, json, relationship) {
+    if (this.keepValue(snapshot.record, relationship.key)) {
+      return this._super(...arguments);
+    }
+  },
+
+  serializeAttribute: function(snapshot, json, key) {
+    if (this.keepValue(snapshot.record, key)) {
+      return this._super(...arguments);
     }
   }
 });

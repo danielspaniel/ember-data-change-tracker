@@ -36,7 +36,7 @@ test('_serializedExtraAttributeValue for object attribute', function(assert) {
   let company = make('small-company');
 
   let tests = [
-    ['info', null, "{}"],
+    ['info', null, null],
     ['info', { dude: 1 }, '{"dude":1}'],
     ['company', null, {id: null, type: null}],
     ['company', company, {id: company.id, type: company.constructor.modelName}],
@@ -61,8 +61,8 @@ test('changing object attributes instance values', function(assert) {
 
   let changed = (user.changed().info);
 
-  assert.deepEqual(changed[0], { dude: 3 }, 'shows current value at index 0 of changed array');
-  assert.deepEqual(changed[1], { dude: 1 }, 'shows last value at index 1 of changed array');
+  assert.deepEqual(changed[0], { dude: 1 }, 'shows last value at index 0 of changed array');
+  assert.deepEqual(changed[1], { dude: 3 }, 'shows current value at index 1 of changed array');
 });
 
 test('changing object attribute entirely', function(assert) {
@@ -96,8 +96,8 @@ test('attribute with no type ( uses object transform )', function(assert) {
   user.set('json.foo', 2);
 
   let changed = user.changed().json;
-  assert.deepEqual(changed[0], { foo: 2 });
-  assert.deepEqual(changed[1], { foo: 1 });
+  assert.deepEqual(changed[0], { foo: 1 });
+  assert.deepEqual(changed[1], { foo: 2 });
 });
 
 test('belongsTo async:false replacing model', function(assert) {
@@ -105,9 +105,9 @@ test('belongsTo async:false replacing model', function(assert) {
   let company2 = make('company');
 
   let tests = [
-    [null, company, [company, null]],
-    [company, company2, [company2, company]],
-    [company, null, [null, company]],
+    [null, company, [null, company]],
+    [company, company2, [company, company2]],
+    [company, null, [company, null]],
     [company, company, undefined],
   ];
 
@@ -121,8 +121,7 @@ test('belongsTo async:false replacing model', function(assert) {
     setUser(user, nextCompany);
     let changed = user.changed().company;
     if (expectedChanged) {
-      assert.deepEqual(changed[0], expectedChanged[0]);
-      assert.deepEqual(changed[1], expectedChanged[1]);
+      assert.deepEqual(changed, expectedChanged);
     } else {
       assert.ok(!changed);
     }
@@ -134,9 +133,9 @@ test('belongsTo async:false replacing (polymorphic) model', function(assert) {
   let company2 = make('big-company');
 
   let tests = [
-    [null, company, [company, null]],
-    [company, company2, [company2, company]],
-    [company, null, [null, company]],
+    [null, company, [null, company]],
+    [company, company2, [company, company2]],
+    [company, null, [company, null]],
     [company, company, undefined],
   ];
 
@@ -151,8 +150,7 @@ test('belongsTo async:false replacing (polymorphic) model', function(assert) {
 
     let changed = user.changed().company;
     if (expectedChanged) {
-      assert.deepEqual(changed[0], expectedChanged[0]);
-      assert.deepEqual(changed[1], expectedChanged[1]);
+      assert.deepEqual(changed, expectedChanged);
     } else {
       assert.ok(!changed);
     }
@@ -200,26 +198,26 @@ test('belongsTo async:true replacing model', function(assert) {
   });
 });
 
-test('didExtraAttributeChange', function(assert) {
+test('didAttributeChange', function(assert) {
   let user = make('user');
   let company = make('small-company');
   let info = { dude: 1 };
 
   let tests = [
-    ['info', null, false],
+    ['info', null, true],
     ['info', info, true],
     ['company', null, false],
     ['company', company, true],
   ];
 
-  let setUser = (attr, value)=> {
+  let setUser = (user, attr, value)=> {
     Ember.run(()=>user.set(attr, value));
   };
 
   for (let test of tests) {
     let [key, value, expected] = test;
-    setUser(key, value);
-    assert.equal(user.didExtraAttributeChange(key), expected);
+    setUser(user, key, value);
+    assert.equal(user.didAttributeChange(key), expected);
   }
 });
 
@@ -229,23 +227,20 @@ test('keepOnlyChanged serializer', function(assert) {
   let info = { dude: 1 };
 
   let tests = [
-    ['info', null, false],
-//    ['info', info, true],
-//    ['company', null, false],
-//    ['company', company, true],
+    ['info', null, true, 'undefined to null attribute is a change ( according to ember-data )'],
+    ['info', info, true, 'replace attribute'],
+    ['company', null, false, 'undefined to null relationship is NOT a change'],
+    ['company', company, true, 'change belongsTo'],
   ];
 
-  let setUser = (attr, value)=> {
+  let setUser = (user, attr, value)=> {
     Ember.run(()=>user.set(attr, value));
   };
 
   for (let test of tests) {
-    let [key, value, expected] = test;
-    let json = user.serialize();
-    console.log('A',json.data.attributes);
-    setUser(key, value);
-    json = user.serialize();
-    console.log('B',json.data.attributes);
-    assert.equal(!!json[key], expected);
+    let [key, value, expected, message] = test;
+    setUser(user, key, value);
+    let attributes = user.serialize();
+    assert.equal(attributes.hasOwnProperty(key), expected, message);
   }
 });
