@@ -23,8 +23,8 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
    And you have a user with an object attribute this:
 
 ```javascript
-  let company = company // model 
-  let company2 = company // differnt company model 
+  let company //=> company model 
+  let company2 //=> differnt company model 
   let info = {foo: 1) // some object
   let user = my user model where info => info  and company => company
 ```
