@@ -64,7 +64,7 @@ Example: ( replace belongTo )
    
  Usage: ( file: app/serializers/user.js )
  
- ```
+ ```javascript
   import DS from 'ember-data';
   import keepOnlyChanged from 'ember-data-change-tracker/mixins/keep-only-changed';
  
