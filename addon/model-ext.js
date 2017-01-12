@@ -102,7 +102,6 @@ Model.reopen({
         case 'belongsTo':
           return !(current.type === last.type && current.id === last.id);
         case 'attribute':
-          //        console.trace(key, current, last,"this._valuesChanged(current, last)",this._valuesChanged(current, last));
           return this._valuesChanged(current, last);
       }
     }
@@ -112,7 +111,7 @@ Model.reopen({
     let changed = this.changedAttributes();
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
-      if (extraAttributeChecks.hasOwnProperty(key)) {
+      if (!changed[key] && extraAttributeChecks.hasOwnProperty(key)) {
         if (this.didAttributeChange(key, changed)) {
           //          console.log('this.didExtraAttributeChange(key)',key, this.didExtraAttributeChange(key));
           let last = this._deserializedExtraAttributeValue(key, this._lastExtraAttributeValue(key));

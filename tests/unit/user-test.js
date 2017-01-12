@@ -18,7 +18,7 @@ test('sets alreadySetupExtraAttributes to true after extracting extraAttributes'
   assert.ok(user.constructor.alreadySetupExtraAttributes);
 });
 
-test('extractExtraAtttibutes sets correct extraAttributeChecks on constructor', function(assert) {
+test('#extractExtraAtttibutes sets correct extraAttributeChecks on constructor', function(assert) {
   let user = make('user');
   let extraChecks = user.constructor.extraAttributeChecks;
 
@@ -31,15 +31,15 @@ test('extractExtraAtttibutes sets correct extraAttributeChecks on constructor', 
   assert.deepEqual(extraChecks.company, { type: 'belongsTo' });
 });
 
-test('_serializedExtraAttributeValue for object attribute', function(assert) {
+test('#_serializedExtraAttributeValue for object attribute', function(assert) {
   let user = make('user');
   let company = make('small-company');
 
   let tests = [
     ['info', null, null],
     ['info', { dude: 1 }, '{"dude":1}'],
-    ['company', null, {id: null, type: null}],
-    ['company', company, {id: company.id, type: company.constructor.modelName}],
+    ['company', null, { id: null, type: null }],
+    ['company', company, { id: company.id, type: company.constructor.modelName }],
   ];
 
   let setUser = (attr, value)=> {
@@ -54,7 +54,52 @@ test('_serializedExtraAttributeValue for object attribute', function(assert) {
   }
 });
 
-test('changing object attributes instance values', function(assert) {
+test('#didAttributeChange', function(assert) {
+  let user = make('user');
+  let company = make('small-company');
+  let info = { dude: 1 };
+
+  let tests = [
+    ['info', null, true],
+    ['info', info, true],
+    ['company', null, false],
+    ['company', company, true],
+  ];
+
+  let setUser = (user, attr, value)=> {
+    Ember.run(()=>user.set(attr, value));
+  };
+
+  for (let test of tests) {
+    let [key, value, expected] = test;
+    setUser(user, key, value);
+    assert.equal(user.didAttributeChange(key), expected);
+  }
+});
+
+test('#save method resets changed', function(assert) {
+  const done = assert.async();
+  mockSetup();
+  Ember.run(()=> {
+    let company = make('company');
+    let info = { dude: 1 };
+    let user = make('user', { company, info });
+
+    // change relationship and attribute
+    user.set('company', null);
+    info.dude = 2;
+
+    mockUpdate(user);
+    user.save().then(()=> {
+      assert.ok(!user.changed().info, 'clears changed info after save');
+      assert.ok(!user.changed().company, 'clears changed company after save');
+      done();
+      mockTeardown();
+    });
+  });
+});
+
+test('modify attribute of type "object"', function(assert) {
   let info = { dude: 1 };
   let user = make('user', { info });
   info.dude = 3;
@@ -65,14 +110,14 @@ test('changing object attributes instance values', function(assert) {
   assert.deepEqual(changed[1], { dude: 3 }, 'shows current value at index 1 of changed array');
 });
 
-test('changing object attribute entirely', function(assert) {
+test('replace attribute of type "object"', function(assert) {
   let info = { dude: 1 };
   let info2 = { dude: 3 };
 
   let tests = [
     [undefined, null, [undefined, null]],
-    [undefined, info, [{}, info]],
-    [null, info, [{}, info]],
+    [undefined, info, [undefined, info]],
+    [null, info, [null, info]],
     [info, null, [info, null]],
     [info, info, undefined],
     [info, info2, [info, info2]],
@@ -91,16 +136,24 @@ test('changing object attribute entirely', function(assert) {
   }
 });
 
-test('attribute with no type ( uses object transform )', function(assert) {
-  let user = this.subject({json: {foo:1}});
-  user.set('json.foo', 2);
+test('replace attribute of type undefined', function(assert) {
+  let user = make('user', { json: { foo: 1 } });
+  Ember.run(()=>user.set('json', { foo: 2 }));
 
   let changed = user.changed().json;
-  assert.deepEqual(changed[0], { foo: 1 });
-  assert.deepEqual(changed[1], { foo: 2 });
+  assert.deepEqual(changed, [{ foo: 1 }, { foo: 2 }]);
 });
 
-test('belongsTo async:false replacing model', function(assert) {
+test('modify attribute of type undefined', function(assert) {
+  let json = { foo: 1 };
+  let user = make('user', { json });
+  json.foo = 2;
+
+  let changed = user.changed().json;
+  assert.deepEqual(changed, [{ foo: 1 }, { foo: 2 }]);
+});
+
+test('replace belongsTo async:false', function(assert) {
   let company = make('company');
   let company2 = make('company');
 
@@ -128,7 +181,7 @@ test('belongsTo async:false replacing model', function(assert) {
   }
 });
 
-test('belongsTo async:false replacing (polymorphic) model', function(assert) {
+test('replacing (polymorphic) belongsTo async:false', function(assert) {
   let company = make('small-company');
   let company2 = make('big-company');
 
@@ -157,29 +210,7 @@ test('belongsTo async:false replacing (polymorphic) model', function(assert) {
   }
 });
 
-test('save resets changed', function(assert) {
-  const done = assert.async();
-  mockSetup();
-  Ember.run(()=> {
-    let company = make('company');
-    let info = { dude: 1 };
-    let user = make('user', { company, info });
-
-    // change relationship and attribute
-    user.set('company', null);
-    info.dude = 2;
-
-    mockUpdate(user);
-    user.save().then(()=> {
-      assert.ok(!user.changed().info, 'clears changed info after save');
-      assert.ok(!user.changed().company, 'clears changed company after save');
-      done();
-      mockTeardown();
-    });
-  });
-});
-
-test('belongsTo async:true replacing model', function(assert) {
+test('replacing belongsTo async:true', function(assert) {
   let done = assert.async();
   mockSetup({ logLevel: 1 });
   let profile1 = build('profile');
@@ -198,28 +229,6 @@ test('belongsTo async:true replacing model', function(assert) {
   });
 });
 
-test('didAttributeChange', function(assert) {
-  let user = make('user');
-  let company = make('small-company');
-  let info = { dude: 1 };
-
-  let tests = [
-    ['info', null, true],
-    ['info', info, true],
-    ['company', null, false],
-    ['company', company, true],
-  ];
-
-  let setUser = (user, attr, value)=> {
-    Ember.run(()=>user.set(attr, value));
-  };
-
-  for (let test of tests) {
-    let [key, value, expected] = test;
-    setUser(user, key, value);
-    assert.equal(user.didAttributeChange(key), expected);
-  }
-});
 
 test('keepOnlyChanged serializer', function(assert) {
   let user = make('user');

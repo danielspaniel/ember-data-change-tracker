@@ -22,25 +22,28 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
    And you have a user with an object attribute this:
 
 ```javascript
-  let user = my user model where info => {foo:1} 
+  let info = {foo: 1)
+  let user = my user model where info => info  or { foo: 1 } 
 ```
   
   So when you do this: 
 ```javascript
-  user.set('info', {foo: 2); // or
-  user.set('info.foo', 2);   // same idea
+  info.foo = 1                // or
+  user.set('info.foo', 1);   // same idea
 ```
      
  - Ember data does not know that info attribute changed because it does not track the internal state of that info object
- - When using this addon you get a new method on models `changed`()`
 
-  Using `changed()` method shows you the changes in the info object:
+#### changed() method added to models
+  -  Shows you the changes in the info object:
 
 ```javascript
                       //    old value, new value      
   user.changed().info //=> [{foo: 1),  {foo: 2)] 
 ```
    
+  - This changed method merges what ember data does ( show changes if you replace the attribute ) 
+   with changes when you 'modify' the attribute so either one will show up as a change  
 
 ## Installation
 
