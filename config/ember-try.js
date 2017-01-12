@@ -15,15 +15,15 @@ module.exports = {
       }
     },
     {
-      name: 'ember-lts-2.8',
+      name: 'ember-2.8',
       bower: {
         dependencies: {
-          'ember': 'components/ember#lts-2-8',
-          'ember-data': 'components/ember-data#lts-2-8'
+          'ember': 'components/ember#2-8',
+          'ember-data': 'components/ember-data#2-8'
         },
         resolutions: {
-          'ember': 'lts-2-8',
-          'ember-data': 'lts-2-8'
+          'ember': '2-8',
+          'ember-data': '2-8'
         }
       }
     },
