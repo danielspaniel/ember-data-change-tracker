@@ -1,6 +1,6 @@
 {
   "name": "ember-data-change-tracker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Track all changes in ember data models including object attributes and relationships",
   "keywords": [
     "ember-addon",
