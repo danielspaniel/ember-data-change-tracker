@@ -62,7 +62,7 @@ Example: ( replace belongTo )
   - Useful when you want to reduce the size of a json payload 
    - removing unchanged values can be big reduction at times
    
- Usage: ( file: app/serializers/user.js )
+ Usage: //file: app/serializers/user.js 
  
  ```javascript
   import DS from 'ember-data';
