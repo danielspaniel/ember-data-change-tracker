@@ -4,9 +4,10 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
  - Currently ember-data tracks changes for numbers/strings/date/boolean attribute,
   and has a changeAttributes method to see what changed 
  
- - This addon tracks changes in attributes that are object/json such that if 
-   the object/json changes this will flag the attribute as changed.
- 
+ - This addon tracks:
+    - modifications in attributes that are object/json
+    - replacement of belongsTo association models 
+    
     Say there is a user model like this:
 
 ```javascript
@@ -22,30 +23,40 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
    And you have a user with an object attribute this:
 
 ```javascript
-  let info = {foo: 1)
-  let user = my user model where info => info  or { foo: 1 } 
+  let company = company // model 
+  let company2 = company // differnt company model 
+  let info = {foo: 1) // some object
+  let user = my user model where info => info  and company => company
 ```
-  
-  So when you do this: 
-```javascript
-  info.foo = 1                // or
-  user.set('info.foo', 1);   // same idea
-```
-     
- - Ember data does not know that info attribute changed because it does not track the internal state of that info object
 
 #### changed() method added to models
   -  Shows you any changes in the info object 
     - whether modified or replacing type attribute  
-
+  - Shows when you replace a belongsTo association
+   
+  Example: ( modify attribute ) 
 ```javascript
+  info.foo = 1                // or
+  user.set('info.foo', 1);   // same idea
                       //    old value, new value      
   user.changed().info //=> [{foo: 1),  {foo: 2)] 
 ```
-   
-  - This changed method merges what ember data does ( show changes if you replace the attribute ) 
-   with changes when you 'modify' the attribute so either one will show up as a change  
 
+  Example: ( replace attribute ) 
+```javascript
+  user.set('info', {foo: 2}); 
+                      //    old value, new value      
+  user.changed().info //=> [{foo: 1),  {foo: 2)] 
+```
+
+  Example: ( replace belongTo ) 
+```javascript
+  user.set('company', company2);  
+                        //    old value, new value      
+  user.changed().company //=> [company,  company2] 
+```
+   
+  
 
 ## Installation
 
