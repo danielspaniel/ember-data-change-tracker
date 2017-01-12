@@ -34,7 +34,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
     - whether modified or replacing type attribute  
   - Shows when you replace a belongsTo association
    
-  Example: ( modify attribute ) 
+Example: ( modify attribute ) 
 ```javascript
   info.foo = 1                // or
   user.set('info.foo', 1);   // same idea
@@ -42,14 +42,14 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
   user.changed().info //=> [{foo: 1),  {foo: 2)] 
 ```
 
-  Example: ( replace attribute ) 
+Example: ( replace attribute ) 
 ```javascript
   user.set('info', {foo: 2}); 
                       //    old value, new value      
   user.changed().info //=> [{foo: 1),  {foo: 2)] 
 ```
 
-  Example: ( replace belongTo ) 
+Example: ( replace belongTo ) 
 ```javascript
   user.set('company', company2);  
                         //    old value, new value      
