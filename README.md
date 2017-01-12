@@ -33,7 +33,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
  - Ember data does not know that info attribute changed because it does not track the internal state of that info object
  - When using this addon you get a new method on models `changed`()`
 
-  Using changed method shows you the change in info object:
+  Using `changed()` method shows you the changes in the info object:
 
 ```javascript
                       //    old value, new value      
