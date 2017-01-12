@@ -35,7 +35,8 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
  - Ember data does not know that info attribute changed because it does not track the internal state of that info object
 
 #### changed() method added to models
-  -  Shows you the changes in the info object:
+  -  Shows you any changes in the info object 
+    - whether modified or replacing type attribute  
 
 ```javascript
                       //    old value, new value      
@@ -44,6 +45,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
    
   - This changed method merges what ember data does ( show changes if you replace the attribute ) 
    with changes when you 'modify' the attribute so either one will show up as a change  
+
 
 ## Installation
 
