@@ -24,6 +24,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
 ```javascript
   let user = my user model where info => {foo:1} 
 ```
+  
   So when you do this: 
 ```javascript
   user.set('info', {foo: 2); // or
@@ -40,9 +41,6 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
   user.changed().info //=> [{foo: 1),  {foo: 2)] 
 ```
    
-    
-     
-     
 
 ## Installation
 
