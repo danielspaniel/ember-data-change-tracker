@@ -44,17 +44,17 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
    
 Example: ( modify attribute ) 
 ```javascript
-  info.foo = 1                // or
-  user.set('info.foo', 1);   // same idea
+  info.foo = 2               // or
+  user.set('info.foo', 2);   // same idea
                       //    old value, new value      
   user.changed().info //=> [{foo: 1),  {foo: 2)] 
 ```
 
 Example: ( replace attribute ) 
 ```javascript
-  user.set('info', {foo: 2}); 
+  user.set('info', {foo: 3}); 
                       //    old value, new value      
-  user.changed().info //=> [{foo: 1),  {foo: 2)] 
+  user.changed().info //=> [{foo: 1),  {foo: 3)] 
 ```
 
 Example: ( replace belongTo ) 
