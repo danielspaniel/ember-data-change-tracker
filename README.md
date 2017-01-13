@@ -38,9 +38,10 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
 ```
 
 #### changed() method added to models
-  -  Shows you any changes in the info object 
-    - whether modified or replacing type attribute  
+  -  Shows you any changes in an object attribute type 
+    - whether modified or replacing the value  
   - Shows when you replace a belongsTo association
+  - Merges ember-data changeAttribute information into one unified change object
    
 Example: ( modify attribute ) 
 ```javascript
