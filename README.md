@@ -9,6 +9,12 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
  - This addon tracks:
     - modifications in attributes that are object/json
     - replacement of belongsTo association models 
+
+## Installation
+
+* `ember install ember-data-change-tracking`
+
+## Why?
     
     Say there is a user model like this:
 
@@ -72,8 +78,4 @@ Example: ( replace belongTo )
  
   export default DS.RESTSerializer.extend(keepOnlyChanged);
  ```
-
-## Installation
-
-* `ember install ember-data-change-tracking`
 
