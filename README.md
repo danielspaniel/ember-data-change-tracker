@@ -88,5 +88,5 @@ Example: ( replace belongTo )
   user.serialize(); //=> '{ info: {"foo:1"}'
   
   // without this mixin enabled the json would look like:
-  '{ name: 'dude', info: {"foo:1"}, company: "1" companyType: "company"', profile: "1"}'  
+  // '{ name: 'dude', info: {"foo:1"}, company: "1" companyType: "company"', profile: "1"}'  
  ```
