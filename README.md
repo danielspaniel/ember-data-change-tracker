@@ -20,11 +20,11 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
 
 ```javascript
   export default Model.extend({
-       name: attr('string'),
-       info: attr('object'),
-       json: attr(),
-       company: belongsTo('company', { async: false, polymorphic: true }),
-       profile: belongsTo('profile', { async: true }),
+       name: attr('string'),  
+       info: attr('object'),  // ember-data does not track modifications
+       json: attr(),          // ember-data does not track modifications if this is object
+       company: belongsTo('company', { async: false, polymorphic: true }),  // ember-data does not track replacement 
+       profile: belongsTo('profile', { async: true }), // ember-data does not track replacement
    });
 ```
 
