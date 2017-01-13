@@ -70,22 +70,14 @@ Model.reopen({
     return `last-${keyName}`;
   },
 
-  saveExtraAttribute(key, info) {
-    this.set(
-      this._saveValueKey(key),
-      this._serializedExtraAttributeValue(key, info)
-    );
-  },
-
-  valuesEqual(value1, value2) {
-    return (value1 === value2);
-    //    return (value1 && value1.toString()) === (value2 && value2.toString());
+  _saveExtraAttribute(key) {
+    let currentValue = this._serializedExtraAttributeValue(key);
+    this.set(this._saveValueKey(key), currentValue);
   },
 
   _valuesChanged(value1, value2) {
     let valuesBlank = isEmpty(value1) && isEmpty(value2);
-    //    console.log('_valuesChanged',value1, value2,'valuesBlank',valuesBlank,"this.valuesEqual(value1, value2)",this.valuesEqual(value1, value2));
-    return !(valuesBlank || this.valuesEqual(value1, value2));
+    return !(valuesBlank || value1 === value2);
   },
 
   didAttributeChange(key, changed) {
@@ -126,7 +118,7 @@ Model.reopen({
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
       if (extraAttributeChecks.hasOwnProperty(key)) {
-        this.saveExtraAttribute(key);
+        this._saveExtraAttribute(key);
       }
     }
   },

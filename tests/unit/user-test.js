@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import {build, make, mockUpdate, mockFindRecord, manualSetup, mockSetup, mockTeardown}  from 'ember-data-factory-guy';
+import FactoryGuy, {build, make, mockUpdate, mockFindRecord, manualSetup, mockSetup, mockTeardown}  from 'ember-data-factory-guy';
 import {initializer as modelInitializer} from 'ember-data-change-tracker';
 import {test, moduleForModel} from 'ember-qunit';
 
@@ -28,7 +28,44 @@ test('#extractExtraAtttibutes sets correct extraAttributeChecks on constructor',
   assert.equal(typeof extraChecks.info.transform.serialize, 'function');
   assert.equal(typeof extraChecks.info.transform.deserialize, 'function');
 
+  assert.equal(extraChecks.json.type, 'attribute');
+  assert.equal(typeof extraChecks.json.transform.serialize, 'function');
+  assert.equal(typeof extraChecks.json.transform.deserialize, 'function');
+
   assert.deepEqual(extraChecks.company, { type: 'belongsTo' });
+});
+
+test('#saveChanges saves belongsTo assocations when model is ready on ajax load', function(assert) {
+  let done = assert.async();
+
+  mockSetup({ logLevel: 1 });
+  let company = make('company');
+  let profile = make('profile');
+  let user = build('user', { profile: profile.get('id'), company: { id: company.get('id'), type: 'company' } });
+  mockFindRecord('user').returns({ json: user });
+
+  Ember.run(()=> {
+    FactoryGuy.store.find('user', user.get('id')).then((user)=> {
+      assert.deepEqual(user._lastExtraAttributeValue('company'), { id: company.get('id'), type: 'company' });
+      assert.deepEqual(user._lastExtraAttributeValue('profile'), { id: profile.get('id'), type: 'profile' });
+      done();
+      mockTeardown();
+    });
+  });
+});
+
+test('#saveChanges saves belongsTo assocations when model info is pushed to store', function(assert) {
+  let company = make('company');
+  let profile = make('profile');
+  let userJson = build('user', { profile: profile.get('id'), company: { id: company.get('id'), type: 'company' } });
+
+  let normalized = FactoryGuy.store.normalize('user', userJson.get());
+
+  Ember.run(()=> {
+    let user = FactoryGuy.store.push(normalized);
+    assert.deepEqual(user._lastExtraAttributeValue('company'), { id: company.get('id'), type: 'company' });
+    assert.deepEqual(user._lastExtraAttributeValue('profile'), { id: profile.get('id'), type: 'profile' });
+  });
 });
 
 test('#_serializedExtraAttributeValue for object attribute', function(assert) {
@@ -161,24 +198,26 @@ test('replace belongsTo async:false', function(assert) {
     [null, company, [null, company]],
     [company, company2, [company, company2]],
     [company, null, [company, null]],
-    [company, company, undefined],
+    [company, company, undefined]
   ];
 
   let setUser = (user, nextCompany)=> {
-    Ember.run(()=>user.set('company', nextCompany));
+    user.set('company', nextCompany);
   };
+  Ember.run(()=> {
+    for (let test of tests) {
+      let [firstCompany, nextCompany, expectedChanged] = test;
+      let user = make('user', { company: firstCompany });
+      setUser(user, nextCompany);
+      let changed = user.changed().company;
+      if (expectedChanged) {
+        assert.deepEqual(changed, expectedChanged);
+      } else {
+        assert.ok(!changed);
+      }
 
-  for (let test of tests) {
-    let [firstCompany, nextCompany, expectedChanged] = test;
-    let user = make('user', { company: firstCompany });
-    setUser(user, nextCompany);
-    let changed = user.changed().company;
-    if (expectedChanged) {
-      assert.deepEqual(changed, expectedChanged);
-    } else {
-      assert.ok(!changed);
     }
-  }
+  });
 });
 
 test('replacing (polymorphic) belongsTo async:false', function(assert) {
@@ -228,7 +267,6 @@ test('replacing belongsTo async:true', function(assert) {
     });
   });
 });
-
 
 test('keepOnlyChanged serializer', function(assert) {
   let user = make('user');

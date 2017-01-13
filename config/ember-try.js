@@ -2,28 +2,41 @@
 module.exports = {
   scenarios: [
     {
-      name: 'ember-2.5',
+      name: 'ember-data-2.5',
       bower: {
         dependencies: {
-          'ember': 'components/ember#2.5',
+          'ember': 'components/ember#2.10',
           'ember-data': 'components/ember-data#2.5'
         },
         resolutions: {
-          'ember': '2.5',
+          'ember': '2.10',
           'ember-data': '2.5'
         }
       }
     },
     {
-      name: 'ember-2.8',
+      name: 'ember-data-2.8',
       bower: {
         dependencies: {
-          'ember': 'components/ember#2-8',
-          'ember-data': 'components/ember-data#2-8'
+          'ember': 'components/ember#2.10',
+          'ember-data': 'components/ember-data#2.8'
         },
         resolutions: {
-          'ember': '2-8',
-          'ember-data': '2-8'
+          'ember': '2.10',
+          'ember-data': '2.8'
+        }
+      }
+    },
+    {
+      name: 'ember-data-2.10',
+      bower: {
+        dependencies: {
+          'ember': 'components/ember#2.10',
+          'ember-data': 'components/ember-data#2.10'
+        },
+        resolutions: {
+          'ember': '2.10',
+          'ember-data': '2.10'
         }
       }
     },
@@ -32,7 +45,7 @@ module.exports = {
       bower: {
         dependencies: {
           'ember': 'components/ember#release',
-          'ember': 'components/ember-data#release'
+          'ember-data': 'components/ember-data#release'
         },
         resolutions: {
           'ember': 'release',
