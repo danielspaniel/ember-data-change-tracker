@@ -64,18 +64,29 @@ Example: ( replace belongTo )
   user.changed().company //=> [company,  company2] 
 ```
    
-##### Serialize only changed attrbutes/associations 
+## Serializer extras
   - Mixin is provided that will allow you to remove any attributes/associations
-   that did not change from being serialized.
+   that did not change from the serialized json
   - Useful when you want to reduce the size of a json payload 
    - removing unchanged values can be big reduction at times
    
- Usage: //file: app/serializers/user.js 
+ Example:  
  
+  Let's say you set up the user model's serializer with keep-only-changed mixin  
+  
  ```javascript
+  // file: app/serializers/user.js
   import DS from 'ember-data';
   import keepOnlyChanged from 'ember-data-change-tracker/mixins/keep-only-changed';
  
   export default DS.RESTSerializer.extend(keepOnlyChanged);
  ```
-
+   
+  Then when you are updating the user model 
+ ```javascript
+  user.set('info.foo', 1);
+  user.serialize(); //=> '{ info: {"foo:1"}'
+  
+  // without this mixin enabled the json would look like:
+  '{ name: 'dude', info: {"foo:1"}, company: "1" companyType: "company"', profile: "1"}'  
+ ```
