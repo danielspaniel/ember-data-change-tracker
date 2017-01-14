@@ -5,7 +5,7 @@ const { isEmpty } = Ember;
 const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
 const skipAttrRegex = /string|boolean|date|number/;
-const knownTrackerOpts = Ember.A(['only', 'except', 'skipHasMany']);
+const knownTrackerOpts = Ember.A(['only', 'except', 'trackHasMany']);
 /**
  * Helper class for change tracking models
  */
@@ -84,7 +84,7 @@ export default class Tracker {
 
     let unknownOpts = Object.keys(opts).filter((v)=>!knownTrackerOpts.includes(v));
     Ember.assert(`[ember-data-change-tracker] changeTracker options can have 
-      'only' or 'except' or 'skipHasMany' but you are declaring: ${unknownOpts}`,
+      'only' or 'except' or 'trackHasMany' but you are declaring: ${unknownOpts}`,
       Ember.isEmpty(unknownOpts)
     );
 

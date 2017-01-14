@@ -41,8 +41,8 @@ test('#options with valid options', sinon.test(function(assert) {
   let envConfig = this.stub(Tracker, 'envConfig');
 
   let tests = [
-    [{ changeTracker: { skipHasMany: true } }, {}, { skipHasMany: true }],
-    [{ changeTracker: { skipHasMany: true } }, { only: ['info'] }, { skipHasMany: true, only: ['info'] }],
+    [{ changeTracker: { trackHasMany: true } }, {}, { trackHasMany: true }],
+    [{ changeTracker: { trackHasMany: true } }, { only: ['info'] }, { trackHasMany: true, only: ['info'] }],
     [{}, { only: ['info'] }, { only: ['info'] }],
     [{}, { except: ['info'] }, { except: ['info'] }],
   ];
@@ -64,7 +64,7 @@ test('#options with invalid options', function(assert) {
 
   company.set('changeTracker', { dude: "where's my car"});
   assert.throws(()=>Tracker.options(company),`[ember-data-change-tracker] 
-    changeTracker options can have 'only' or 'except' or 'skipHasMany' but 
+    changeTracker options can have 'only' or 'except' or 'trackHasMany' but 
     you are declaring: dude`);
 });
 
