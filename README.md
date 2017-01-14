@@ -5,11 +5,13 @@
 This addon aims to fill in the gaps in the change tracking that ember data does now. 
  - Currently ember-data tracks changes for numbers/strings/date/boolean attribute,
   and has a changeAttributes method to see what changed 
- - Works on ember-data versions 2.5+
- - This addon tracks:
-    - modifications in attributes that are object/json
-    - replacement of belongsTo association models 
 
+ - This addon:
+    - tracks modifications in attributes that are object/json
+    - tracks replacement of belongsTo associations 
+    - tracks replacement/changes in hasMany associations 
+    - Only works with ember-data versions 2.5+
+    
 ## Installation
 
 * `ember install ember-data-change-tracking`
