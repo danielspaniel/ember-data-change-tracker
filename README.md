@@ -22,7 +22,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
 
 ```javascript
   export default Model.extend({
-       name: attr('string'),  
+       name: attr('string'),  // ember-date DOES track this already  
        info: attr('object'),  // ember-data does not track modifications
        json: attr(),          // ember-data does not track modifications if this is object
        company: belongsTo('company', { async: false, polymorphic: true }),  // ember-data does not track replacement 
