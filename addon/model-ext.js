@@ -38,7 +38,7 @@ Model.reopen({
    * @returns {*}
    */
   changed() {
-    let changed = this.changedAttributes();
+    let changed = Ember.assign({},this.changedAttributes());
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
       if (!changed[key] && extraAttributeChecks.hasOwnProperty(key)) {

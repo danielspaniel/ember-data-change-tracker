@@ -45,9 +45,15 @@ export default class Tracker {
   }
 
   static includeChangeKey(key, opts) {
-    return Ember.$.isEmptyObject(opts) ||
+    if (Ember.$.isEmptyObject(opts) ||
+        Object.keys(opts).length === 1 && opts.hasOwnProperty('trackHasMany')
+    ) {
+      return true;
+    }
+    return (
       opts.only && opts.only.includes(key) ||
-      opts.except && !opts.except.includes(key);
+      opts.except && !opts.except.includes(key)
+    );
   }
 
   static includeAttribute(key, type, opts) {
@@ -56,7 +62,7 @@ export default class Tracker {
 
   static valuesChanged(value1, value2) {
     let valuesBlank = isEmpty(value1) && isEmpty(value2);
-    return !(valuesBlank || value1.toString() === value2.toString());
+    return !(valuesBlank || JSON.stringify(value1) === JSON.stringify(value2));
   }
 
   /**
@@ -92,7 +98,8 @@ export default class Tracker {
   }
 
   /**
-   * Serializing the value to be able to tell if the value changed.
+   * Serialize the value to be able to tell if the value changed.
+   *
    * For attributes, using the transform function that each custom
    * attribute should have.
    *
@@ -129,7 +136,7 @@ export default class Tracker {
         return info.transform.deserialize(value);
     }
   }
-  
+
   static extractAtttibutes(model) {
     let { constructor } = model;
     constructor.alreadySetupExtraAttributes = true;
@@ -138,7 +145,12 @@ export default class Tracker {
     constructor.eachAttribute((attribute, meta)=> {
       if (this.includeAttribute(attribute, meta.type, trackerOpts)) {
         let transform = this.transformFn(model, meta.type);
-//        Ember.assert() nice transformer missing in test mode
+        Ember.assert(`[ember-data-change-tracker] changeTracker could not find 
+          a ${meta.type} transform function for the attribute '${attribute}' in 
+          model '${model.constructor.modelName}'. 
+          If you are in a unit test, be sure to include it in the list of needs`,
+          transform
+        );
         extraChecks[attribute] = { type: 'attribute', transform };
       }
     });
@@ -147,7 +159,7 @@ export default class Tracker {
         extraChecks[key] = { type: relationship.kind };
       }
     });
-    //    console.log('extact', this.constructor.modelName, extraChecks);
+//    console.log('extact', model.constructor.modelName, extraChecks);
     constructor.extraAttributeChecks = extraChecks;
   }
 

@@ -26,6 +26,7 @@ test('#envConfig retuns the config for the application environment', function(as
 
 test('includeChangeKey', function(assert) {
   let tests = [
+    ['info', { trackHasMany: false }, true],
     ['info', { only: ['info'] }, true],
     ['info', { except: ['info'] }, false],
   ];
