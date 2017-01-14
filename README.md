@@ -41,7 +41,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
   -  Shows you any changes in an object attribute type 
     - whether modified or replacing the value  
   - Shows when you replace a belongsTo association
-  - Merges ember-data changeAttribute information into one unified change object
+  - Merges ember-data `changeAttribute()` information into one unified change object
    
 Example: ( modify attribute ) 
 ```javascript

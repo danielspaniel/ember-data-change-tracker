@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 export default Ember.Mixin.create({
   keepValue(record, key) {
-    return record.didAttributeChange(key) || record.get('isNew');
+    return record.get('isNew') || record.didAttributeChange(key);
   },
 
   serializeBelongsTo: function(snapshot, json, relationship) {
