@@ -13,7 +13,7 @@ export default class Tracker {
 
   /**
    * Get Ember application container
-   * 
+   *
    * @param {DS.Model} model
    * @returns {*}
    */
@@ -23,19 +23,19 @@ export default class Tracker {
 
   /**
    * Get Ember application configuration
-   * 
+   *
    * @param {DS.Model} model
    * @returns {*|{}}
-   */ 
+   */
   static envConfig(model) {
     return this.container(model).resolveRegistration('config:environment') || {};
   }
 
   /**
    * A custom attribute should have a transform function associated with it.
-   * If not, use object transform. 
-   * A transform function is required for serializing and deserializing 
-   * the attribute in order to save past values and also to retrieve 
+   * If not, use object transform.
+   * A transform function is required for serializing and deserializing
+   * the attribute in order to save past values and also to retrieve
    * them for comparison with current.
    *
    * @param {DS.Model} model
@@ -59,7 +59,7 @@ export default class Tracker {
 
   /**
    * Should this attribute be tracked based on model options
-   * 
+   *
    * @param {String} key attribute name
    * @param {Object} opts model options
    * @returns {*}
@@ -77,11 +77,11 @@ export default class Tracker {
   }
 
   /**
-   * Should this attribute be tracked. 
-   * 
+   * Should this attribute be tracked.
+   *
    * Don't track types that ember-data already tracks, like
    * string, number, boolean and date types.
-   * 
+   *
    * @param {String} key attribute name
    * @param {Object} opts model options
    * @returns {*}
@@ -114,13 +114,13 @@ export default class Tracker {
     let modelConfig = model.changeTracker || {};
 
     let opts = assign(envConfig, modelConfig);
-    Ember.assert(`[ember-data-change-tracker] changeTracker options can have 'only' 
+    Ember.assert(`[ember-data-change-tracker] changeTracker options can have 'only'
       or 'except' but not user both together.`,
       !(opts.only && opts.except)
     );
 
     let unknownOpts = Object.keys(opts).filter((v)=>!knownTrackerOpts.includes(v));
-    Ember.assert(`[ember-data-change-tracker] changeTracker options can have 
+    Ember.assert(`[ember-data-change-tracker] changeTracker options can have
       'only' or 'except' or 'trackHasMany' but you are declaring: ${unknownOpts}`,
       Ember.isEmpty(unknownOpts)
     );
@@ -143,11 +143,16 @@ export default class Tracker {
   static serialize(model, key) {
     let info = this.modelInfo(model, key);
     switch (info.type) {
+      case 'attribute':
+        return info.transform.serialize(model.get(key));
       case 'belongsTo':
         let value = model.belongsTo(key).value();
         return { type: value && value.constructor.modelName, id: value && value.id };
-      case 'attribute':
-        return info.transform.serialize(model.get(key));
+      case 'hasMany':
+        let values = model.hasMany(key).value();
+        return values && values.map((value)=> {
+          return { type: value.constructor.modelName, id: value && value.id };
+        });
     }
   }
 
@@ -162,10 +167,15 @@ export default class Tracker {
   static deserialize(model, key, value) {
     let info = this.modelInfo(model, key);
     switch (info.type) {
-      case 'belongsTo':
-        return value.id ? model.store.peekRecord(value.type, value.id) : null;
       case 'attribute':
         return info.transform.deserialize(value);
+      case 'belongsTo':
+        return value.id ? model.store.peekRecord(value.type, value.id) : null;
+      case 'hasMany':
+        let values = value;
+        return values && values.map((value)=> {
+          return value.id ? model.store.peekRecord(value.type, value.id) : null;
+        });
     }
   }
 
@@ -177,9 +187,9 @@ export default class Tracker {
     constructor.eachAttribute((attribute, meta)=> {
       if (this.trackAttribute(attribute, meta.type, trackerOpts)) {
         let transform = this.transformFn(model, meta.type);
-        Ember.assert(`[ember-data-change-tracker] changeTracker could not find 
-          a ${meta.type} transform function for the attribute '${attribute}' in 
-          model '${model.constructor.modelName}'. 
+        Ember.assert(`[ember-data-change-tracker] changeTracker could not find
+          a ${meta.type} transform function for the attribute '${attribute}' in
+          model '${model.constructor.modelName}'.
           If you are in a unit test, be sure to include it in the list of needs`,
           transform
         );
@@ -187,7 +197,7 @@ export default class Tracker {
       }
     });
     constructor.eachRelationship(function(key, relationship) {
-      if (relationship.kind === 'belongsTo') {
+      if (relationship.kind === 'belongsTo' || relationship.kind === 'hasMany') {
         extraChecks[key] = { type: relationship.kind };
       }
     });

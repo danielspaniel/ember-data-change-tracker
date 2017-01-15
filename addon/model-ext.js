@@ -20,10 +20,22 @@ Model.reopen({
       let current = Tracker.serialize(this, key);
       let last = Tracker.lastValue(this, key);
       switch (info.type) {
-        case 'belongsTo':
-          return !(current.type === last.type && current.id === last.id);
         case 'attribute':
           return Tracker.valuesChanged(current, last);
+        case 'belongsTo':
+          return !(current.type === last.type && current.id === last.id);
+        case 'hasMany':
+          if (!current && !last) {
+            return false;
+          }
+          if ((current && current.length) !== (last && last.length)) {
+            return true;
+          }
+          let currentSorted = current.sortBy('id');
+          let lastSorted = last.sortBy('id');
+          return !!currentSorted.find((value, i)=> {
+            return value.type !== lastSorted[i].type || value.id !== lastSorted[i].id;
+          });
       }
     }
   },
@@ -70,7 +82,7 @@ Model.reopen({
   savedTrackerValue(key) {
     return Tracker.lastValue(this, key);
   },
-  
+
   setupExtraAttributes: Ember.on('ready', function() {
     if (!this.constructor.alreadySetupExtraAttributes) {
       Tracker.extractAtttibutes(this);

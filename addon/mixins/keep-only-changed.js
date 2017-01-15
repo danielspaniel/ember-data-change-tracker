@@ -11,6 +11,20 @@ export default Ember.Mixin.create({
     }
   },
 
+  _shouldSerializeHasMany: function() {
+    //TODO:
+    // look at 'trackHasMany' option? or should it have its own?
+    return true;
+  },
+
+  //TODO:
+  // not needed?
+  // serializeHasMany: function(snapshot, json, relationship) {
+  //   if (this.keepValue(snapshot.record, relationship.key)) {
+  //     return this._super(...arguments);
+  //   }
+  // },
+
   serializeAttribute: function(snapshot, json, key) {
     if (this.keepValue(snapshot.record, key)) {
       return this._super(...arguments);
