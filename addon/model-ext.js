@@ -61,6 +61,16 @@ Model.reopen({
     Tracker.saveChanges(this);
   },
 
+  /**
+   * Get value that tracker saves for this attribute
+   *
+   * @param {String} key attribute name
+   * @returns {*}
+   */
+  savedTrackerValue(key) {
+    return Tracker.lastValue(this, key);
+  },
+  
   setupExtraAttributes: Ember.on('ready', function() {
     if (!this.constructor.alreadySetupExtraAttributes) {
       Tracker.extractAtttibutes(this);
