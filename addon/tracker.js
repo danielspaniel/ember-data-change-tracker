@@ -92,7 +92,7 @@ export default class Tracker {
 
   static valuesChanged(value1, value2) {
     let valuesBlank = isEmpty(value1) && isEmpty(value2);
-    return !(valuesBlank || JSON.stringify(value1) === JSON.stringify(value2));
+    return !(valuesBlank || value1 === value2);
   }
 
   /**
@@ -142,12 +142,16 @@ export default class Tracker {
    */
   static serialize(model, key) {
     let info = this.modelInfo(model, key);
+    let value;
     switch (info.type) {
       case 'belongsTo':
-        let value = model.belongsTo(key).value();
+        value = model.belongsTo(key).value();
         return { type: value && value.constructor.modelName, id: value && value.id };
       case 'attribute':
-        return info.transform.serialize(model.get(key));
+        value = info.transform.serialize(model.get(key));
+        // serializer transform might not stringify, and this value must be
+        // a string in order to correctly track modifications
+        return JSON.stringify(value);
     }
   }
 

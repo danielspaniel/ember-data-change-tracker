@@ -62,7 +62,7 @@ Model.reopen({
   },
 
   /**
-   * Get value that tracker saves for this attribute
+   * Get value the last known value tracker is saving for this attribute
    *
    * @param {String} key attribute name
    * @returns {*}

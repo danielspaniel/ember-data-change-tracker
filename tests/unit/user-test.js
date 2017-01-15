@@ -1,9 +1,11 @@
 import Ember from 'ember';
-import FactoryGuy, {build, make, mockUpdate, mockFindRecord,
-  mockDelete, manualSetup, mockSetup, mockTeardown}  from 'ember-data-factory-guy';
+import FactoryGuy, {
+  build, make, mockUpdate, mockFindRecord,
+  mockDelete, manualSetup, mockSetup, mockTeardown
+}  from 'ember-data-factory-guy';
 import {initializer as modelInitializer} from 'ember-data-change-tracker';
 import {test, moduleForModel} from 'ember-qunit';
-import Tracker, {ModelTrackerKey} from 'ember-data-change-tracker/tracker';
+import {ModelTrackerKey} from 'ember-data-change-tracker/tracker';
 
 modelInitializer();
 
@@ -52,43 +54,59 @@ test('#saveChanges saves belongsTo assocations when model is ready on ajax load'
 
   Ember.run(()=> {
     FactoryGuy.store.find('user', user.get('id')).then((user)=> {
-      assert.deepEqual(Tracker.lastValue(user, 'company'), { id: company.get('id'), type: 'company' });
-      assert.deepEqual(Tracker.lastValue(user, 'profile'), { id: profile.get('id'), type: 'profile' });
+      assert.deepEqual(user.savedTrackerValue('company'), { id: company.get('id'), type: 'company' });
+      assert.deepEqual(user.savedTrackerValue('profile'), { id: profile.get('id'), type: 'profile' });
       done();
       mockTeardown();
     });
   });
 });
 
-test('#saveChanges saves belongsTo assocations when model info is pushed to store', function(assert) {
+test('#saveChanges saves attributes/assocations assocations when model info is pushed to store', function(assert) {
   let company = make('company');
   let profile = make('profile');
-  let userJson = build('user', { profile: profile.get('id'), company: { id: company.get('id'), type: 'company' } });
+  let info = { dude: 1 };
+  let userJson = build('user', { info, profile: profile.get('id'), company: { id: company.get('id'), type: 'company' } });
 
   let normalized = FactoryGuy.store.normalize('user', userJson.get());
 
   Ember.run(()=> {
     let user = FactoryGuy.store.push(normalized);
-    assert.deepEqual(Tracker.lastValue(user, 'company'), { id: company.get('id'), type: 'company' });
-    assert.deepEqual(Tracker.lastValue(user, 'profile'), { id: profile.get('id'), type: 'profile' });
+    assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
+    assert.deepEqual(user.savedTrackerValue('company'), { id: company.get('id'), type: 'company' });
+    assert.deepEqual(user.savedTrackerValue('profile'), { id: profile.get('id'), type: 'profile' });
   });
 });
 
+test('#saveChanges saves attributes/assocations when model newly created', function(assert) {
+  let company = make('company');
+  let profile = make('profile');
+  let info = { dude: 1 };
+  let user;
+  Ember.run(()=> {
+    user = FactoryGuy.store.createRecord('user', { info, profile, company });
+  });
+  assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
+  assert.deepEqual(user.savedTrackerValue('company'), { id: company.get('id'), type: 'company' });
+  assert.deepEqual(user.savedTrackerValue('profile'), { id: profile.get('id'), type: 'profile' });
+
+});
+
 test('#didAttributeChange', function(assert) {
-  let user = make('user');
   let company = make('small-company');
   let info = { dude: 1 };
 
   let tests = [
-    ['info', null, true],
-    ['info', info, true],
-    ['company', null, false],
-    ['company', company, true],
+    ['info', undefined, null, true],
+    ['info', undefined, info, true],
+    ['company', null, null, false],
+    ['company', null, company, true],
   ];
 
   for (let test of tests) {
-    let [key, value, expected] = test;
-    setUser(user, key, value);
+    let [key, firstValue, nextValue, expected] = test;
+    let user = make('user', { [key]: firstValue });
+    setUser(user, key, nextValue);
     assert.equal(user.didAttributeChange(key), expected);
   }
 });
@@ -267,7 +285,7 @@ test('includes attrs on create', function(assert) {
 
 test('clears saved attributes on delete', function(assert) {
   let done = assert.async();
-  let company = make('company', {info: {d:2}});
+  let company = make('company', { info: { d: 2 } });
   assert.ok(!!company.get(ModelTrackerKey));
   mockDelete(company);
   Ember.run(()=> {

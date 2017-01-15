@@ -74,7 +74,7 @@ test('#serialize object attribute', function(assert) {
   let company = make('small-company');
 
   let tests = [
-    ['info', null, null],
+    ['info', null, "null"],
     ['info', { dude: 1 }, '{"dude":1}'],
     ['company', null, { id: null, type: null }],
     ['company', company, { id: company.id, type: company.constructor.modelName }],
