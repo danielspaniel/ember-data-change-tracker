@@ -1,6 +1,5 @@
-import Ember from 'ember';
 import Tracker from 'ember-data-change-tracker/tracker';
-import {make, manualSetup}  from 'ember-data-factory-guy';
+import {make, makeList, manualSetup}  from 'ember-data-factory-guy';
 import {initializer as modelInitializer} from 'ember-data-change-tracker';
 import {test, moduleFor} from 'ember-qunit';
 import sinon from 'sinon';
@@ -14,10 +13,6 @@ moduleFor('model:company', 'Tracker', {
     manualSetup(this.container);
   }
 });
-
-let setUser = (user, attr, value)=> {
-  Ember.run(()=>user.set(attr, value));
-};
 
 test('#envConfig retuns the config for the application environment', function(assert) {
   let company = make('company');
@@ -60,30 +55,38 @@ test('#options with invalid options', function(assert) {
   let company = make('company');
 
   company.set('changeTracker', { only: ['info'], except: ['info']});
-  assert.throws(()=>Tracker.options(company),`[ember-data-change-tracker] 
+  assert.throws(()=>Tracker.options(company),`[ember-data-change-tracker]
     changeTracker options can have 'only' or 'except' but not user both together.`);
 
   company.set('changeTracker', { dude: "where's my car"});
-  assert.throws(()=>Tracker.options(company),`[ember-data-change-tracker] 
-    changeTracker options can have 'only' or 'except' or 'trackHasMany' but 
+  assert.throws(()=>Tracker.options(company),`[ember-data-change-tracker]
+    changeTracker options can have 'only' or 'except' or 'trackHasMany' but
     you are declaring: dude`);
 });
 
-test('#serialize object attribute', function(assert) {
-  let user = make('user');
-  let company = make('small-company');
+test('#serialize, #deserialize values', function(assert) {
+  let company = make('company');
+  let projects = makeList('project', 2);
 
   let tests = [
-    ['info', null, "null"],
-    ['info', { dude: 1 }, '{"dude":1}'],
-    ['company', null, { id: null, type: null }],
-    ['company', company, { id: company.id, type: company.constructor.modelName }],
+    ['info', undefined, undefined, {}],
+    ['info', null, "null", null],
+    ['info', { dude: 1 }, '{"dude":1}', { dude: 1 }],
+    ['company', null, { id: null, type: null }, null],
+    ['company', company, { id: company.id, type: company.constructor.modelName }, company],
+    ['projects', undefined, null, null],
+    ['projects', projects, projects.map((p)=> { return {id: p.id, type: p.constructor.modelName}; }), projects],
   ];
 
   for (let test of tests) {
-    let [key, value, expected] = test;
-    setUser(user, key, value);                            
-    assert.deepEqual(Tracker.serialize(user, key), expected);
+    let [key, value, expectedSerialized, expectedDeserialized] = test;
+    let user = make('user', {[key]: value});
+
+    let serializedValue = Tracker.serialize(user, key);
+    assert.deepEqual(serializedValue, expectedSerialized);
+
+     let deserializedValue = Tracker.deserialize(user, key, serializedValue);
+//    console.log(key, 'serializedValue',serializedValue, 'deserializedValue',deserializedValue);
+     assert.deepEqual(deserializedValue, expectedDeserialized);
   }
 });
-
