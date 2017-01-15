@@ -292,8 +292,10 @@ test('replace hasMany async:false', function(assert) {
       setUser(user, nextProjectList);
       let changed = user.changed().projects;
       if (expectedChanged) {
-        //TODO ok to convert to array for comparison or should the chaanged obj hold only vanilla arrays?
+        //TODO:
+        // forced to convert to array for comparison, perhaps should the changed obj hold only vanilla arrays?
         // (internally it is a DS.ManyArray)
+        // current doc states that the changed object will hold vanilla arrays. Make sure to update.
         let changeArray = changed.map((e)=>{return e.toArray ? e.toArray() : e;});
         assert.deepEqual(changeArray, expectedChanged);
       } else {
