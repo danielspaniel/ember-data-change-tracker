@@ -24,7 +24,7 @@ test('#envConfig retuns the config for the application environment', function(as
   assert.equal(Tracker.envConfig(company).modulePrefix, 'dummy');
 });
 
-test('includeChangeKey', function(assert) {
+test('trackChangeKey', function(assert) {
   let tests = [
     ['info', { trackHasMany: false }, true],
     ['info', { only: ['info'] }, true],
@@ -33,7 +33,7 @@ test('includeChangeKey', function(assert) {
 
   for (let test of tests) {
     let [key, opts, expected] = test;
-    assert.equal(Tracker.includeChangeKey(key, opts), expected);
+    assert.equal(Tracker.trackChangeKey(key, opts), expected);
   }
 });
 

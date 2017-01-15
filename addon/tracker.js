@@ -1,6 +1,5 @@
 import Ember from 'ember';
 const { isEmpty } = Ember;
-//const { dasherize } = Ember.String;
 
 const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
@@ -11,22 +10,35 @@ const knownTrackerOpts = Ember.A(['only', 'except', 'trackHasMany']);
  */
 export default class Tracker {
 
+  /**
+   * Get Ember application container
+   * 
+   * @param {DS.Model} model
+   * @returns {*}
+   */
   static container(model) {
     return Ember.getOwner ? Ember.getOwner(model.store) : model.store.container;
   }
 
+  /**
+   * Get Ember application configuration
+   * 
+   * @param {DS.Model} model
+   * @returns {*|{}}
+   */ 
   static envConfig(model) {
     return this.container(model).resolveRegistration('config:environment') || {};
   }
 
   /**
    * A custom attribute should have a transform function associated with it.
-   * If not, use object transform. A transform function is required for
-   * serializing and deserializing the attribute in order to save past values
-   * and then retrieve them for comparison with current.
+   * If not, use object transform. 
+   * A transform function is required for serializing and deserializing 
+   * the attribute in order to save past values and also to retrieve 
+   * them for comparison with current.
    *
-   * @param model
-   * @param {String} attributeType 'object', 'json' or could be undefined
+   * @param {DS.Model} model
+   * @param {String} attributeType like: 'object', 'json' or could be undefined
    * @returns {*}
    */
   static transformFn(model, attributeType) {
@@ -36,15 +48,22 @@ export default class Tracker {
   /**
    * Find the extra attribute info for a key
    *
-   * @param model
-   * @param key
+   * @param {DS.Model} model
+   * @param {String} key attibute name
    * @returns {*}
    */
   static modelInfo(model, key) {
     return (model.constructor.extraAttributeChecks || {})[key];
   }
 
-  static includeChangeKey(key, opts) {
+  /**
+   * Should this attribute be tracked based on model options
+   * 
+   * @param {String} key attribute name
+   * @param {Object} opts model options
+   * @returns {*}
+   */
+  static trackChangeKey(key, opts) {
     if (Ember.$.isEmptyObject(opts) ||
         Object.keys(opts).length === 1 && opts.hasOwnProperty('trackHasMany')
     ) {
@@ -56,8 +75,18 @@ export default class Tracker {
     );
   }
 
-  static includeAttribute(key, type, opts) {
-    return !skipAttrRegex.test(type) && this.includeChangeKey(key, opts);
+  /**
+   * Should this attribute be tracked. 
+   * 
+   * Don't track types that ember-data already tracks, like
+   * string, number, boolean and date types.
+   * 
+   * @param {String} key attribute name
+   * @param {Object} opts model options
+   * @returns {*}
+   */
+  static trackAttribute(key, type, opts) {
+    return !skipAttrRegex.test(type) && this.trackChangeKey(key, opts);
   }
 
   static valuesChanged(value1, value2) {
@@ -75,7 +104,8 @@ export default class Tracker {
    * In config environment you can set options like:
    *
    *   changeTracker: {trackHasMany: false}
-   *
+
+   * @param {DS.Model} model
    * @returns {*}
    */
   static options(model) {
@@ -106,6 +136,7 @@ export default class Tracker {
    * For belongsTo using object with {type, id}
    * For hasMany using array of objects with {type, id}
    *
+   * @param {DS.Model} model
    * @param {String} key attribute or relationship key
    */
   static serialize(model, key) {
@@ -122,7 +153,7 @@ export default class Tracker {
   /**
    * Deserialze value
    *
-   * @param {DS.model} model
+   * @param {DS.Model} model
    * @param {String} key attibute name
    * @param {String|Object} value
    * @returns {*}
@@ -143,7 +174,7 @@ export default class Tracker {
     let trackerOpts = this.options(model);
     let extraChecks = {};
     constructor.eachAttribute((attribute, meta)=> {
-      if (this.includeAttribute(attribute, meta.type, trackerOpts)) {
+      if (this.trackAttribute(attribute, meta.type, trackerOpts)) {
         let transform = this.transformFn(model, meta.type);
         Ember.assert(`[ember-data-change-tracker] changeTracker could not find 
           a ${meta.type} transform function for the attribute '${attribute}' in 
@@ -166,7 +197,7 @@ export default class Tracker {
   /**
    * Retrieve the last known value for this model key
    *
-   * @param {DS.model} model
+   * @param {DS.Model} model
    * @param {String} key attibute name
    * @returns {*}
    */
@@ -176,7 +207,7 @@ export default class Tracker {
 
   /**
    *
-   * @param {DS.model} model
+   * @param {DS.Model} model
    * @param {String} key attibute name
    * @returns {*}
    */
@@ -187,7 +218,7 @@ export default class Tracker {
   /**
    * Save current model key value in model's tracker hash
    *
-   * @param {DS.model} model
+   * @param {DS.Model} model
    * @param {String} key attibute name
    */
   static saveAttribute(model, key) {
@@ -200,7 +231,7 @@ export default class Tracker {
   /**
    * Remove tracker hash from the model's state
    *
-   * @param {DS.model} model
+   * @param {DS.Model} model
    */
   static clear(model) {
     model.set(ModelTrackerKey, undefined);
@@ -209,7 +240,7 @@ export default class Tracker {
   /**
    * Save change tracker attributes
    *
-   * @param {DS.model} model
+   * @param {DS.Model} model
    */
   static saveChanges(model) {
     let extraAttributeChecks = model.constructor.extraAttributeChecks || {};
