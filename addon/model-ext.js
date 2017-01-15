@@ -4,10 +4,10 @@ import Tracker from './tracker';
 
 Model.reopen({
   /**
-   * Did attribute change?
+   * Did an attribute change?
    *
    * @param {String} key the attribute name
-   * @param {Object} changed optional ember-data changedAttribute has
+   * @param {Object} changed optional ember-data changedAttribute object
    * @returns {Boolean} true if value changed
    */
   didAttributeChange(key, changed) {
@@ -27,6 +27,7 @@ Model.reopen({
       }
     }
   },
+
   /**
    * Did any attributes change?
    *
@@ -50,6 +51,7 @@ Model.reopen({
     }
     return changed;
   },
+
   /**
    * Provide access to tracker's save changes to model can
    * call this method manually => needed when manually pushing data
