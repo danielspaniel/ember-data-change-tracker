@@ -160,7 +160,7 @@ export default class Tracker {
         return JSON.stringify(value);
       case 'belongsTo':
         value = model.belongsTo(key).value();
-        return { type: value && value.constructor.modelName, id: value && value.id };
+        return value && { type: value && value.constructor.modelName, id: value && value.id };
       case 'hasMany':
         let values = model.hasMany(key).value();
         return values && values.map((value)=> {
@@ -185,7 +185,7 @@ export default class Tracker {
       case 'attribute':
         return info.transform.deserialize(value);
       case 'belongsTo':
-        return value.id ? model.store.peekRecord(value.type, value.id) : null;
+        return value && value.id ? model.store.peekRecord(value.type, value.id) : null;
       case 'hasMany':
         let values = value;
         return values && values.map((value)=> {

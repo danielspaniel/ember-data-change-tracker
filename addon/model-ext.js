@@ -24,6 +24,12 @@ Model.reopen({
         case 'attribute':
           return Tracker.valuesChanged(current, last);
         case 'belongsTo':
+          if (!current && !last) {
+            return false;
+          }
+          if (!current && last || current && !last) {
+            return true;
+          }
           return !(current.type === last.type && current.id === last.id);
         case 'hasMany':
           if (!current && !last) {
@@ -52,7 +58,7 @@ Model.reopen({
    * @returns {*}
    */
   changed() {
-    let changed = Ember.assign({},this.changedAttributes());
+    let changed = Ember.assign({}, this.changedAttributes());
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
       if (!changed[key] && extraAttributeChecks.hasOwnProperty(key)) {

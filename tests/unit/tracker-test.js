@@ -54,12 +54,12 @@ test('#options with valid options', sinon.test(function(assert) {
 test('#options with invalid options', function(assert) {
   let company = make('company');
 
-  company.set('changeTracker', { only: ['info'], except: ['info']});
-  assert.throws(()=>Tracker.options(company),`[ember-data-change-tracker]
+  company.set('changeTracker', { only: ['info'], except: ['info'] });
+  assert.throws(()=>Tracker.options(company), `[ember-data-change-tracker]
     changeTracker options can have 'only' or 'except' but not user both together.`);
 
-  company.set('changeTracker', { dude: "where's my car"});
-  assert.throws(()=>Tracker.options(company),`[ember-data-change-tracker]
+  company.set('changeTracker', { dude: "where's my car" });
+  assert.throws(()=>Tracker.options(company), `[ember-data-change-tracker]
     changeTracker options can have 'only' or 'except' or 'trackHasMany' but
     you are declaring: dude`);
 });
@@ -72,21 +72,23 @@ test('#serialize, #deserialize values', function(assert) {
     ['info', undefined, undefined, {}],
     ['info', null, "null", null],
     ['info', { dude: 1 }, '{"dude":1}', { dude: 1 }],
-    ['company', null, { id: null, type: null }, null],
+    ['company', null, null, null],
     ['company', company, { id: company.id, type: company.constructor.modelName }, company],
     ['projects', undefined, null, null],
-    ['projects', projects, projects.map((p)=> { return {id: p.id, type: p.constructor.modelName}; }), projects],
+    ['projects', projects, projects.map((p)=> {
+      return { id: p.id, type: p.constructor.modelName };
+    }), projects],
   ];
 
   for (let test of tests) {
     let [key, value, expectedSerialized, expectedDeserialized] = test;
-    let user = make('user', {[key]: value});
+    let user = make('user', { [key]: value });
 
     let serializedValue = Tracker.serialize(user, key);
     assert.deepEqual(serializedValue, expectedSerialized);
 
-     let deserializedValue = Tracker.deserialize(user, key, serializedValue);
-//    console.log(key, 'serializedValue',serializedValue, 'deserializedValue',deserializedValue);
-     assert.deepEqual(deserializedValue, expectedDeserialized);
+    let deserializedValue = Tracker.deserialize(user, key, serializedValue);
+//    console.log(key, 'serializedValue', serializedValue, 'deserializedValue', deserializedValue);
+    assert.deepEqual(deserializedValue, expectedDeserialized);
   }
 });
