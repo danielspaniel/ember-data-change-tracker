@@ -45,13 +45,13 @@ export default class Tracker {
    */
   static transformFn(model, attributeType) {
     let transformType = attributeType || 'object';
-//    if (/-mf-array/.test(attributeType)) {
-//      transformType = 'array';
-//    }
-//    if (/-mf-fragment/.test(attributeType)) {
-//      transformType = 'fragment';
-//    }
-    return this.container(model).lookup(`transform:${transformType}`);
+    //    if (/-mf-array/.test(attributeType)) {
+    //      transformType = 'array';
+    //    }
+    //    if (/-mf-fragment/.test(attributeType)) {
+    //      transformType = 'fragment';
+    //    }
+    return model.store.serializerFor(model.constructor.modelName).transformFor(transformType);
   }
 
   /**
@@ -152,7 +152,7 @@ export default class Tracker {
     let info = this.modelInfo(model, key);
     let value;
     switch (info.type) {
-//      case '-mf-array':
+      //      case '-mf-array':
       case 'attribute':
         value = info.transform.serialize(model.get(key));
         // serializer transform might not stringify, and this value must be
@@ -180,8 +180,8 @@ export default class Tracker {
   static deserialize(model, key, value) {
     let info = this.modelInfo(model, key);
     switch (info.type) {
-//      case '-mf-array':
-//        return info.transform.deserialize(JSON.parse(value));
+      //      case '-mf-array':
+      //        return info.transform.deserialize(JSON.parse(value));
       case 'attribute':
         return info.transform.deserialize(value);
       case 'belongsTo':
@@ -209,9 +209,9 @@ export default class Tracker {
           transform
         );
         let type = 'attribute';
-//        if (modelFragmentRegex.test(meta.type)) {
-//          type = meta.type.split('$')[0];
-//        }
+        //        if (modelFragmentRegex.test(meta.type)) {
+        //          type = meta.type.split('$')[0];
+        //        }
         extraChecks[attribute] = { type, transform };
       }
     });
@@ -222,6 +222,50 @@ export default class Tracker {
     });
     //    console.log('extact', model.constructor.modelName, extraChecks);
     constructor.extraAttributeChecks = extraChecks;
+  }
+
+  /**
+   *
+   * @param model
+   * @param key
+   * @param changed
+   * @returns {*}
+   */
+  static didChange(model, key, changed) {
+    changed = changed || model.changedAttributes();
+    if (changed[key]) {
+      return true;
+    }
+    let info = this.modelInfo(model, key);
+    if (info) {
+      let current = this.serialize(model, key);
+      let last = this.lastValue(model, key);
+      switch (info.type) {
+        case '-mf-array':
+        case 'attribute':
+          return this.valuesChanged(current, last);
+        case 'belongsTo':
+          if (!current && !last) {
+            return false;
+          }
+          if (!current && last || current && !last) {
+            return true;
+          }
+          return !(current.type === last.type && current.id === last.id);
+        case 'hasMany':
+          if (!current && !last) {
+            return false;
+          }
+          if ((current && current.length) !== (last && last.length)) {
+            return true;
+          }
+          let currentSorted = current.sortBy('id');
+          let lastSorted = last.sortBy('id');
+          return !!currentSorted.find((value, i)=> {
+            return value.type !== lastSorted[i].type || value.id !== lastSorted[i].id;
+          });
+      }
+    }
   }
 
   /**

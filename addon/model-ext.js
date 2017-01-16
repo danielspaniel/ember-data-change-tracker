@@ -11,40 +11,7 @@ Model.reopen({
    * @returns {Boolean} true if value changed
    */
   didAttributeChange(key, changed) {
-    changed = changed || this.changedAttributes();
-    if (changed[key]) {
-      return true;
-    }
-    let info = Tracker.modelInfo(this, key);
-    if (info) {
-      let current = Tracker.serialize(this, key);
-      let last = Tracker.lastValue(this, key);
-      switch (info.type) {
-        case '-mf-array':
-        case 'attribute':
-          return Tracker.valuesChanged(current, last);
-        case 'belongsTo':
-          if (!current && !last) {
-            return false;
-          }
-          if (!current && last || current && !last) {
-            return true;
-          }
-          return !(current.type === last.type && current.id === last.id);
-        case 'hasMany':
-          if (!current && !last) {
-            return false;
-          }
-          if ((current && current.length) !== (last && last.length)) {
-            return true;
-          }
-          let currentSorted = current.sortBy('id');
-          let lastSorted = last.sortBy('id');
-          return !!currentSorted.find((value, i)=> {
-            return value.type !== lastSorted[i].type || value.id !== lastSorted[i].id;
-          });
-      }
-    }
+    return Tracker.didChange(this, key, changed);
   },
 
   /**
