@@ -193,7 +193,6 @@ Usage:
   user.savedTrackerValue('info') //=> {foo: 1}  original value of info still the same   
 ```
 
-
 ## Rollback
 
  - This is something that could be achieved if only attributes and belongsTo associations are tracked.

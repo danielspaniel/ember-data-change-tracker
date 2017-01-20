@@ -39,8 +39,10 @@ Model.reopen({
   },
 
   /**
-   * Provide access to tracker's save changes to model can
-   * call this method manually => needed when manually pushing data
+   * Provide access to tracker's saveChanges method to allow you to
+   * call this method manually 
+   * 
+   * NOTE: This is needed when manually pushing data
    * to the store and using Ember < 2.10
    */
   saveChanges() {
