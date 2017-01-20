@@ -42,7 +42,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
   let user = //=> user model where info => info  and company => company
 ```
 
-### changed() method added to models
+### changed() method added to DS.Model instances
   -  Shows you any changes in an object attribute type
     - whether modified or replacing the value  
   - Shows when you replace a belongsTo association
@@ -85,6 +85,40 @@ Example: ( remove from a hasMany )
                           //    old value,             new value      
   user.changed().projects //=> [[project1, project2],  [project2]]
 ```
+
+### Configuration
+  - By default tracking hasMany is turned off 
+    - To turn it on globally:
+
+```javascript
+  // file config/environment.js
+  var ENV = {
+    modulePrefix: 'dummy',
+    environment: environment,
+    rootURL: '/',
+    locationType: 'auto',
+    changeTracker: { trackHasMany: true } // add this setting
+    EmberENV: {
+    ... rest of config
+   
+```
+  - You can also set options on the model itself
+    
+```
+  // file app/models/user.js
+  export default Model.extend({
+    changeTracker: {only: ['info', 'company', 'pets']}, // settings for this model
+    name: attr('string'),
+    style: attr('string'),
+    info: attr('object'),
+    json: attr(),
+    company: belongsTo('company', { async: false, polymorphic: true }),
+    profile: belongsTo('profile', { async: true }),
+    projects: hasMany('project', { async: false }),
+    pets: hasMany('pet', { async: true })
+  });
+```
+    - You can use only or except and also override the global trackHasMany  
 
 ### Serializer extras
   - Mixin is provided that will allow you to remove any attributes/associations
