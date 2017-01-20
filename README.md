@@ -180,6 +180,7 @@ user.serialize(); //=> '{ info: {"foo:1"} }'
 ## Extra's 
   - Adds a few more helpful methods to ember data model
     - ```didChange(key) ```
+
 Usage:
 ```javascript
   user.set('info.foo', 8)      
