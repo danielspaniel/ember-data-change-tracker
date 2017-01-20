@@ -131,12 +131,12 @@ Example: ( remove from a hasMany )
  ```
 ```javascript
   changeTracker: {trackHasMany: false} // global
-  changeTracker: {only: ['pets']},
+  changeTracker: {only: ['pets']},    // in model
   // will track pets
 ```
 ```javascript
   changeTracker: {trackHasMany: true} // global
-  changeTracker: {except: ['pets']},
+  changeTracker: {except: ['pets']},  // in model
   // will track projects
 ```
 
