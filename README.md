@@ -180,19 +180,19 @@ user.serialize(); //=> '{ info: {"foo:1"} }'
 ## Extra's 
   - Adds a few more helpful methods to ember data model
     - ```didChange(key) ```
+      - did the value on this key change?
+    - ```savedTrackerValue(key)``` 
+      - this is the value that the key had after it was created/saved and 
+      before any modifications
 
 Usage:
 ```javascript
+  user.savedTrackerValue('info') //=> {foo: 1}  original value of info
   user.set('info.foo', 8)      
   user.didChange('info') //=> true
+  user.savedTrackerValue('info') //=> {foo: 1}  original value of info still the same   
 ```
-    - ```savedTrackerValue(key)```
 
-Usage:
-```javascript
-  user.set('info.foo', 8);      
-  user.savedTrackerValue('info') //=> {foo: 1}
-```
 
 ## Rollback
 
