@@ -88,12 +88,13 @@ Example: ( remove from a hasMany )
                           //    old value,             new value
   user.changed().projects //=> [[project1, project2],  [DS.ManyArray with project2]]
 ```
-**NOTE: As noted above, the change object for tracking hasMany will have an array as the first value and a DS.ManyArray (or DS.PromiseManyArray) as the second value. This lack of symmetry might be annoying and could addressed in the future. Pull requests are welcomed ;)
+**NOTE:** As noted above, the change object for tracking hasMany will have an array 
+  as the first value and a DS.ManyArray (or DS.PromiseManyArray) as the second value. 
+  This lack of symmetry might be annoying and could addressed in the future.
 
-**NOTE: hasMany is a tricky one. The old value will currently be an array of models, and
-  not a DS.ManyArray as it should be.
   But that is only important for rollback, which is not happening yet. For just seeing what
-  changed it is good enough.**
+  changed it is good enough.
+
 
 ### Configuration
   - By default tracking hasMany is turned off
