@@ -186,7 +186,14 @@ Usage:
   user.set('info.foo', 8)      
   user.didChange('info') //=> true
 ```
-    
+    - ```savedTrackerValue(key)```
+
+Usage:
+```javascript
+  user.set('info.foo', 8);      
+  user.savedTrackerValue('info') //=> {foo: 1}
+```
+
 ## Rollback
 
  - This is something that could be achieved if only attributes and belongsTo associations are tracked.
