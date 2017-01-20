@@ -10,7 +10,7 @@ Model.reopen({
    * @param {Object} changed optional ember-data changedAttribute object
    * @returns {Boolean} true if value changed
    */
-  didAttributeChange(key, changed) {
+  didChange(key, changed) {
     return Tracker.didChange(this, key, changed);
   },
 
@@ -29,7 +29,7 @@ Model.reopen({
     let extraAttributeChecks = this.constructor.extraAttributeChecks || {};
     for (let key in extraAttributeChecks) {
       if (!changed[key] && extraAttributeChecks.hasOwnProperty(key)) {
-        if (this.didAttributeChange(key, changed)) {
+        if (this.didChange(key, changed)) {
           let last = Tracker.deserializedlastValue(this, key);
           changed[key] = [last, this.get(key)];
         }

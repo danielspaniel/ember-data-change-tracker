@@ -121,7 +121,7 @@ test('#saveChanges saves attributes/assocations when model newly created', funct
   assert.deepEqual(user.savedTrackerValue('projects'), expectedProjects);
 });
 
-test('#didAttributeChange', function(assert) {
+test('#didChange', function(assert) {
   let company = make('small-company');
   let projects = makeList('project', 2);
   let pets = makeList('pet', 2);
@@ -142,7 +142,7 @@ test('#didAttributeChange', function(assert) {
     let [key, firstValue, nextValue, expected] = test;
     let user = make('user', { [key]: firstValue });
     setUser(user, key, nextValue);
-    assert.equal(user.didAttributeChange(key), expected);
+    assert.equal(user.didChange(key), expected);
   }
 });
 

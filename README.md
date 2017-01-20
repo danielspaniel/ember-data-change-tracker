@@ -177,11 +177,19 @@ user.serialize(); //=> '{ info: {"foo:1"} }'
 // where all the attributes and association are included whether they changed or not
 ```
 
-
+## Extra's 
+  - Adds a few more helpful methods to ember data model
+    - ```didChange()```
+Usage:
+```javascript
+  user.set('info.foo', 8)      
+  user.didChange('info') //=> true
+```
+    
 ## Rollback
 
- This is something that could be achieved if only attributes and belongsTo associations are tracked.
- Since we are trying to track hasMany .. it is way harder, but it is an interesting idea.
+ - This is something that could be achieved if only attributes and belongsTo associations are tracked.
+  Since we are trying to track hasMany .. it is way harder, but it is an interesting idea.
 
 ## Known Issues
   - Ember less than 2.10
