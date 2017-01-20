@@ -38,7 +38,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
 ```javascript
   let company = //=> company model
   let company2 = //=> different company model
-  let info = {foo: 1) // some object
+  let info = {foo: 1} // some object
   let projects = //=> collection of project models
   let user = //=> user model with info => info , company => company, and projects => projects 
 ```
@@ -58,14 +58,14 @@ Example: ( modify attribute )
   info.foo = 2               // or
   user.set('info.foo', 2);   // same idea
                       //    old value, new value      
-  user.changed().info //=> [{foo: 1),  {foo: 2)]
+  user.changed().info //=> [{foo: 1},  {foo: 2}]
 ```
 
 Example: ( replace attribute )
 ```javascript
   user.set('info', {foo: 3});
                       //    old value, new value      
-  user.changed().info //=> [{foo: 1),  {foo: 3)]
+  user.changed().info //=> [{foo: 1},  {foo: 3}]
 ```
 
 Example: ( replace belongTo )
