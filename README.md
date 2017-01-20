@@ -168,13 +168,4 @@ Example: ( remove from a hasMany )
   // where all the attributes and association are included whether they changed or not
  ```
 
-New addon for dirty tracking non standard attributes ( objects ) and associations
-  - tracks modifications in attributes that are object/json
-  - tracks replacement of belongsTo associations
-  - tracks replacement/changes in hasMany associations
-  - Only works with ember-data versions 2.5+
-
-https://github.com/danielspaniel/ember-data-change-tracker
-
-
  
