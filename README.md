@@ -33,7 +33,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
    });
 ```
 
-   And you have a user with an object attribute this:
+   And you have a user with attributes/associations:
 
 ```javascript
   let company = //=> company model
