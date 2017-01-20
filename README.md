@@ -10,6 +10,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
     - tracks modifications in attributes that are object/json
     - tracks replacement of belongsTo associations
     - tracks replacement/changes in hasMany associations
+    - adds a ```changed()``` method to DS.Model 
     - Only works with ember-data versions 2.5+
 
 ## Installation
@@ -164,3 +165,14 @@ Example: ( remove from a hasMany )
   // '{ name: 'dude', info: {"foo:1"}, company: "1" companyType: "company"', profile: "1" }'
   // where all the attributes and association are included whether they changed or not
  ```
+
+New addon for dirty tracking non standard attributes ( objects ) and associations
+  - tracks modifications in attributes that are object/json
+  - tracks replacement of belongsTo associations
+  - tracks replacement/changes in hasMany associations
+  - Only works with ember-data versions 2.5+
+
+https://github.com/danielspaniel/ember-data-change-tracker
+
+
+ 
