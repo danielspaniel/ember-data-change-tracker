@@ -89,10 +89,10 @@ Example: ( remove from a hasMany )
   user.changed().projects //=> [[project1, project2],  [project2]]
 ```
 
-*NOTE: hasMany is a tricky one. The old value will currently be an array of models, and
+**NOTE: hasMany is a tricky one. The old value will currently be an array of models, and
   not a DS.ManyArray as it should be. 
   But that is only important for rollback, which is not happening yet. For just seeing what
-  changed it is good enough. 
+  changed it is good enough.** 
   
 ### Configuration
   - By default tracking hasMany is turned off
