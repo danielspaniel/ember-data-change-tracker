@@ -182,3 +182,10 @@ user.serialize(); //=> '{ info: {"foo:1"} }'
 
  This is something that could be achieved if only attributes and belongsTo associations are tracked.
  Since we are trying to track hasMany .. it is way harder, but it is an interesting idea.
+
+## Known Issues
+  - Ember less than 2.10
+   - When pushing data to the store directly to create a model ( usually done when using 
+     websockets ) you need to call ```model.saveChanges()``` manually after creating that 
+     new model
+     
