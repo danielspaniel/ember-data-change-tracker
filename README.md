@@ -118,7 +118,11 @@ Example: ( remove from a hasMany )
     pets: hasMany('pet', { async: true })
   });
 ```
-  - You can use only or except and also override the global trackHasMany  
+  - You can use only or except and also override the global trackHasMany
+    - for example: 
+    ```javascript changeTracker: {trackHasMany: true} ```    
+    ```javascript changeTracker: {trackHasMany: true, only: ['pets']}, ```   
+    
 
 ### Serializer extras
   - Mixin is provided that will allow you to remove any attributes/associations
