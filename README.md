@@ -3,8 +3,8 @@
 [![Build Status](https://secure.travis-ci.org/danielspaniel/ember-data-change-tracker.png?branch=master)](http://travis-ci.org/danielspaniel/ember-data-change-tracker) [![Ember Observer Score](http://emberobserver.com/badges/ember-data-change-tracker.svg)](http://emberobserver.com/addons/ember-data-change-tracker) [![npm version](https://badge.fury.io/js/ember-data-change-tracker.svg)](http://badge.fury.io/js/ember-data-change-tracker)
 
 This addon aims to fill in the gaps in the change tracking that ember data does now.
- - Currently ember-data tracks changes for numbers/strings/date/boolean attribute,
-  and has a changeAttributes method to see what changed
+ - Currently ember-data tracks changes for numbers/strings/date/boolean attributes,
+  and has a ```changeAttributes()``` method to see what changed
 
  - This addon:
     - tracks modifications in attributes that are object/json
