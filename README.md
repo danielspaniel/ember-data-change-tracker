@@ -121,10 +121,19 @@ Example: ( remove from a hasMany )
   - You can use only or except and also override the global trackHasMany
     - for example: 
 ```javascript
- changeTracker: {trackHasMany: true} 
+  changeTracker: {trackHasMany: false} // global 
+  changeTracker: {trackHasMany: true}, // in model 
+  // will track project and pets
  ```    
 ```javascript 
-  changeTracker: {trackHasMany: true, only: ['pets']}, 
+  changeTracker: {trackHasMany: false} // global
+  changeTracker: {only: ['pets']},
+  // will track pets  
+```   
+```javascript 
+  changeTracker: {trackHasMany: true} // global
+  changeTracker: {except: ['pets']},
+  // will track projects  
 ```   
     
 

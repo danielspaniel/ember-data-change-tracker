@@ -24,6 +24,7 @@ test('shouldTrackKey', function(assert) {
     ['pets', 'hasMany', { trackHasMany: false }, false],
     ['pets', 'hasMany', { trackHasMany: true }, true],
     ['pets', 'hasMany', { trackHasMany: false, only: ['pets'] }, true],
+    ['pets', 'hasMany', { trackHasMany: true, except: ['pets'] }, false],
     ['company', 'belongsTo', { trackHasMany: false }, true],
     ['company', 'belongsTo', { only: ['info'] }, false],
     ['company', 'belongsTo', { only: ['info', 'company'] }, true],

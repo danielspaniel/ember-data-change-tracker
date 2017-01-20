@@ -75,7 +75,11 @@ export default class Tracker {
   static trackChangeKey(key, type, opts) {
     let { only, except, trackHasMany } = opts;
     if (type === 'hasMany') {
-      return trackHasMany || (!trackHasMany && only && only.includes(key));
+      return (
+        (trackHasMany && (!only && !except)) ||
+        (trackHasMany && !isEmpty(except) && !except.includes(key)) ||
+        (!trackHasMany && !isEmpty(only) && only.includes(key))
+      );
     }
     return (
       (!only && !except) ||
