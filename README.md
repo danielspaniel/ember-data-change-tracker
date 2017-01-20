@@ -46,6 +46,8 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
 ### changed() method added to DS.Model instances
   -  Shows you any changes in an object attribute type
     - whether modified or replacing the value  
+    - attr() will default to 'object' type 
+    - works with any custom type you have created
   - Shows when you replace a belongsTo association
   - Shows when you add to a hasMany association
   - Shows when you delete from a hasMany association
