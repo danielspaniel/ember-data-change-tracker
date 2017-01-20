@@ -122,6 +122,7 @@ Example: ( remove from a hasMany )
   });
 ```
   - You can use only or except and also override the global trackHasMany
+    - So, you can't use only and except at the same time, just one or the other 
     - for example: 
 ```javascript
   changeTracker: {trackHasMany: false} // global 
