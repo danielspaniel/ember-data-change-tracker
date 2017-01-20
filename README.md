@@ -110,7 +110,7 @@ Example: ( remove from a hasMany )
 ```javascript
   // file app/models/user.js
   export default Model.extend({
-    changeTracker: {only: ['info', 'company', 'pets']}, // settings for this model
+    changeTracker: {only: ['info', 'company', 'pets']}, // settings for user models
     name: attr('string'),
     style: attr('string'),
     info: attr('object'),
