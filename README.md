@@ -10,7 +10,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
     - tracks modifications in attributes that are object/json
     - tracks replacement of belongsTo associations
     - tracks replacement/changes in hasMany associations
-    - adds a ```changed()``` method to DS.Model 
+    - adds a ```changed()``` method to DS.Model
     - Only works with ember-data versions 2.5+
 
 ## Installation
@@ -23,7 +23,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
 
 ```javascript
   export default Model.extend({
-       name: attr('string'),  // ember-date tracks this already   
+       name: attr('string'),  // ember-data tracks this already
        info: attr('object'),  // ember-data does not track modifications
        json: attr(),          // ember-data does not track modifications if this is object
        company: belongsTo('company', { async: false, polymorphic: true }),  // ember-data does not track replacement
@@ -40,13 +40,13 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
   let company2 = //=> different company model
   let info = {foo: 1} // some object
   let projects = //=> collection of project models
-  let user = //=> user model with info => info , company => company, and projects => projects 
+  let user = //=> user model with info => info , company => company, and projects => projects
 ```
 
 ### changed() method added to DS.Model instances
   -  Shows you any changes in an object attribute type
-    - whether modified or replacing the value  
-    - attr() will default to 'object' type 
+    - whether modified or replacing the value
+    - attr() will default to 'object' type
     - works with any custom type you have created
   - Shows when you replace a belongsTo association
   - Shows when you add to a hasMany association
@@ -57,40 +57,40 @@ Example: ( modify attribute )
 ```javascript
   info.foo = 2               // or
   user.set('info.foo', 2);   // same idea
-                      //    old value, new value      
+                      //    old value, new value
   user.changed().info //=> [{foo: 1},  {foo: 2}]
 ```
 
 Example: ( replace attribute )
 ```javascript
   user.set('info', {foo: 3});
-                      //    old value, new value      
+                      //    old value, new value
   user.changed().info //=> [{foo: 1},  {foo: 3}]
 ```
 
 Example: ( replace belongTo )
 ```javascript
-  user.set('company', company2);  
-                        //    old value, new value      
+  user.set('company', company2);
+                        //    old value, new value
   user.changed().company //=> [company,  company2]
 ```
 
 Example: ( add to a hasMany )
-```javascript    
+```javascript
   user.get('projects').addObject(project3); // add project3
-                          //    old value,             new value      
+                          //    old value,             new value
   user.changed().projects //=> [[project1, project2],  [project1, project2, project3]]
 ```
 
 Example: ( remove from a hasMany )
-```javascript      
+```javascript
   user.get('projects').removeObject(firstProject); // remove project1
-                          //    old value,             new value      
+                          //    old value,             new value
   user.changed().projects //=> [[project1, project2],  [project2]]
 ```
 
 ### Configuration
-  - By default tracking hasMany is turned off 
+  - By default tracking hasMany is turned off
     - To turn it on globally:
 
 ```javascript
@@ -103,10 +103,10 @@ Example: ( remove from a hasMany )
     changeTracker: { trackHasMany: true } // add this setting
     EmberENV: {
     ... rest of config
-   
+
 ```
   - You can also set options on the model itself
-    
+
 ```javascript
   // file app/models/user.js
   export default Model.extend({
@@ -122,51 +122,50 @@ Example: ( remove from a hasMany )
   });
 ```
   - You can use only or except and also override the global trackHasMany
-    - So, you can't use only and except at the same time, just one or the other 
-    - for example: 
+    - So, you can't use only and except at the same time, just one or the other
+    - for example:
 ```javascript
-  changeTracker: {trackHasMany: false} // global 
-  changeTracker: {trackHasMany: true}, // in model 
+  changeTracker: {trackHasMany: false} // global
+  changeTracker: {trackHasMany: true}, // in model
   // will track project and pets
- ```    
-```javascript 
+ ```
+```javascript
   changeTracker: {trackHasMany: false} // global
   changeTracker: {only: ['pets']},
-  // will track pets  
-```   
-```javascript 
+  // will track pets
+```
+```javascript
   changeTracker: {trackHasMany: true} // global
   changeTracker: {except: ['pets']},
-  // will track projects  
-```   
-    
+  // will track projects
+```
+
 
 ### Serializer extras
   - Mixin is provided that will allow you to remove any attributes/associations
-   that did not change from the serialized json
+    that did not change from the serialized json
   - Useful when you want to reduce the size of a json payload
-   - removing unchanged values can be big reduction at times
+  - removing unchanged values can be big reduction at times
 
- Example:  
+Example:
 
-  Let's say you set up the user model's serializer with keep-only-changed mixin  
+  Let's say you set up the user model's serializer with keep-only-changed mixin
 
- ```javascript
-  // file: app/serializers/user.js
-  import DS from 'ember-data';
-  import keepOnlyChanged from 'ember-data-change-tracker/mixins/keep-only-changed';
+```javascript
+// file: app/serializers/user.js
+import DS from 'ember-data';
+import keepOnlyChanged from 'ember-data-change-tracker/mixins/keep-only-changed';
 
-  export default DS.RESTSerializer.extend(keepOnlyChanged);
- ```
+export default DS.RESTSerializer.extend(keepOnlyChanged);
+```
 
-  Then when you are updating the user model
- ```javascript
-  user.set('info.foo', 1);
-  user.serialize(); //=> '{ info: {"foo:1"} }'
+Then when you are updating the user model
 
-  // without this mixin enabled the json would look like:
-  // '{ name: 'dude', info: {"foo:1"}, company: "1" companyType: "company"', profile: "1" }'
-  // where all the attributes and association are included whether they changed or not
- ```
+```javascript
+user.set('info.foo', 1);
+user.serialize(); //=> '{ info: {"foo:1"} }'
 
- 
+// without this mixin enabled the json would look like:
+// '{ name: 'dude', info: {"foo:1"}, company: "1" companyType: "company"', profile: "1" }'
+// where all the attributes and association are included whether they changed or not
+```
