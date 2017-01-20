@@ -5,7 +5,8 @@ import FactoryGuy, {
 }  from 'ember-data-factory-guy';
 import {initializer as modelInitializer} from 'ember-data-change-tracker';
 import {test, moduleForModel} from 'ember-qunit';
-import {ModelTrackerKey} from 'ember-data-change-tracker/tracker';
+import Tracker, {ModelTrackerKey} from 'ember-data-change-tracker/tracker';
+import sinon from 'sinon';
 
 modelInitializer();
 
@@ -412,7 +413,7 @@ test('mutating attributes of elements in hasMany', function(assert) {
 test('keepOnlyChanged serializer mixin', function(assert) {
   let user = make('user');
   let company = make('small-company');
-  let projects = makeList('project', 2);
+  //  let projects = makeList('project', 2);
   let info = { dude: 1 };
 
   let tests = [
@@ -420,8 +421,9 @@ test('keepOnlyChanged serializer mixin', function(assert) {
     ['info', info, true, 'replace attribute'],
     ['company', null, false, 'undefined to null relationship is NOT a change'],
     ['company', company, true, 'change belongsTo'],
-    ['projects', [], false, 'undefined to empty array is not a change in hasMany'],
-    ['projects', projects, true, 'change hasMany']
+    // hasMany are not serialized by default
+    //    ['projects', [], false, 'undefined to empty array is not a change in hasMany'],
+    //    ['projects', projects, true, 'change hasMany']
   ];
 
   for (let test of tests) {
@@ -432,19 +434,22 @@ test('keepOnlyChanged serializer mixin', function(assert) {
   }
 });
 
-test('includes attrs on create', function(assert) {
+test('saves keys on create', sinon.test(function(assert) {
   let company = make('company');
   let projects = makeList('project', 2);
+
+  let envConfig = this.stub(Tracker, 'envConfig');
+  envConfig.returns({ changeTracker: { trackHasMany: true } });
+
+  let user;
   Ember.run(()=> {
-    let user = FactoryGuy.store.createRecord('user', { company, projects });
-    let json = user.serialize();
-
-    assert.equal(json['company'], company.get('id'));
-    assert.deepEqual(json['projects'], projects.map((p)=> p.id));
+    user = FactoryGuy.store.createRecord('user', { company, projects });
   });
-});
+  assert.equal(Ember.typeOf(user.savedTrackerValue('company')), "object");
+  assert.equal(Ember.typeOf(user.savedTrackerValue('projects')), "array");
+}));
 
-test('clears all saved attributes on delete', function(assert) {
+test('clears all saved keys on delete', function(assert) {
   let done = assert.async();
   let user = make('user', { info: { d: 2 } });
 
