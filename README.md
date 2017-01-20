@@ -14,7 +14,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
 
 ## Installation
 
-* `ember install ember-data-change-tracking`
+* `ember install ember-data-change-tracker`
 
 ## Why?
 
@@ -42,7 +42,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
   let user = //=> user model where info => info  and company => company
 ```
 
-#### changed() method added to models
+### changed() method added to models
   -  Shows you any changes in an object attribute type
     - whether modified or replacing the value  
   - Shows when you replace a belongsTo association
@@ -86,7 +86,7 @@ Example: ( remove from a hasMany )
   user.changed().projects //=> [[project1, project2],  [project2]]
 ```
 
-## Serializer extras
+### Serializer extras
   - Mixin is provided that will allow you to remove any attributes/associations
    that did not change from the serialized json
   - Useful when you want to reduce the size of a json payload
