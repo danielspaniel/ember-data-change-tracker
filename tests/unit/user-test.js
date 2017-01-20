@@ -446,13 +446,13 @@ test('includes attrs on create', function(assert) {
 
 test('clears all saved attributes on delete', function(assert) {
   let done = assert.async();
-  let company = make('company', { info: { d: 2 } });
+  let user = make('user', { info: { d: 2 } });
 
-  assert.ok(!!company.get(ModelTrackerKey));
-  mockDelete(company);
+  assert.ok(!!user.get(ModelTrackerKey));
+  mockDelete(user);
   Ember.run(()=> {
-    company.destroyRecord().then(()=> {
-      assert.ok(!company.get(ModelTrackerKey));
+    user.destroyRecord().then(()=> {
+      assert.ok(!user.get(ModelTrackerKey));
       done();
     });
   });

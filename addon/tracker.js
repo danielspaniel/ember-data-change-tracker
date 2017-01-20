@@ -72,15 +72,15 @@ export default class Tracker {
    * @param {Object} opts model options
    * @returns {*}
    */
-  static trackChangeKey(key, opts) {
-    if (Ember.$.isEmptyObject(opts) ||
-      Object.keys(opts).length === 1 && opts.hasOwnProperty('trackHasMany')
-    ) {
-      return true;
+  static trackChangeKey(key, type, opts) {
+    let { only, except, trackHasMany } = opts;
+    if (type === 'hasMany') {
+      return trackHasMany || (!trackHasMany && only && only.includes(key));
     }
     return (
-      opts.only && opts.only.includes(key) ||
-      opts.except && !opts.except.includes(key)
+      (!only && !except) ||
+      !isEmpty(only) && only.includes(key) ||
+      !isEmpty(except) && !except.includes(key)
     );
   }
 
@@ -94,8 +94,8 @@ export default class Tracker {
    * @param {Object} opts model options
    * @returns {*}
    */
-  static trackAttribute(key, type, opts) {
-    return !skipAttrRegex.test(type) && this.trackChangeKey(key, opts);
+  static shouldTrackKey(key, type, opts) {
+    return !skipAttrRegex.test(type) && this.trackChangeKey(key, type, opts);
   }
 
   static valuesChanged(value1, value2) {
@@ -112,8 +112,8 @@ export default class Tracker {
    *
    * In config environment you can set options like:
    *
-   *   changeTracker: {trackHasMany: false}
-
+   *   changeTracker: {trackHasMany: true} // default is false
+   *
    * @param {DS.Model} model
    * @returns {*}
    */
@@ -133,6 +133,9 @@ export default class Tracker {
       Ember.isEmpty(unknownOpts)
     );
 
+    if (!opts.hasOwnProperty('trackHasMany')) {
+      opts.trackHasMany = false;
+    }
     return opts;
   }
 
@@ -157,7 +160,10 @@ export default class Tracker {
         value = info.transform.serialize(model.get(key));
         // serializer transform might not stringify, and this value must be
         // a string in order to correctly track modifications
-        return JSON.stringify(value);
+        if (typeof value !== 'string') {
+          value = JSON.stringify(value);
+        }
+        return value;
       case 'belongsTo':
         value = model.belongsTo(key).value();
         return value && { type: value && value.constructor.modelName, id: value && value.id };
@@ -199,8 +205,9 @@ export default class Tracker {
     constructor.alreadySetupExtraAttributes = true;
     let trackerOpts = this.options(model);
     let extraChecks = {};
+
     constructor.eachAttribute((attribute, meta)=> {
-      if (this.trackAttribute(attribute, meta.type, trackerOpts)) {
+      if (this.shouldTrackKey(attribute, meta.type, trackerOpts)) {
         let transform = this.transformFn(model, meta.type);
         Ember.assert(`[ember-data-change-tracker] changeTracker could not find
           a ${meta.type} transform function for the attribute '${attribute}' in
@@ -215,12 +222,16 @@ export default class Tracker {
         extraChecks[attribute] = { type, transform };
       }
     });
-    constructor.eachRelationship(function(key, relationship) {
-      if (relationship.kind === 'belongsTo' || relationship.kind === 'hasMany') {
+
+    constructor.eachRelationship((key, relationship) => {
+      if (
+        (relationship.kind === 'belongsTo' || relationship.kind === 'hasMany') &&
+        (this.shouldTrackKey(relationship.key, relationship.kind, trackerOpts))
+      ) {
         extraChecks[key] = { type: relationship.kind };
       }
     });
-    //    console.log('extact', model.constructor.modelName, extraChecks);
+
     constructor.extraAttributeChecks = extraChecks;
   }
 

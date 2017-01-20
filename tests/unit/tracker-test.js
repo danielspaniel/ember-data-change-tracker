@@ -14,21 +14,28 @@ moduleFor('model:company', 'Tracker', {
   }
 });
 
-test('#envConfig retuns the config for the application environment', function(assert) {
+test('#envConfig returns the config for the application environment', function(assert) {
   let company = make('company');
   assert.equal(Tracker.envConfig(company).modulePrefix, 'dummy');
 });
 
-test('trackChangeKey', function(assert) {
+test('shouldTrackKey', function(assert) {
   let tests = [
-    ['info', { trackHasMany: false }, true],
-    ['info', { only: ['info'] }, true],
-    ['info', { except: ['info'] }, false],
+    ['pets', 'hasMany', { trackHasMany: false }, false],
+    ['pets', 'hasMany', { trackHasMany: true }, true],
+    ['pets', 'hasMany', { trackHasMany: false, only: ['pets'] }, true],
+    ['company', 'belongsTo', { trackHasMany: false }, true],
+    ['company', 'belongsTo', { only: ['info'] }, false],
+    ['company', 'belongsTo', { only: ['info', 'company'] }, true],
+    ['company', 'belongsTo', { except: ['info'] }, true],
+    ['info', 'attribute', { trackHasMany: false }, true],
+    ['info', 'attribute', { only: ['info'] }, true],
+    ['info', 'attribute', { except: ['info'] }, false],
   ];
 
   for (let test of tests) {
-    let [key, opts, expected] = test;
-    assert.equal(Tracker.trackChangeKey(key, opts), expected);
+    let [key, type, opts, expected] = test;
+    assert.equal(!!Tracker.shouldTrackKey(key, type, opts), expected);
   }
 });
 
@@ -37,10 +44,11 @@ test('#options with valid options', sinon.test(function(assert) {
   let envConfig = this.stub(Tracker, 'envConfig');
 
   let tests = [
+    [{ changeTracker: {} }, {}, { trackHasMany: false }],
     [{ changeTracker: { trackHasMany: true } }, {}, { trackHasMany: true }],
     [{ changeTracker: { trackHasMany: true } }, { only: ['info'] }, { trackHasMany: true, only: ['info'] }],
-    [{}, { only: ['info'] }, { only: ['info'] }],
-    [{}, { except: ['info'] }, { except: ['info'] }],
+    [{}, { only: ['info'] }, { only: ['info'], trackHasMany: false }],
+    [{}, { except: ['info'] }, { except: ['info'], trackHasMany: false }],
   ];
 
   for (let test of tests) {
@@ -64,10 +72,13 @@ test('#options with invalid options', function(assert) {
     you are declaring: dude`);
 });
 
-test('#serialize, #deserialize values', function(assert) {
+test('#serialize, #deserialize values', sinon.test(function(assert) {
   let company = make('company');
   let projects = makeList('project', 2);
-
+  
+  let envConfig = this.stub(Tracker, 'envConfig');
+  envConfig.returns({changeTracker: {trackHasMany: true}});
+  
   let tests = [
     ['info', undefined, undefined, {}],
     ['info', null, "null", null],
@@ -88,7 +99,6 @@ test('#serialize, #deserialize values', function(assert) {
     assert.deepEqual(serializedValue, expectedSerialized);
 
     let deserializedValue = Tracker.deserialize(user, key, serializedValue);
-//    console.log(key, 'serializedValue', serializedValue, 'deserializedValue', deserializedValue);
     assert.deepEqual(deserializedValue, expectedDeserialized);
   }
-});
+}));
