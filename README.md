@@ -104,7 +104,7 @@ Example: ( remove from a hasMany )
 ```
   - You can also set options on the model itself
     
-```
+```javascript
   // file app/models/user.js
   export default Model.extend({
     changeTracker: {only: ['info', 'company', 'pets']}, // settings for this model
@@ -118,7 +118,7 @@ Example: ( remove from a hasMany )
     pets: hasMany('pet', { async: true })
   });
 ```
-    - You can use only or except and also override the global trackHasMany  
+  - You can use only or except and also override the global trackHasMany  
 
 ### Serializer extras
   - Mixin is provided that will allow you to remove any attributes/associations
