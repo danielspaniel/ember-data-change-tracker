@@ -40,7 +40,7 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
   let company2 = //=> different company model
   let info = {foo: 1) // some object
   let projects = //=> collection of project models
-  let user = //=> user model where info => info  and company => company
+  let user = //=> user model with info => info , company => company, and projects => projects 
 ```
 
 ### changed() method added to DS.Model instances
