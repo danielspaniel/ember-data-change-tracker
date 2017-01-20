@@ -174,3 +174,10 @@ user.serialize(); //=> '{ info: {"foo:1"} }'
 // '{ name: 'dude', info: {"foo:1"}, company: "1" companyType: "company"', profile: "1" }'
 // where all the attributes and association are included whether they changed or not
 ```
+
+
+## Rollback
+ 
+ This is something that could be achieved if only attributes and belongsTo associations are tracked.
+ Since we are trying to track hasMany .. it is way harder, but it is an interesting idea. 
+  
