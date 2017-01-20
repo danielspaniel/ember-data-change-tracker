@@ -128,8 +128,8 @@ Example: ( remove from a hasMany )
     pets: hasMany('pet', { async: true })
   });
 ```
-  - You can use only or except and also override the global trackHasMany
-    - So, you can't use only and except at the same time, just one or the other
+  - You can use `only` or `except` and also override the global `trackHasMany`
+    - So, you can't use `only` and `except` at the same time, just one or the other
     - for example:
 ```javascript
   changeTracker: {trackHasMany: false} // global
