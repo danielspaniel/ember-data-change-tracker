@@ -297,10 +297,9 @@ test('#changed when replace hasMany async:false', function(assert) {
       let changed = user.changed().projects;
       if (expectedChanged) {
         //TODO:
-        // forced to convert to array for comparison, perhaps should the changed obj hold only vanilla arrays?
-        // (internally it is a DS.ManyArray)
-        // current doc states that the changed object will hold vanilla arrays. Make sure to update.
-        // [[a,b], [c,b,n]]
+        // Forced to convert to array for comparison,
+        // Perhaps the changed objects should hold only vanilla arrays.
+        // Right now it is a DS.ManyArray because relationship is {async: false}
         let changeArray = changed.map((e)=> {
           return e.toArray ? e.toArray() : e;
         });
@@ -342,7 +341,10 @@ test('#changed when replacing hasMany async:true', function(assert) {
   let user = make('user');
   Ember.run(()=> {
     user.get('pets').then(()=> {
-      //TODO: test passes but above call returns an empty array for pets - wrong mocking? useless test?
+      //TODO:
+      // Forced to convert to array for comparison,
+      // Perhaps the changed objects should hold only vanilla arrays.
+      // Right now it is a DS.PromiseManyArray because relationship is {async: true}
       user.set('pets', pets2);
       assert.ok(user.changed().pets);
       mockTeardown();
@@ -376,7 +378,7 @@ test('removing element from hasMany', function(assert) {
   Ember.run(()=> {
     user.get('projects').removeObject(firstProject);
 
-    let changed = user.changed().projects;
+    let changed = user.changed().projects;    
     let changedArray = changed.map((e)=> {
       return e.toArray ? e.toArray() : e;
     });
