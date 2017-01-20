@@ -120,8 +120,12 @@ Example: ( remove from a hasMany )
 ```
   - You can use only or except and also override the global trackHasMany
     - for example: 
-    ```javascript changeTracker: {trackHasMany: true} ```    
-    ```javascript changeTracker: {trackHasMany: true, only: ['pets']}, ```   
+```javascript
+ changeTracker: {trackHasMany: true} 
+ ```    
+```javascript 
+  changeTracker: {trackHasMany: true, only: ['pets']}, 
+```   
     
 
 ### Serializer extras
