@@ -177,7 +177,7 @@ user.serialize(); //=> '{ info: {"foo:1"} }'
 
 
 ## Rollback
- 
+  
  This is something that could be achieved if only attributes and belongsTo associations are tracked.
  Since we are trying to track hasMany .. it is way harder, but it is an interesting idea. 
   
