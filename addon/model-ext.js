@@ -4,9 +4,9 @@ import Tracker from './tracker';
 
 Model.reopen({
   /**
-   * Did an attribute change?
+   * Did an attribute/association change?
    *
-   * @param {String} key the attribute name
+   * @param {String} key the attribute/association name
    * @param {Object} changed optional ember-data changedAttribute object
    * @returns {Boolean} true if value changed
    */
@@ -15,7 +15,7 @@ Model.reopen({
   },
 
   /**
-   * Did any attributes change?
+   * Did any attribute/associations change?
    *
    * returns object with:
    *  {key: value} = {attribute: [oldValue, newValue]}
@@ -50,9 +50,9 @@ Model.reopen({
   },
 
   /**
-   * Get value the last known value tracker is saving for this attribute
+   * Get value the last known value tracker is saving for this key
    *
-   * @param {String} key attribute name
+   * @param {String} key attribute/association name
    * @returns {*}
    */
   savedTrackerValue(key) {
@@ -69,7 +69,8 @@ Model.reopen({
   saveOnUpdate: Ember.on('didUpdate', function() {
     this.saveChanges();
   }),
-
+  
+  // There is no didReload callback on models, so have to override reload
   reload() {
     let promise = this._super();
     promise.then(()=>this.saveChanges());

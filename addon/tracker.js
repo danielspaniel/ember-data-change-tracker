@@ -58,7 +58,7 @@ export default class Tracker {
    * Find the extra attribute info for a key
    *
    * @param {DS.Model} model
-   * @param {String} key attibute name
+   * @param {String} key attribute/association name
    * @returns {*}
    */
   static modelInfo(model, key) {
@@ -68,7 +68,7 @@ export default class Tracker {
   /**
    * Should this attribute be tracked based on model options
    *
-   * @param {String} key attribute name
+   * @param {String} key attribute/association name
    * @param {Object} opts model options
    * @returns {*}
    */
@@ -94,7 +94,7 @@ export default class Tracker {
    * Don't track types that ember-data already tracks, like
    * string, number, boolean and date types.
    *
-   * @param {String} key attribute name
+   * @param {String} key attribute/association name
    * @param {Object} opts model options
    * @returns {*}
    */
@@ -153,7 +153,7 @@ export default class Tracker {
    * For hasMany using array of objects with {type, id}
    *
    * @param {DS.Model} model
-   * @param {String} key attribute or relationship key
+   * @param {String} key attribute/association name
    */
   static serialize(model, key) {
     let info = this.modelInfo(model, key);
@@ -183,7 +183,7 @@ export default class Tracker {
    * Deserialze value
    *
    * @param {DS.Model} model
-   * @param {String} key attibute name
+   * @param {String} key attribute/association name
    * @param {String|Object} value
    * @returns {*}
    */
@@ -287,7 +287,7 @@ export default class Tracker {
    * Retrieve the last known value for this model key
    *
    * @param {DS.Model} model
-   * @param {String} key attibute name
+   * @param {String} key attribute/association name
    * @returns {*}
    */
   static lastValue(model, key) {
@@ -297,7 +297,7 @@ export default class Tracker {
   /**
    *
    * @param {DS.Model} model
-   * @param {String} key attibute name
+   * @param {String} key attribute/association name
    * @returns {*}
    */
   static deserializedlastValue(model, key) {
@@ -308,7 +308,7 @@ export default class Tracker {
    * Save current model key value in model's tracker hash
    *
    * @param {DS.Model} model
-   * @param {String} key attibute name
+   * @param {String} key attribute/association name
    */
   static saveAttribute(model, key) {
     let currentValue = this.serialize(model, key);
