@@ -53,7 +53,7 @@ test('#saveChanges saves attributes/assocations when model is ready on ajax load
   let envConfig = sinon.stub(Tracker, 'envConfig');
   envConfig.returns({ changeTracker: {trackHasMany: true }});
 
-  mockSetup({ logLevel: 1 });
+  mockSetup({ logLevel: 0 });
   let info = { dude: 1 };
   let company = make('company');
   let profile = make('profile');
@@ -85,7 +85,7 @@ test('#saveChanges saves attributes/assocations when model is ready on ajax load
 
 test('#saveChanges saves attributes/assocations when model is ready on model reload', function(assert) {
   let done = assert.async();
-  mockSetup({ logLevel: 1 });
+  mockSetup({ logLevel: 0 });
 
   let envConfig = sinon.stub(Tracker, 'envConfig');
   envConfig.returns({ changeTracker: {trackHasMany: true }});
@@ -371,7 +371,7 @@ test('#changed when replace hasMany async:false', function(assert) {
 
 test('#changed when replacing belongsTo async:true', function(assert) {
   let done = assert.async();
-  mockSetup({ logLevel: 1 });
+  mockSetup({ logLevel: 0 });
   let profile1 = build('profile');
   let profile2 = make('profile');
   mockFindRecord('profile').returns({ json: profile1 });
@@ -390,7 +390,7 @@ test('#changed when replacing belongsTo async:true', function(assert) {
 
 test('#changed when replacing hasMany async:true', function(assert) {
   let done = assert.async();
-  mockSetup({ logLevel: 1 });
+  mockSetup({ logLevel: 0 });
   let pets1 = buildList('pet', 2);
   let pets2 = makeList('pet', 2);
 
