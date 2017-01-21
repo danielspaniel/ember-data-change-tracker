@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import FactoryGuy, {
-  build, buildList, make, makeList, mockUpdate, mockFindRecord,
+  build, buildList, make, makeList, mockUpdate, mockFindRecord, mockReload,
   mockDelete, mockFindAll, manualSetup, mockSetup, mockTeardown
 }  from 'ember-data-factory-guy';
 import {initializer as modelInitializer} from 'ember-data-change-tracker';
@@ -47,20 +47,25 @@ test('#extractExtraAtttibutes sets correct extraAttributeChecks on constructor',
   assert.deepEqual(extraChecks.pets, { type: 'hasMany' });
 });
 
-test('#saveChanges saves belongsTo assocations when model is ready on ajax load', function(assert) {
+test('#saveChanges saves attributes/assocations when model is ready on ajax load', function(assert) {
   let done = assert.async();
+
+  let envConfig = sinon.stub(Tracker, 'envConfig');
+  envConfig.returns({ changeTracker: {trackHasMany: true }});
 
   mockSetup({ logLevel: 1 });
   let info = { dude: 1 };
   let company = make('company');
   let profile = make('profile');
   let projects = makeList('project', 2);
+  
   let user = build('user', {
     info,
     profile: profile.get('id'),
     company: { id: company.get('id'), type: 'company' },
     projects: projects.map(v=>v.id)
   });
+  
   mockFindRecord('user').returns({ json: user });
 
   Ember.run(()=> {
@@ -72,6 +77,57 @@ test('#saveChanges saves belongsTo assocations when model is ready on ajax load'
       });
       assert.deepEqual(user.savedTrackerValue('projects'), expectedProjects);
       mockTeardown();
+      Tracker.envConfig.restore();
+      done();
+    });
+  });
+});
+
+test('#saveChanges saves attributes/assocations when model is ready on model reload', function(assert) {
+  let done = assert.async();
+  mockSetup({ logLevel: 1 });
+
+  let envConfig = sinon.stub(Tracker, 'envConfig');
+  envConfig.returns({ changeTracker: {trackHasMany: true }});
+
+  let info = { dude: 1 };
+  let company = make('company');
+  let profile = make('profile');
+  let projects = makeList('project', 2);
+
+  let user = make('user', {
+    info,
+    profile: profile.get('id'),
+    company: { id: company.get('id'), type: 'company' },
+    projects: projects.map(v=>v.id)
+  });
+
+  let info2 = { dude: 2 };
+  let company2 = make('company');
+  let profile2 = make('profile');
+  let projects2 = makeList('project', 2);
+
+  let newUserAttrs = build('user', {
+    id: user.get('id'),
+    info: info2,
+    profile: profile2.get('id'),
+    company: { id: company2.get('id'), type: 'company' },
+    projects: projects2.map(v=>v.id)
+  });
+
+  mockReload(user).returns({ json: newUserAttrs });
+
+  Ember.run(()=> {
+    user.reload().then((user)=> {
+      assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info2));
+      assert.deepEqual(user.savedTrackerValue('company'), { id: company2.get('id'), type: 'company' });
+      assert.deepEqual(user.savedTrackerValue('profile'), { id: profile2.get('id'), type: 'profile' });
+      let expectedProjects = projects2.map((p)=> {
+        return { id: p.id, type: p.constructor.modelName };
+      });
+      assert.deepEqual(user.savedTrackerValue('projects'), expectedProjects);
+      mockTeardown();
+      Tracker.envConfig.restore();
       done();
     });
   });
@@ -108,6 +164,7 @@ test('#saveChanges saves attributes/assocations when model newly created', funct
   let profile = make('profile');
   let projects = makeList('project', 1);
   let info = { dude: 1 };
+
   let user;
   Ember.run(()=> {
     user = FactoryGuy.store.createRecord('user', { info, profile, company, projects });
@@ -118,6 +175,7 @@ test('#saveChanges saves attributes/assocations when model newly created', funct
   let expectedProjects = projects.map((p)=> {
     return { id: p.id, type: p.constructor.modelName };
   });
+
   assert.deepEqual(user.savedTrackerValue('projects'), expectedProjects);
 });
 
@@ -378,7 +436,7 @@ test('removing element from hasMany', function(assert) {
   Ember.run(()=> {
     user.get('projects').removeObject(firstProject);
 
-    let changed = user.changed().projects;    
+    let changed = user.changed().projects;
     let changedArray = changed.map((e)=> {
       return e.toArray ? e.toArray() : e;
     });

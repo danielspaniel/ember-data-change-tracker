@@ -66,9 +66,15 @@ Model.reopen({
     this.saveChanges();
   }),
 
-  resetAttributes: Ember.on('didUpdate', function() {
+  saveOnUpdate: Ember.on('didUpdate', function() {
     this.saveChanges();
   }),
+
+  reload() {
+    let promise = this._super();
+    promise.then(()=>this.saveChanges());
+    return promise;
+  },
 
   clearSavedAttributes: Ember.on('didDelete', function() {
     Tracker.clear(this);
