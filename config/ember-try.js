@@ -4,7 +4,7 @@ module.exports = {
     {
       name: 'ember-data-2.5',
       bower: {
-        dependencies: {
+        devDependencies: {
           'ember': 'components/ember#2.10',
           'ember-data': 'components/ember-data#2.5'
         },
@@ -17,7 +17,7 @@ module.exports = {
     {
       name: 'ember-data-2.8',
       bower: {
-        dependencies: {
+        devDependencies: {
           'ember': 'components/ember#2.10',
           'ember-data': 'components/ember-data#2.8'
         },
@@ -30,7 +30,7 @@ module.exports = {
     {
       name: 'ember-data-2.10',
       bower: {
-        dependencies: {
+        devDependencies: {
           'ember': 'components/ember#2.10',
           'ember-data': 'components/ember-data#2.10'
         },
@@ -43,7 +43,7 @@ module.exports = {
     {
       name: 'ember-release',
       bower: {
-        dependencies: {
+        devDependencies: {
           'ember': 'components/ember#release',
           'ember-data': 'components/ember-data#release'
         },
@@ -56,7 +56,7 @@ module.exports = {
     {
       name: 'ember-beta',
       bower: {
-        dependencies: {
+        devDependencies: {
           'ember': 'components/ember#beta',
           'ember-data': 'components/ember-data#beta'
         },
@@ -69,7 +69,7 @@ module.exports = {
     {
       name: 'ember-canary',
       bower: {
-        dependencies: {
+        devDependencies: {
           'ember': 'components/ember#canary',
           'ember-data': 'components/ember-data#canary'
         },
