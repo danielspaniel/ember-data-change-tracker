@@ -13,9 +13,6 @@ module.exports = {
       },
       npm: {
         devDependencies: {
-          'ember-data': 'emberjs/data#2.5.5'
-        },
-        resolutions: {
           'ember-data': '2.5.5'
         }
       }
@@ -32,10 +29,7 @@ module.exports = {
       },
       npm: {
         devDependencies: {
-          'ember-data': 'emberjs/data#2.8.1'
-        },
-        resolutions: {
-          'ember-data': '2.8.1'
+          'ember-data': 'v2.8.1'
         }
       }
     },
@@ -51,10 +45,7 @@ module.exports = {
       },
       npm: {
         devDependencies: {
-          'ember-data': 'emberjs/data#2.10.2'
-        },
-        resolutions: {
-          'ember-data': '2.10.2'
+          'ember-data': '2.10.0'
         }
       }
     },
@@ -71,9 +62,6 @@ module.exports = {
       npm: {
         devDependencies: {
           'ember-data': 'emberjs/data#release'
-        },
-        resolutions: {
-          'ember-data': 'release'
         }
       }
     },
@@ -81,20 +69,15 @@ module.exports = {
       name: 'ember-beta',
       bower: {
         devDependencies: {
-          'ember': 'components/ember#beta',
-          'ember-data': 'components/ember-data#beta'
+          'ember': 'components/ember#beta'
         },
         resolutions: {
-          'ember': 'beta',
-          'ember-data': 'beta'
+          'ember': 'beta'
         }
       },
       npm: {
         devDependencies: {
           'ember-data': 'emberjs/data#beta'
-        },
-        resolutions: {
-          'ember-data': 'beta'
         }
       }
     },
@@ -111,9 +94,6 @@ module.exports = {
       npm: {
         devDependencies: {
           'ember-data': 'emberjs/data#canary'
-        },
-        resolutions: {
-          'ember-data': 'canary'
         }
       }
     }
