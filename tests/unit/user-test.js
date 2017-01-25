@@ -58,14 +58,14 @@ test('#saveChanges saves attributes/assocations when model is ready on ajax load
   let company = make('company');
   let profile = make('profile');
   let projects = makeList('project', 2);
-  
+
   let user = build('user', {
     info,
     profile: profile.get('id'),
     company: { id: company.get('id'), type: 'company' },
     projects: projects.map(v=>v.id)
   });
-  
+
   mockFindRecord('user').returns({ json: user });
 
   Ember.run(()=> {
@@ -522,3 +522,80 @@ test('clears all saved keys on delete', function(assert) {
     });
   });
 });
+
+test('#rollbackTrackedChanges', function(assert) {
+  let company = make('company');
+  let company2 = make('company');
+  let info = { dude: 1 };
+  let info2 = { dude: 3 };
+
+  let tests = [
+    ['company', null, company],
+    ['company', company, company2],
+    ['company', company, null],
+    // ['company', company, company] // change from same to same, test separately?
+    ['info', undefined, null],
+    ['info', undefined, info],
+    ['info', null, info],
+    ['info', info, null],
+    // ['info', info, info], // change from same to same, test separately?
+    ['info', info, info2],
+  ];
+
+  Ember.run(()=> {
+    for (let test of tests) {
+      let [key, from, to] = test;
+      var opts = {};
+      opts[key] = from;
+
+      let user = make('user', opts);
+      setUser(user, key, to);
+
+      assert.ok(user.changed()[key]);
+      assert.deepEqual(user.get(key), to);
+
+      user.rollbackTrackedChanges();
+
+      assert.ok(!user.changed()[key]);
+      assert.deepEqual(user.get(key), from);
+    }
+  });
+});
+
+test('#rollbackTrackedChanges for hasMany', sinon.test(function(assert) {
+  let projects = makeList('project', 2);
+  let projects2 = makeList('project', 2);
+
+  let envConfig = this.stub(Tracker, 'envConfig');
+  envConfig.returns({ changeTracker: { trackHasMany: true } });
+
+  let tests = [
+    // ['projects', undefined, []],
+    // ['projects', undefined, projects],
+    ['projects', projects, projects2],
+  ];
+
+  let user = make('user', { projects });
+  setUser(user, 'projects', projects2);
+
+  Ember.run(()=> {
+    for (let test of tests) {
+      let [key, from, to] = test;
+      var opts = {};
+      opts[key] = from;
+
+      let user = make('user', opts);
+      setUser(user, key, to);
+
+      assert.ok(user.changed()[key]);
+      assert.deepEqual(user.get(key).toArray(), to);
+
+      user.rollbackTrackedChanges();
+
+      console.log('user.changed()[key]', user.changed()[key]);
+      assert.ok(!user.changed()[key]);
+      // assert.deepEqual(user.get(key).toArray(), from);
+    }
+  });
+
+}));

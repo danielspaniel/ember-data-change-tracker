@@ -272,10 +272,12 @@ export default class Tracker {
             return false;
           }
           if ((current && current.length) !== (last && last.length)) {
+            console.log('bbb', key, last.toArray(), current.toArray());
             return true;
           }
           let currentSorted = current.sortBy('id');
           let lastSorted = last.sortBy('id');
+          console.log('ccc', key);
           return !!currentSorted.find((value, i)=> {
             return value.type !== lastSorted[i].type || value.id !== lastSorted[i].id;
           });
