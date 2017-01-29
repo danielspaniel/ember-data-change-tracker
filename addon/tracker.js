@@ -1,11 +1,11 @@
 import Ember from 'ember';
-const { isEmpty } = Ember;
+import {valuesChanged, hasManyChanged, relationShipTransform} from './utilities';
 
 const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
-//const modelFragmentRegex = /^-mf-/;
-const skipAttrRegex = /string|boolean|date|^number$/;
-const knownTrackerOpts = Ember.A(['only', 'except', 'trackHasMany']);
+const alreadyTrackedRegex = /^-mf-|string|boolean|date|^number$/;
+const knownTrackerOpts = Ember.A(['only', 'auto', 'except', 'trackHasMany']);
+const defaultOpts = { trackHasMany: false, auto: false };
 
 /**
  * Helper class for change tracking models
@@ -29,12 +29,34 @@ export default class Tracker {
    * @returns {*|{}}
    */
   static envConfig(model) {
-    return this.container(model).resolveRegistration('config:environment') || {};
+    let config = this.container(model).resolveRegistration('config:environment');
+    return config.changeTracker || {};
+  }
+
+  /**
+   * Get tracker configuration that is set on the model
+   *
+   * @param {DS.Model} model
+   * @returns {*|{}}
+   */
+  static modelConfig(model) {
+    return model.changeTracker || {};
+  }
+
+  /**
+   * Is this model in auto save mode
+   *
+   * @param model
+   * @returns {Boolean}
+   */
+  static autoSave(model) {
+    return model.constructor.trackerAutoSave;
   }
 
   /**
    * A custom attribute should have a transform function associated with it.
    * If not, use object transform.
+   *
    * A transform function is required for serializing and deserializing
    * the attribute in order to save past values and also to retrieve
    * them for comparison with current.
@@ -45,66 +67,23 @@ export default class Tracker {
    */
   static transformFn(model, attributeType) {
     let transformType = attributeType || 'object';
-    //    if (/-mf-array/.test(attributeType)) {
-    //      transformType = 'array';
-    //    }
-    //    if (/-mf-fragment/.test(attributeType)) {
-    //      transformType = 'fragment';
-    //    }
     return model.store.serializerFor(model.constructor.modelName).transformFor(transformType);
   }
 
   /**
-   * Find the extra attribute info for a key
+   * Find the meta data for a key (attributes/association) that tracker is
+   * tracking on this model
    *
    * @param {DS.Model} model
-   * @param {String} key attribute/association name
-   * @returns {*}
+   * @param {string} [key] only this key's info and no other
+   * @returns {*} all the meta info on this model that tracker is tracking
    */
-  static modelInfo(model, key) {
-    return (model.constructor.extraAttributeChecks || {})[key];
-  }
-
-  /**
-   * Should this attribute be tracked based on model options
-   *
-   * @param {String} key attribute/association name
-   * @param {Object} opts model options
-   * @returns {*}
-   */
-  static trackChangeKey(key, type, opts) {
-    let { only, except, trackHasMany } = opts;
-    if (type === 'hasMany') {
-      return (
-        (trackHasMany && (!only && !except)) ||
-        (trackHasMany && !isEmpty(except) && !except.includes(key)) ||
-        (!trackHasMany && !isEmpty(only) && only.includes(key))
-      );
+  static modelInfo(model, key = null) {
+    let info = (model.constructor.trackerKeys || {});
+    if (key) {
+      return info[key];
     }
-    return (
-      (!only && !except) ||
-      !isEmpty(only) && only.includes(key) ||
-      !isEmpty(except) && !except.includes(key)
-    );
-  }
-
-  /**
-   * Should this attribute be tracked.
-   *
-   * Don't track types that ember-data already tracks, like
-   * string, number, boolean and date types.
-   *
-   * @param {String} key attribute/association name
-   * @param {Object} opts model options
-   * @returns {*}
-   */
-  static shouldTrackKey(key, type, opts) {
-    return !skipAttrRegex.test(type) && this.trackChangeKey(key, type, opts);
-  }
-
-  static valuesChanged(value1, value2) {
-    let valuesBlank = isEmpty(value1) && isEmpty(value2);
-    return !(valuesBlank || value1 === value2);
+    return info;
   }
 
   /**
@@ -122,24 +101,16 @@ export default class Tracker {
    * @returns {*}
    */
   static options(model) {
-    let envConfig = this.envConfig(model).changeTracker || {};
-    let modelConfig = model.changeTracker || {};
+    let envConfig = this.envConfig(model);
+    let modelConfig = this.modelConfig(model);
+    let opts = assign({}, defaultOpts, envConfig, modelConfig);
 
-    let opts = assign(envConfig, modelConfig);
-    Ember.assert(`[ember-data-change-tracker] changeTracker options can have 'only'
-      or 'except' but not user both together.`,
-      !(opts.only && opts.except)
-    );
-
-    let unknownOpts = Object.keys(opts).filter((v)=>!knownTrackerOpts.includes(v));
+    let unknownOpts = Object.keys(opts).filter((v) => !knownTrackerOpts.includes(v));
     Ember.assert(`[ember-data-change-tracker] changeTracker options can have
-      'only' or 'except' or 'trackHasMany' but you are declaring: ${unknownOpts}`,
+      'only', 'except' , 'auto', or 'trackHasMany' but you are declaring: ${unknownOpts}`,
       Ember.isEmpty(unknownOpts)
     );
 
-    if (!opts.hasOwnProperty('trackHasMany')) {
-      opts.trackHasMany = false;
-    }
     return opts;
   }
 
@@ -149,8 +120,8 @@ export default class Tracker {
    * For attributes, using the transform function that each custom
    * attribute should have.
    *
-   * For belongsTo using object with {type, id}
-   * For hasMany using array of objects with {type, id}
+   * For belongsTo ( polymorphic ) using object with {type, id}
+   * For hasMany ( polymorphic ) using array of objects with {type, id}
    *
    * @param {DS.Model} model
    * @param {String} key attribute/association name
@@ -158,85 +129,96 @@ export default class Tracker {
   static serialize(model, key) {
     let info = this.modelInfo(model, key);
     let value;
-    switch (info.type) {
-      //      case '-mf-array':
-      case 'attribute':
-        value = info.transform.serialize(model.get(key));
-        // serializer transform might not stringify, and this value must be
-        // a string in order to correctly track modifications
-        if (typeof value !== 'string') {
-          value = JSON.stringify(value);
-        }
-        return value;
-      case 'belongsTo':
-        value = model.belongsTo(key).value();
-        return value && { type: value && value.constructor.modelName, id: value && value.id };
-      case 'hasMany':
-        let values = model.hasMany(key).value();
-        return values && values.map((value)=> {
-            return { type: value.constructor.modelName, id: value && value.id };
-          });
+    if (info.type === 'attribute') {
+      value = info.transform.serialize(model.get(key));
+    } else {
+      value = info.transform.serialize(model, key, info);
+    }
+    return value;
+  }
+
+  static trackingIsSetup(model) {
+    return model.constructor.alreadySetupTrackingMeta;
+  }
+
+  static setupTracking(model) {
+    if (!this.trackingIsSetup(model)) {
+      model.constructor.alreadySetupTrackingMeta = true;
+      let info = Tracker.getTrackerInfo(model);
+      model.constructor.trackerKeys = info.keyMeta;
+      model.constructor.trackerAutoSave = info.autoSave;
     }
   }
 
-  /**
-   * Deserialze value
-   *
-   * @param {DS.Model} model
-   * @param {String} key attribute/association name
-   * @param {String|Object} value
-   * @returns {*}
-   */
-  static deserialize(model, key, value) {
-    let info = this.modelInfo(model, key);
-    switch (info.type) {
-      //      case '-mf-array':
-      //        return info.transform.deserialize(JSON.parse(value));
-      case 'attribute':
-        return info.transform.deserialize(value);
-      case 'belongsTo':
-        return value && value.id ? model.store.peekRecord(value.type, value.id) : null;
-      case 'hasMany':
-        let values = value;
-        return values && values.map((value)=> {
-            return value.id ? model.store.peekRecord(value.type, value.id) : null;
-          });
-    }
-  }
-
-  static extractAtttibutes(model) {
+  static extractKeys(model) {
     let { constructor } = model;
-    constructor.alreadySetupExtraAttributes = true;
-    let trackerOpts = this.options(model);
-    let extraChecks = {};
+    let trackerKeys = {};
+    let hasManyList = [];
 
-    constructor.eachAttribute((attribute, meta)=> {
-      if (this.shouldTrackKey(attribute, meta.type, trackerOpts)) {
-        let transform = this.transformFn(model, meta.type);
-        Ember.assert(`[ember-data-change-tracker] changeTracker could not find
-          a ${meta.type} transform function for the attribute '${attribute}' in
-          model '${model.constructor.modelName}'.
-          If you are in a unit test, be sure to include it in the list of needs`,
-          transform
-        );
-        let type = 'attribute';
-        //        if (modelFragmentRegex.test(meta.type)) {
-        //          type = meta.type.split('$')[0];
-        //        }
-        extraChecks[attribute] = { type, transform };
+    constructor.eachAttribute((attribute, meta) => {
+      if (!alreadyTrackedRegex.test(meta.type)) {
+        trackerKeys[attribute] = { type: 'attribute', name: meta.type };
       }
     });
 
     constructor.eachRelationship((key, relationship) => {
-      if (
-        (relationship.kind === 'belongsTo' || relationship.kind === 'hasMany') &&
-        (this.shouldTrackKey(relationship.key, relationship.kind, trackerOpts))
-      ) {
-        extraChecks[key] = { type: relationship.kind };
+      trackerKeys[key] = {
+        type: relationship.kind,
+        polymorphic: relationship.options.polymorphic
+      };
+      if (relationship.kind === 'hasMany') {
+        hasManyList.push(key);
       }
     });
 
-    constructor.extraAttributeChecks = extraChecks;
+    return [trackerKeys, hasManyList];
+  }
+
+  static getTrackerInfo(model) {
+    let [trackableInfo, hasManyList] = this.extractKeys(model);
+    //    console.log(model.constructor.modelName, 'trackableInfo', trackableInfo);
+    let trackerOpts = this.options(model);
+//    console.log('getTrackerInfo trackerOpts', trackerOpts);
+    let all = new Set(Object.keys(trackableInfo));
+    let except = new Set(trackerOpts.except || []);
+    let only = new Set(trackerOpts.only || [...all]);
+
+    if (!trackerOpts.trackHasMany) {
+      except = new Set([...except, ...hasManyList]);
+    }
+
+    all = new Set([...all].filter(a => !except.has(a)));
+    all = new Set([...all].filter(a => only.has(a)));
+
+    let keyMeta = {};
+    Object.keys(trackableInfo).forEach(key => {
+      if (all.has(key)) {
+        let info = trackableInfo[key];
+        info.transform = this.getTransform(model, key, info);
+        keyMeta[key] = info;
+      }
+    });
+
+    return { autoSave: trackerOpts.auto, keyMeta };
+  }
+
+  static getTransform(model, key, info) {
+    let transform;
+
+    if (info.type === 'attribute') {
+      transform = this.transformFn(model, info.name);
+
+      Ember.assert(`[ember-data-change-tracker] changeTracker could not find
+      a ${info.name} transform function for the attribute '${key}' in
+      model '${model.constructor.modelName}'.
+      If you are in a unit test, be sure to include it in the list of needs`,
+        transform
+      );
+    } else {
+      transform = relationShipTransform[info.type];
+    }
+
+    return transform;
   }
 
   /**
@@ -246,41 +228,21 @@ export default class Tracker {
    * @param changed
    * @returns {*}
    */
-  static didChange(model, key, changed) {
+  static didChange(model, key, changed, info) {
     changed = changed || model.changedAttributes();
     if (changed[key]) {
       return true;
     }
-    let info = this.modelInfo(model, key);
-    if (info) {
+    let keyInfo = info && info[key] || this.modelInfo(model, key);
+    if (keyInfo) {
       let current = this.serialize(model, key);
       let last = this.lastValue(model, key);
-      switch (info.type) {
-        case '-mf-array':
+      switch (keyInfo.type) {
         case 'attribute':
-          return this.valuesChanged(current, last);
         case 'belongsTo':
-          if (!current && !last) {
-            return false;
-          }
-          if (!current && last || current && !last) {
-            return true;
-          }
-          return !(current.type === last.type && current.id === last.id);
+          return valuesChanged(current, last, keyInfo.polymorphic);
         case 'hasMany':
-          if (!current && !last) {
-            return false;
-          }
-          if ((current && current.length) !== (last && last.length)) {
-            console.log('bbb', key, last.toArray(), current.toArray());
-            return true;
-          }
-          let currentSorted = current.sortBy('id');
-          let lastSorted = last.sortBy('id');
-          console.log('ccc', key);
-          return !!currentSorted.find((value, i)=> {
-            return value.type !== lastSorted[i].type || value.id !== lastSorted[i].id;
-          });
+          return hasManyChanged(current, last, keyInfo.polymorphic);
       }
     }
   }
@@ -297,25 +259,14 @@ export default class Tracker {
   }
 
   /**
-   *
-   * @param {DS.Model} model
-   * @param {String} key attribute/association name
-   * @returns {*}
-   */
-  static deserializedlastValue(model, key) {
-    return this.deserialize(model, key, this.lastValue(model, key));
-  }
-
-  /**
    * Save current model key value in model's tracker hash
    *
    * @param {DS.Model} model
    * @param {String} key attribute/association name
    */
-  static saveAttribute(model, key) {
-    let currentValue = this.serialize(model, key);
+  static saveKey(model, key) {
     let tracker = model.get(ModelTrackerKey) || {};
-    tracker[key] = currentValue;
+    tracker[key] = this.serialize(model, key);
     model.set(ModelTrackerKey, tracker);
   }
 
@@ -328,17 +279,19 @@ export default class Tracker {
     model.set(ModelTrackerKey, undefined);
   }
 
+  static startTrack(model) {
+    model.saveChanges();
+  }
+
   /**
    * Save change tracker attributes
    *
    * @param {DS.Model} model
    */
   static saveChanges(model) {
-    let extraAttributeChecks = model.constructor.extraAttributeChecks || {};
-    for (let key in extraAttributeChecks) {
-      if (extraAttributeChecks.hasOwnProperty(key)) {
-        Tracker.saveAttribute(model, key);
-      }
-    }
+    let modelInfo = this.modelInfo(model);
+    Object.keys(modelInfo).forEach((key) => {
+      Tracker.saveKey(model, key);
+    });
   }
 }

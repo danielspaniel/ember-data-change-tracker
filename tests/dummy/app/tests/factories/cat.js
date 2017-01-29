@@ -1,7 +1,7 @@
 import FactoryGuy from 'ember-data-factory-guy';
 
-FactoryGuy.define("pet", {
+FactoryGuy.define("cat", {
   default: {
-    name: (f)=> `Fido${f.id}`
+    name: (f)=> `Cat${f.id}`
   }
 });

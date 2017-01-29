@@ -4,5 +4,5 @@ import { belongsTo } from 'ember-data/relationships';
 
 export default Model.extend({
   title: attr('string'),
-  user: belongsTo('user', { async: false })
+  company: belongsTo('company', { async: false })
 });
