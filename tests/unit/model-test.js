@@ -355,7 +355,6 @@ test('clears all saved keys on delete', function(assert) {
 
 test('#rollback', function(assert) {
   Ember.run(() => {
-    let location = build('location').get();
     let profile1 = make('profile');
     let profile2 = make('profile');
     let projects = makeList('project', 2);
@@ -363,8 +362,8 @@ test('#rollback', function(assert) {
     let pets = makeList('cat', 4);
     let [cat, cat2] = pets;
     let bigCompany = make('big-company');
+    let smallCompany = make('small-company');
     let user = make('user', { profile: profile1, company: bigCompany, pets, projects });
-    let smallCompany = make('small-company', { location });
 
     let savedUser = user.serialize();
 
@@ -383,7 +382,7 @@ test('#rollback', function(assert) {
     user.rollback();
 
     console.timeEnd('track');
- 
+
     assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
     assert.deepEqual(savedUser, user.serialize());
   });

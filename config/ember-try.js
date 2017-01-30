@@ -2,7 +2,7 @@
 module.exports = {
   scenarios: [
     {
-      name: 'ember-data-2.5',
+      name: 'ember-data-2.7',
       bower: {
         devDependencies: {
           'ember': 'components/ember#2.10.2'
@@ -13,7 +13,7 @@ module.exports = {
       },
       npm: {
         devDependencies: {
-          'ember-data': '2.5.5'
+          'ember-data': '2.7.0'
         }
       }
     },
