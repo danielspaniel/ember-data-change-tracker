@@ -3,14 +3,17 @@
 [![Build Status](https://secure.travis-ci.org/danielspaniel/ember-data-change-tracker.png?branch=master)](http://travis-ci.org/danielspaniel/ember-data-change-tracker) [![Ember Observer Score](http://emberobserver.com/badges/ember-data-change-tracker.svg)](http://emberobserver.com/addons/ember-data-change-tracker) [![npm version](https://badge.fury.io/js/ember-data-change-tracker.svg)](http://badge.fury.io/js/ember-data-change-tracker)
 
 This addon aims to fill in the gaps in the change tracking that ember data does now.
- - Currently ember-data tracks changes for numbers/strings/date/boolean attributes
-  - has a ```changeAttributes()``` method to see what changed
-
+ - Currently ember-data 
+  - tracks changes for numbers/strings/date/boolean attributes
+  - has a ```changeAttributes()``` method to see what changed => [ last, current ]
+  - has a ```rollbackAttributes()``` method to rollback attributes
+  
  - This addon:
     - tracks modifications in attributes that are object/json
     - tracks replacement of belongsTo associations
     - tracks replacement/changes in hasMany associations
     - adds a ```changed()``` method to DS.Model
+    - adds a ```rollback()``` method to DS.Model
     - Only works with ember-data versions 2.5+
 
 ## Installation
@@ -52,53 +55,31 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
   - Shows when you add to a hasMany association
   - Shows when you delete from a hasMany association
   - Merges ember-data `changeAttribute()` information into one unified change object
-
-Example: ( modify attribute )
-```javascript
-  info.foo = 2               // or
-  user.set('info.foo', 2);   // same idea
-                      //    old value, new value
-  user.changed().info //=> [{foo: 1},  {foo: 2}]
-```
-
-Example: ( replace attribute )
-```javascript
-  user.set('info', {foo: 3});
-                      //    old value, new value
-  user.changed().info //=> [{foo: 1},  {foo: 3}]
-```
-
-Example: ( replace belongsTo )
-```javascript
-  user.set('company', company2);
-                        //    old value, new value
-  user.changed().company //=> [company,  company2]
-```
-
-Example: ( add to a hasMany )
-```javascript
-  user.get('projects').addObject(project3); // add project3
-                          //    old value,             new value
-  user.changed().projects //=> [[project1, project2],  [DS.ManyArray with projects: (project1, project2, project3)]]
-```
+  - Unlike ember-data no last and current value is shown, just the boolean true
 
 Example: ( remove from a hasMany )
 ```javascript
   user.get('projects').removeObject(firstProject); // remove project1
-                          //    old value,             new value
-  user.changed().projects //=> [[project1, project2],  [DS.ManyArray with project2]]
+  user.changed() //=> {projects: true }
 ```
-**NOTE:** As noted above, the change object for tracking hasMany will have an array 
-  as the first value and a DS.ManyArray (or DS.PromiseManyArray) as the second value. 
-  This lack of symmetry might be annoying and could addressed in the future.
-
-  But that is only important for rollback, which is not happening yet. For just seeing what
-  changed it is good enough.
-
 
 ### Configuration
-  - By default tracking hasMany is turned off
-    - To turn it on globally:
+  - Global configuration 
+    - By default the global settings are ```javascript { trackHasMany: false, auto: false }```
+    - The options available are: 
+      - trackHasMany ( true / false [default])  => should hasMany associations be tracked
+      - auto ( true / false [default]) => should tracking be turned on my default
+       - auto tracking means when any model is saved/updated/reloaded the tracker will save
+          the current state, allowing you to rollback anytime 
+
+  - Model configuration
+    - Takes precedence over global
+    - The options available are: 
+       - trackHasMany : same as global trackHasMany  
+       - auto : same as global auto  
+       - only : limit the attributes/associations tracked on this model to just these
+       - except : don't include these attributes/associations
+       - can use only and except as same time, but you can also stuff blueberries in your nose         
 
 ```javascript
   // file config/environment.js
@@ -107,12 +88,12 @@ Example: ( remove from a hasMany )
     environment: environment,
     rootURL: '/',
     locationType: 'auto',
-    changeTracker: { trackHasMany: true } // add this setting
+    changeTracker: { trackHasMany: true, auto: true }, 
     EmberENV: {
     ... rest of config
 
 ```
-  - You can also set options on the model itself
+  - Set options on the model
 
 ```javascript
   // file app/models/user.js
@@ -128,25 +109,6 @@ Example: ( remove from a hasMany )
     pets: hasMany('pet', { async: true })
   });
 ```
-  - You can use `only` or `except` and also override the global `trackHasMany`
-    - So, you can't use `only` and `except` at the same time, just one or the other
-    - for example:
-```javascript
-  changeTracker: {trackHasMany: false} // global
-  changeTracker: {trackHasMany: true}, // in model
-  // will track project and pets
- ```
-```javascript
-  changeTracker: {trackHasMany: false} // global
-  changeTracker: {only: ['pets']},    // in model
-  // will track pets
-```
-```javascript
-  changeTracker: {trackHasMany: true} // global
-  changeTracker: {except: ['pets']},  // in model
-  // will track projects
-```
-
 
 ### Serializer extras
   - Mixin is provided that will allow you to remove any attributes/associations
@@ -195,9 +157,42 @@ Usage:
 
 ## Rollback
 
- - This is something that could be achieved if only attributes and belongsTo associations are tracked.
-  Since we are trying to track hasMany .. it is way harder, but it is an interesting idea.
+  - The method ```rollback()``` is added to model
+  - If your not using auto track you have to call ```startTrack()``` before editing 
+  - Performace wise, it's fast. I turned to take a sip of bubbly and poof it was done. 
+    
+Usage: 
+ 
+```javascript 
 
+    let info = {foo: 1};
+    let projects = makeList('project', 2);
+    let pets = makeList('cat', 4);
+    let [cat, cat2] = pets;
+    let bigCompany = make('big-company');
+    let smallCompany = make('small-company');
+
+    let user = make('user', { profile: profile1, company: bigCompany, pets, projects });
+
+    user.startTrack();
+
+    user.setProperties({
+      'info.foo': 3,
+      company: smallCompany,
+      profile: profile2,
+      projects: [project1],
+      pets: [cat, cat2]
+    });
+
+    user.rollback();
+
+    user.get('info') //=> {foo: 1}
+    user.get('profile') //=> profile1
+    user.get('company') //=> bigCompany
+    user.get('pets') //=> back to 4 pets
+
+```
+ 
 ## Known Issues
   - Ember less than 2.10
    - When pushing data to the store directly to create a model ( usually done when using 
