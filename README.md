@@ -14,7 +14,9 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
     - tracks replacement/changes in hasMany associations
     - adds a ```changed()``` method to DS.Model
     - adds a ```rollback()``` method to DS.Model
-    - Only works with ember-data versions 2.5+
+    - Only works with 
+      - ember-data versions 2.7+ ( if you have polymphic relationships )
+      - ember-data versions 2.5+ ( if you don't )
 
 ## Installation
 
