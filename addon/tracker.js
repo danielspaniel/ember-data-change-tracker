@@ -174,15 +174,15 @@ export default class Tracker {
         hasManyList.push(key);
       }
     });
-    console.log('constructor trackerKeys' , trackerKeys);
+//    console.log('constructor trackerKeys' , trackerKeys);
     return [trackerKeys, hasManyList];
   }
 
   static getTrackerInfo(model) {
     let [trackableInfo, hasManyList] = this.extractKeys(model);
-    console.log(model.constructor.modelName, 'trackableInfo', trackableInfo);
+//    console.log(model.constructor.modelName, 'trackableInfo', trackableInfo);
     let trackerOpts = this.options(model);
-    console.log('getTrackerInfo trackerOpts', trackerOpts);
+//    console.log('getTrackerInfo trackerOpts', trackerOpts);
     let all = new Set(Object.keys(trackableInfo));
     let except = new Set(trackerOpts.except || []);
     let only = new Set(trackerOpts.only || [...all]);
