@@ -50,6 +50,10 @@ export default class Tracker {
    * @returns {Boolean}
    */
   static autoSave(model) {
+    if (model.constructor.trackerAutoSave === undefined) {
+      let options = this.options(model);
+      model.constructor.trackerAutoSave = options.auto;
+    }
     return model.constructor.trackerAutoSave;
   }
 
@@ -78,7 +82,7 @@ export default class Tracker {
    * @param {string} [key] only this key's info and no other
    * @returns {*} all the meta info on this model that tracker is tracking
    */
-  static modelInfo(model, key = null) {
+  static metaInfo(model, key = null) {
     let info = (model.constructor.trackerKeys || {});
     if (key) {
       return info[key];
@@ -127,7 +131,7 @@ export default class Tracker {
    * @param {String} key attribute/association name
    */
   static serialize(model, key) {
-    let info = this.modelInfo(model, key);
+    let info = this.metaInfo(model, key);
     let value;
     if (info.type === 'attribute') {
       value = info.transform.serialize(model.get(key));
@@ -170,15 +174,15 @@ export default class Tracker {
         hasManyList.push(key);
       }
     });
-
+    console.log('constructor trackerKeys' , trackerKeys);
     return [trackerKeys, hasManyList];
   }
 
   static getTrackerInfo(model) {
     let [trackableInfo, hasManyList] = this.extractKeys(model);
-    //    console.log(model.constructor.modelName, 'trackableInfo', trackableInfo);
+    console.log(model.constructor.modelName, 'trackableInfo', trackableInfo);
     let trackerOpts = this.options(model);
-//    console.log('getTrackerInfo trackerOpts', trackerOpts);
+    console.log('getTrackerInfo trackerOpts', trackerOpts);
     let all = new Set(Object.keys(trackableInfo));
     let except = new Set(trackerOpts.except || []);
     let only = new Set(trackerOpts.only || [...all]);
@@ -233,7 +237,7 @@ export default class Tracker {
     if (changed[key]) {
       return true;
     }
-    let keyInfo = info && info[key] || this.modelInfo(model, key);
+    let keyInfo = info && info[key] || this.metaInfo(model, key);
     if (keyInfo) {
       let current = this.serialize(model, key);
       let last = this.lastValue(model, key);
@@ -289,8 +293,8 @@ export default class Tracker {
    * @param {DS.Model} model
    */
   static saveChanges(model) {
-    let modelInfo = this.modelInfo(model);
-    Object.keys(modelInfo).forEach((key) => {
+    let metaInfo = this.metaInfo(model);
+    Object.keys(metaInfo).forEach((key) => {
       Tracker.saveKey(model, key);
     });
   }

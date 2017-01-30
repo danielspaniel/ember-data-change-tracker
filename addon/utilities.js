@@ -14,8 +14,7 @@ export const relationShipTransform = {
       return value && modelTransform(value, options.polymorphic);
     },
 
-    deserialize(model, options) {
-
+    deserialize() {
     }
   },
   hasMany: {
@@ -24,8 +23,7 @@ export const relationShipTransform = {
       return value && value.map((item) => modelTransform(item, options.polymorphic));
     },
 
-    deserialize(value, options) {
-
+    deserialize() {
     }
   }
 };
@@ -51,11 +49,14 @@ export const hasManyChanged = function(one, other, polymorphic) {
   }
 
   if (polymorphic) {
-    let oneSorted = Ember.A(one).sortBy('id');
-    let otherSorted = Ember.A(other).sortBy('id');
-    return oneSorted.any((value, i) => {
-      return value.type !== otherSorted[i].type || value.id !== otherSorted[i].id;
-    });
+    one = Ember.A(one).sortBy('id');
+    other = Ember.A(other).sortBy('id');
+    for (let i = 0, len = one.length; i < len; i++) {
+      if (serializedModelChanged(one[i], other[i])) {
+        return true;
+      }
+    }
+    return false;
   }
 
   one.sort();
@@ -65,8 +66,7 @@ export const hasManyChanged = function(one, other, polymorphic) {
       return true;
     }
   }
-  return false;
-}
+};
 
 export const valuesChanged = function(one, other, polymorphic) {
   if (isEmpty(one) && isEmpty(other)) {
@@ -80,4 +80,4 @@ export const valuesChanged = function(one, other, polymorphic) {
     return serializedModelChanged(one, other);
   }
   return one !== other;
-}
+};

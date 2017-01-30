@@ -1,10 +1,9 @@
 import Ember from 'ember';
 import Tracker from 'ember-data-change-tracker/tracker';
-import FactoryGuy, {make, makeList, manualSetup}  from 'ember-data-factory-guy';
+import {make, makeList, manualSetup}  from 'ember-data-factory-guy';
 import {initializer as modelInitializer} from 'ember-data-change-tracker';
 import {test, moduleFor} from 'ember-qunit';
 import sinon from 'sinon';
-import DS from 'ember-data';
 const { A } = Ember;
 const { w } = Ember.String;
 modelInitializer();

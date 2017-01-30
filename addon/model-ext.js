@@ -26,7 +26,7 @@ Model.reopen({
    */
   changed() {
     let changed = Object.assign({}, this.changedAttributes());
-    let trackerInfo = Tracker.modelInfo(this);
+    let trackerInfo = Tracker.metaInfo(this);
     for (let key in trackerInfo) {
       if (!changed[key] && trackerInfo.hasOwnProperty(key)) {
         if (this.didChange(key, changed)) {
@@ -43,7 +43,7 @@ Model.reopen({
    * @param {String} [key] attribute/association name to rollback
    */
   rollback(key = null) {
-    let trackerInfo = Tracker.modelInfo(this, key);
+    let trackerInfo = Tracker.metaInfo(this, key);
     this.rollbackAttributes();
     let props = { id: this.id };
     Object.keys(trackerInfo).forEach((key) => {
@@ -67,9 +67,7 @@ Model.reopen({
    * to the store and using Ember < 2.10
    */
   saveChanges() {
-    if (!Tracker.trackingIsSetup(this)) {
-      Tracker.setupTracking(this);
-    }
+    Tracker.setupTracking(this);
     Tracker.saveChanges(this);
   },
 

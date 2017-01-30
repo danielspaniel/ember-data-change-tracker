@@ -6,11 +6,10 @@ import {array, fragment, fragmentArray} from 'model-fragments/attributes';
 export default Model.extend({
   type: attr('string'),
   name: attr('string'),
-//  blob: attr(),
+  blob: attr(),
   list: array('number'),
   location: fragment('location'),
   things: fragmentArray('things'),
 
   users: hasMany('user', { async: true, inverse: 'company' }),
-//  projects: hasMany('project', { async: true })
 });
