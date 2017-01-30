@@ -81,7 +81,7 @@ Model.reopen({
     return Tracker.lastValue(this, key);
   },
 
-  setupExtraAttributes: Ember.on('ready', function() {
+  setupTrackerMetaData: Ember.on('ready', function() {
     if (Tracker.autoSave(this)) {
       Tracker.setupTracking(this);
       this.saveChanges();

@@ -49,7 +49,7 @@ test('only sets up tracking meta data once on model type', function(assert) {
   let model = new Model();
 
   assert.ok(!model.constructor.alreadySetupTrackingMeta);
-  let options = sinon.stub(Tracker,'options').returns({auto: true});
+  sinon.stub(Tracker,'options').returns({auto: true});
   let getTrackerInfo = sinon.stub(Tracker,'getTrackerInfo').returns({autoSave: true});
 
   let dog = make('dog');
@@ -87,7 +87,6 @@ test('#saveChanges saves attributes/assocations when model is ready on ajax load
   let projects = makeList('project', 2);
   let pets = makeList('pet', 1);
 
-  console.log([{ id: pets[0].id, type: 'cat' }]);
   let json = build('user', {
     info,
     profile: profile.get('id'),
@@ -205,10 +204,9 @@ test('#saveChanges saves attributes/assocations when model newly created', funct
   assert.deepEqual(user.savedTrackerValue('profile'), profile.id);
   assert.deepEqual(user.savedTrackerValue('projects'), projects.map(v => v.id));
   assert.deepEqual(user.savedTrackerValue('pets'), [{ id: pets[0].id, type: 'pet' }]);
-
 });
 
-test('#didChange when replacing', function(assert) {
+test('#didChange ( replacing )', function(assert) {
   let company = make('small-company');
   let projects = makeList('project', 2);
   let pets = makeList('pet', 2);
@@ -283,36 +281,6 @@ test('#changed detects modifying attribute of type "object"', function(assert) {
   let changed = (user.changed().info);
   assert.ok(changed);
 });
-
-//test('replace attribute of type "object"', function(assert) {
-//  let info = { dude: 1 };
-//  let info2 = { dude: 3 };
-//
-//  let tests = [
-//    [undefined, null, [undefined, null]],
-//    [undefined, info, [undefined, info]],
-//    [null, info, [null, info]],
-//    [info, null, [info, null]],
-//    [info, info, undefined],
-//    [info, info2, [info, info2]],
-//  ];
-//
-//  for (let test of tests) {
-//    let [firstValue, nextValue, expectedChanged] = test;
-//    let user = make('user', { info: firstValue });
-//    setModel(user, 'info', nextValue);
-//    let changed = user.changed().info;
-//    assert.deepEqual(changed, expectedChanged);
-//  }
-//});
-//
-//test('replace attribute of type undefined', function(assert) {
-//  let user = make('user', { json: { foo: 1 } });
-//  Ember.run(()=>user.set('json', { foo: 2 }));
-//
-//  let changed = user.changed().json;
-//  assert.deepEqual(changed, [{ foo: 1 }, { foo: 2 }]);
-//});
 
 //test('#changed when replacing belongsTo async:false', function(assert) {
 //  let company = make('company');
@@ -420,75 +388,45 @@ test('#changed detects modifying attribute of type "object"', function(assert) {
 //    });
 //  });
 //});
-//
-//test('#changed when replacing hasMany async:true', function(assert) {
-//  let done = assert.async();
-//  mockSetup({ logLevel: 0 });
-//  let pets1 = buildList('pet', 2);
-//  let pets2 = makeList('pet', 2);
-//
-//  mockFindAll('pet').returns({ json: pets1 });
-//
-//  let user = make('user');
-//  Ember.run(()=> {
-//    user.get('pets').then(()=> {
-//      //TODO:
-//      // Forced to convert to array for comparison,
-//      // Perhaps the changed objects should hold only vanilla arrays.
-//      // Right now it is a DS.PromiseManyArray because relationship is {async: true}
-//      user.set('pets', pets2);
-//      assert.ok(user.changed().pets);
-//      mockTeardown();
-//      done();
-//    });
-//  });
-//});
-//
-//test('adding element to hasMany', function(assert) {
-//  let projects = makeList('project', 2);
-//  let newProject = make('project');
-//  let user = make('user', { projects });
-//
-//  Ember.run(()=> {
-////    user.get('projects').addObject(newProject);
-////
-////    let changed = user.changed().projects;
-////    let changedArray = changed.map((e)=> {
-////      return e.toArray ? e.toArray() : e;
-////    });
-////    let expectedChanged = [projects, projects.concat([newProject])];
-////    assert.deepEqual(changedArray, expectedChanged);
-//  });
-//});
-//
-//test('removing element from hasMany', function(assert) {
-//  let projects = makeList('project', 2);
-//  let firstProject = projects[0];
-//  let user = make('user', { projects });
-//
-//  Ember.run(()=> {
-////    user.get('projects').removeObject(firstProject);
-////
-////    let changed = user.changed().projects;
-////    let changedArray = changed.map((e)=> {
-////      return e.toArray ? e.toArray() : e;
-////    });
-////    let expectedChanged = [projects, projects.slice(1)];
-////    assert.deepEqual(changedArray, expectedChanged);
-//  });
-//});
-//
-//test('re-ordering elements in hasMany', function(assert) {
-//  let projects = makeList('project', 2);
-//  let user = make('user', { projects });
-//
-//  Ember.run(()=> {
-//    user.set('projects', projects.reverse());
-//
-//    let changed = user.changed().projects;
-//    assert.ok(!changed);
-//  });
-//});
+
+
+test('#changed ( replacing )', function(assert) {
+  let company = make('small-company');
+  let projects = makeList('project', 2);
+  let pets = makeList('pet', 2);
+  let [cat, dog] = pets;
+  let pets3 = [dog, cat];
+  let info = { dude: 1 };
+
+  let tests = [
+    ['info', undefined, null, true],
+    ['info', undefined, info, true],
+    ['info', info, null, true],
+    ['company', null, null, false],
+    ['company', null, company, true],
+    ['company', company, null, true],
+    ['company', company, company, false],
+    ['projects', [], [], false],
+    ['projects', [], projects, true],
+    ['projects', projects, [], true],
+    ['projects', projects, projects, false],
+    ['pets', [], [], false],
+    ['pets', [], pets, true],
+    ['pets', pets, [], true],
+    ['pets', pets, [cat], true],
+    ['pets', [cat], [cat, dog], true],
+    ['pets', pets, pets3, false],
+  ];
+
+  for (let test of tests) {
+    let [key, firstValue, nextValue, expected] = test;
+    let user = make('user', { [key]: firstValue });
+
+    setModel(user, key, nextValue);
+    console.log(user.changed());
+    assert.equal(!!user.changed()[key], expected);
+  }
+});
 
 test('keepOnlyChanged serializer mixin', function(assert) {
 //  let user = make('user');
@@ -511,75 +449,60 @@ test('keepOnlyChanged serializer mixin', function(assert) {
   }
 });
 
-//test('saves keys on create', sinon.test(function(assert) {
-//  let company = make('company');
-//  let projects = makeList('project', 2);
-//
-//  let envConfig = this.stub(Tracker, 'envConfig');
-//  envConfig.returns({ changeTracker: { trackHasMany: true } });
-//
-//  let user;
-//  Ember.run(()=> {
-//    user = FactoryGuy.store.createRecord('user', { company, projects });
-//  });
-//  assert.equal(Ember.typeOf(user.savedTrackerValue('company')), "object");
-//  assert.equal(Ember.typeOf(user.savedTrackerValue('projects')), "array");
-//}));
-//
-//test('clears all saved keys on delete', function(assert) {
-//  let done = assert.async();
-//  let user = make('user', { info: { d: 2 } });
-//
-//  assert.ok(!!user.get(ModelTrackerKey));
-//  mockDelete(user);
-//  Ember.run(()=> {
-//    user.destroyRecord().then(()=> {
-//      assert.ok(!user.get(ModelTrackerKey));
-//      done();
-//    });
-//  });
-//});
-//
-//test('#rollback', function(assert) {
-//  let company = make('company');
-//  let user = make('user', { company })
-//  let company2 = make('company');
-//  let info = { dude: 1 };
-//  let info2 = { dude: 3 };
-//
-//  let tests = [
-//    ['company', null, company],
-//    ['company', company, company2],
-//    ['company', company, null],
-//    // ['company', company, company] // change from same to same, test separately?
-//    ['info', undefined, null],
-//    ['info', undefined, info],
-//    ['info', null, info],
-//    ['info', info, null],
-//    // ['info', info, info], // change from same to same, test separately?
-//    ['info', info, info2],
-//  ];
-//
-//  Ember.run(()=> {
-//    for (let test of tests) {
-//      let [key, from, to] = test;
-//      var opts = {};
-//      opts[key] = from;
-//
-//      let user = make('user', opts);
-//      setModel(user, key, to);
-//
-//      assert.ok(user.changed()[key]);
-//      assert.deepEqual(user.get(key), to);
-//
-//      user.rollbackTrackedChanges();
-//
-//      assert.ok(!user.changed()[key]);
-//      assert.deepEqual(user.get(key), from);
-//    }
-//  });
-//});
-//
+test('clears all saved keys on delete', function(assert) {
+  let done = assert.async();
+  let user = make('user', { info: { d: 2 } });
+
+  assert.ok(!!user.get(ModelTrackerKey));
+  mockDelete(user);
+  Ember.run(()=> {
+    user.destroyRecord().then(()=> {
+      assert.ok(!user.get(ModelTrackerKey));
+      done();
+    });
+  });
+});
+
+test('#rollback', function(assert) {
+  let company = make('company');
+  let user = make('user', { company })
+  let company2 = make('company');
+  let info = { dude: 1 };
+  let info2 = { dude: 3 };
+
+  let tests = [
+    ['company', null, company],
+    ['company', company, company2],
+    ['company', company, null],
+    // ['company', company, company] // change from same to same, test separately?
+    ['info', undefined, null],
+    ['info', undefined, info],
+    ['info', null, info],
+    ['info', info, null],
+    // ['info', info, info], // change from same to same, test separately?
+    ['info', info, info2],
+  ];
+
+  Ember.run(()=> {
+    for (let test of tests) {
+      let [key, from, to] = test;
+      var opts = {};
+      opts[key] = from;
+
+      let user = make('user', opts);
+      setModel(user, key, to);
+
+      assert.ok(user.changed()[key]);
+      assert.deepEqual(user.get(key), to);
+
+      user.rollback();
+
+      assert.ok(!user.changed()[key]);
+      assert.deepEqual(user.get(key), from);
+    }
+  });
+});
+
 //test('#rollbackTrackedChanges for hasMany', sinon.test(function(assert) {
 //  let projects = makeList('project', 2);
 //  let projects2 = makeList('project', 2);
