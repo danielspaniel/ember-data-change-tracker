@@ -4,7 +4,7 @@
 
 **NOTICE**  
   - Based on extensive interiews with focus group participants, this addon no longer 
-    actually does anything by default when it is installed.
+    actually does anything by default when it is installed. ( as of v0.3.0 )
   - You have to configure it to auto track models or track models manually  
    
 
@@ -95,8 +95,11 @@ Usage:
 
     let user = make('user', { profile: profile1, company: bigCompany, pets, projects });
 
-    user.startTrack();
+    // manual tracking model means you have to explicitly call => startTrack
+    // to save the current state of things before you edit
+    user.startTrack();   
 
+    // edit things  
     user.setProperties({
       'info.foo': 3,
       company: smallCompany,
@@ -107,6 +110,7 @@ Usage:
 
     user.rollback();
 
+    // it's all back to the way it was
     user.get('info') //=> {foo: 1}
     user.get('profile') //=> profile1
     user.get('company') //=> bigCompany
