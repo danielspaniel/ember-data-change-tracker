@@ -8,7 +8,7 @@
   - You have to configure it to auto track models or track models manually  
    
 
-This addon aims to fill in the gaps in the change tracking that ember data does now.
+This addon aims to fill in the gaps in the change tracking / rollback that ember data does now.
  
  - Currently ember-data 
   - tracks changes for numbers/strings/date/boolean attributes
