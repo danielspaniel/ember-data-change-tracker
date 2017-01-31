@@ -4,7 +4,7 @@
 
 **New**  
   - By popular demand, added a new manual mode
-    - In manual mode ( which is the default ) 
+    - Manual mode ( which is the default ) 
       - Auto tracking is turned off 
       - Nothing happens until you tell a model to start tracking
     - Auto track mode
@@ -93,7 +93,9 @@ Example: ( remove from a hasMany )
 Usage: 
  
 ```javascript 
-
+    // make and makeList are from [ember-data-factory-guy](https://github.com/danielspaniel/ember-data-factory-guy). 
+    // they push models ( based on factories ) into the ember-data store
+     
     let info = {foo: 1};
     let projects = makeList('project', 2);
     let pets = makeList('cat', 4);
@@ -229,5 +231,6 @@ Usage:
    - When pushing data to the store directly to create a model ( usually done when using 
      websockets ) you need to call ```model.saveChanges()``` manually after creating that 
      new model
+
 
           
