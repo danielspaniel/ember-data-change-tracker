@@ -145,7 +145,7 @@ Usage:
        - auto : same as global auto  
        - only : limit the attributes/associations tracked on this model to just these
        - except : don't include these attributes/associations
-       - can use only and except as same time, but you could also clean your nose with a pipe cleaner         
+       - You can use 'only' and 'except' at the same time, but you could also clean your nose with a pipe cleaner         
 
 ```javascript
   // file config/environment.js
