@@ -138,7 +138,7 @@ Usage:
         - Since this is manual mode you probably want to track everything 
           since you are focused on one edit at a time
     - The options available are: 
-      - trackHasMany ( true / false [default])  => should hasMany associations be tracked
+      - trackHasMany ( true [default] / false)  => should hasMany associations be tracked
       - auto ( true / false [default]) => should tracking be turned on my default
         - auto tracking means when any model is saved/updated/reloaded the tracker will save
           the current state, allowing you to rollback anytime 
@@ -232,4 +232,4 @@ Usage:
      websockets ) you need to call ```model.saveChanges()``` manually after creating that 
      new model
 
-          
+               
