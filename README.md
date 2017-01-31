@@ -72,7 +72,8 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
   - Shows when you add to a hasMany association
   - Shows when you delete from a hasMany association
   - Merges ember-data `changeAttribute()` information into one unified change object
-  - Unlike ember-data no last and current value is shown, just the boolean true
+  - Unlike ember-data no last and current value is shown, just the boolean => true
+    - Though you will see [last value, current value] for the attributes that ember-data tracks 
 
 Example: ( remove from a hasMany )
 ```javascript
@@ -227,3 +228,4 @@ Usage:
      websockets ) you need to call ```model.saveChanges()``` manually after creating that 
      new model
      
+      
