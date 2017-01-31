@@ -125,9 +125,13 @@ Usage:
 
 
 ### Configuration
+  
   - Global configuration 
     - By default the global settings are: 
-      - { trackHasMany: false, auto: false }
+      - { trackHasMany: true, auto: false }
+        - Essentially this says, track everything in the model but only when I tell you
+        - This is because this is manual mode and in manual mode you probably want
+          to track everything since you are focused on one edit at a time
     - The options available are: 
       - trackHasMany ( true / false [default])  => should hasMany associations be tracked
       - auto ( true / false [default]) => should tracking be turned on my default

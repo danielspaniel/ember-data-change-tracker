@@ -27,11 +27,11 @@ test('#options with valid options', sinon.test(function(assert) {
   let modelConfig = this.stub(Tracker, 'modelConfig');
 
   let tests = [
-    [ {}, {}, { trackHasMany: false, auto: false}],
-    [{ trackHasMany: true } , {}, { trackHasMany: true, auto: false }],
+    [ {}, {}, { trackHasMany: true, auto: false}],
+    [{ trackHasMany: false } , {}, { trackHasMany: false, auto: false }],
     [{ trackHasMany: true } , { only: ['info'] }, { auto: false, trackHasMany: true, only: ['info'] }],
-    [{}, { only: ['info'] }, { only: ['info'], auto: false, trackHasMany: false }],
-    [{}, { except: ['info'] }, { except: ['info'], auto: false, trackHasMany: false }],
+    [{}, { only: ['info'] }, { only: ['info'], auto: false, trackHasMany: true }],
+    [{}, { except: ['info'] }, { except: ['info'], auto: false, trackHasMany: true }],
   ];
 
   for (let test of tests) {
@@ -57,12 +57,12 @@ test('#getTrackerKeys', sinon.test(function(assert) {
   let modelConfig = this.stub(Tracker, 'modelConfig');
 
   let tests = [
-    [ {}, {}, 'info company profile'],
-    [{ trackHasMany: true } , {}, 'info company profile projects pets'],
+    [ {}, {}, 'info company profile projects pets'],
+    [{ trackHasMany: false } , {}, 'info company profile'],
     [{ trackHasMany: true } , { only: ['info'] }, 'info'],
     [{}, { only: ['info'] }, 'info'],
-    [{}, { except: ['info'] }, 'company profile'],
-    [{auto: true}, {}, 'info company profile', true],
+    [{}, { except: ['info'] }, 'company profile projects pets'],
+    [{auto: true}, {}, 'info company profile projects pets', true],
   ];
 
   for (let test of tests) {

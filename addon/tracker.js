@@ -5,7 +5,7 @@ const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
 const alreadyTrackedRegex = /^-mf-|string|boolean|date|^number$/;
 const knownTrackerOpts = Ember.A(['only', 'auto', 'except', 'trackHasMany']);
-const defaultOpts = { trackHasMany: false, auto: false };
+const defaultOpts = { trackHasMany: true, auto: false };
 
 /**
  * Helper class for change tracking models
