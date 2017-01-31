@@ -2,7 +2,14 @@
 
 [![Build Status](https://secure.travis-ci.org/danielspaniel/ember-data-change-tracker.png?branch=master)](http://travis-ci.org/danielspaniel/ember-data-change-tracker) [![Ember Observer Score](http://emberobserver.com/badges/ember-data-change-tracker.svg)](http://emberobserver.com/addons/ember-data-change-tracker) [![npm version](https://badge.fury.io/js/ember-data-change-tracker.svg)](http://badge.fury.io/js/ember-data-change-tracker)
 
+**NOTICE**  
+  - Based on extensive interiews with focus group participants, this addon no longer 
+    actually does anything by default when it is installed.
+  - You have to configure it to auto track models or track models manually  
+   
+
 This addon aims to fill in the gaps in the change tracking that ember data does now.
+ 
  - Currently ember-data 
   - tracks changes for numbers/strings/date/boolean attributes
   - has a ```changeAttributes()``` method to see what changed => [ last, current ]
@@ -17,7 +24,10 @@ This addon aims to fill in the gaps in the change tracking that ember data does 
     - Only works with 
       - ember-data versions 2.7+ ( if you have polymphic relationships )
       - ember-data versions 2.5+ ( if you don't )
-
+    - Can be used in two modes 
+      - auto track mode
+      - manual track mode ( the default )
+       
 ## Installation
 
 * `ember install ember-data-change-tracker`
@@ -65,9 +75,50 @@ Example: ( remove from a hasMany )
   user.changed() //=> {projects: true }
 ```
 
+
+### Rollback
+
+  - The method ```rollback()``` is added to model
+  - If your not using auto track you have to call ```startTrack()``` before editing 
+  - Performace wise, it's fast. I turned to take a sip of bubbly and poof it was done. 
+    
+Usage: 
+ 
+```javascript 
+
+    let info = {foo: 1};
+    let projects = makeList('project', 2);
+    let pets = makeList('cat', 4);
+    let [cat, cat2] = pets;
+    let bigCompany = make('big-company');
+    let smallCompany = make('small-company');
+
+    let user = make('user', { profile: profile1, company: bigCompany, pets, projects });
+
+    user.startTrack();
+
+    user.setProperties({
+      'info.foo': 3,
+      company: smallCompany,
+      profile: profile2,
+      projects: [project1],
+      pets: [cat, cat2]
+    });
+
+    user.rollback();
+
+    user.get('info') //=> {foo: 1}
+    user.get('profile') //=> profile1
+    user.get('company') //=> bigCompany
+    user.get('pets') //=> back to 4 pets
+
+```
+
+
 ### Configuration
   - Global configuration 
-    - By default the global settings are ```javascript { trackHasMany: false, auto: false }```
+    - By default the global settings are:
+     ```javascript { trackHasMany: false, auto: false }```
     - The options available are: 
       - trackHasMany ( true / false [default])  => should hasMany associations be tracked
       - auto ( true / false [default]) => should tracking be turned on my default
@@ -155,44 +206,6 @@ Usage:
   user.set('info.foo', 8)      
   user.didChange('info') //=> true
   user.savedTrackerValue('info') //=> {foo: 1}  original value of info still the same   
-```
-
-## Rollback
-
-  - The method ```rollback()``` is added to model
-  - If your not using auto track you have to call ```startTrack()``` before editing 
-  - Performace wise, it's fast. I turned to take a sip of bubbly and poof it was done. 
-    
-Usage: 
- 
-```javascript 
-
-    let info = {foo: 1};
-    let projects = makeList('project', 2);
-    let pets = makeList('cat', 4);
-    let [cat, cat2] = pets;
-    let bigCompany = make('big-company');
-    let smallCompany = make('small-company');
-
-    let user = make('user', { profile: profile1, company: bigCompany, pets, projects });
-
-    user.startTrack();
-
-    user.setProperties({
-      'info.foo': 3,
-      company: smallCompany,
-      profile: profile2,
-      projects: [project1],
-      pets: [cat, cat2]
-    });
-
-    user.rollback();
-
-    user.get('info') //=> {foo: 1}
-    user.get('profile') //=> profile1
-    user.get('company') //=> bigCompany
-    user.get('pets') //=> back to 4 pets
-
 ```
  
 ## Known Issues
