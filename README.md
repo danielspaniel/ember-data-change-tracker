@@ -91,11 +91,12 @@ Example: ( remove from a hasMany )
     - Though you might want to think twice when tracking one with thousands 
     
 Usage: 
+  
+- make and makeList are from [ember-data-factory-guy](https://github.com/danielspaniel/ember-data-factory-guy). 
+  they push models ( based on factories ) into the ember-data store
+     
  
 ```javascript 
-    // make and makeList are from [ember-data-factory-guy](https://github.com/danielspaniel/ember-data-factory-guy). 
-    // they push models ( based on factories ) into the ember-data store
-     
     let info = {foo: 1};
     let projects = makeList('project', 2);
     let pets = makeList('cat', 4);
@@ -231,6 +232,5 @@ Usage:
    - When pushing data to the store directly to create a model ( usually done when using 
      websockets ) you need to call ```model.saveChanges()``` manually after creating that 
      new model
-
 
           
