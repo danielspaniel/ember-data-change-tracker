@@ -93,8 +93,7 @@ Example: ( remove from a hasMany )
 Usage: 
   
 - make and makeList are from [ember-data-factory-guy](https://github.com/danielspaniel/ember-data-factory-guy). 
-  they push models ( based on factories ) into the ember-data store
-     
+  - they create and push models ( based on factories ) into the ember-data store
  
 ```javascript 
     let info = {foo: 1};
