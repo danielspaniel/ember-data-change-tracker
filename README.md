@@ -2,10 +2,13 @@
 
 [![Build Status](https://secure.travis-ci.org/danielspaniel/ember-data-change-tracker.png?branch=master)](http://travis-ci.org/danielspaniel/ember-data-change-tracker) [![Ember Observer Score](http://emberobserver.com/badges/ember-data-change-tracker.svg)](http://emberobserver.com/addons/ember-data-change-tracker) [![npm version](https://badge.fury.io/js/ember-data-change-tracker.svg)](http://badge.fury.io/js/ember-data-change-tracker)
 
-**NOTICE**  
-  - Based on extensive interiews with focus group participants, this addon no longer 
-    actually does anything by default when it is installed. ( as of v0.3.0 )
-  - You have to configure it to auto track models or track models manually  
+**New**  
+  - By popular demand, added a new manual mode
+    - In manual mode ( which is the default ) 
+      - Auto tracking is turned off 
+      - Nothing happens until you tell a model to start tracking
+    - Auto track mode
+      - Set up in configuration as { auto: true }    
    
 
 This addon aims to fill in the gaps in the change tracking / rollback that ember data does now.
@@ -58,8 +61,10 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
   let user = //=> user model with info => info , company => company, and projects => projects
 ```
 
-### changed() method added to DS.Model instances
-  -  Shows you any changes in an object attribute type
+### Changed
+  
+  - The method ```changed()``` is added to model
+  - Shows you any changes in an object attribute type
     - whether modified or replacing the value
     - attr() will default to 'object' type
     - works with any custom type you have created
@@ -136,7 +141,7 @@ Usage:
        - auto : same as global auto  
        - only : limit the attributes/associations tracked on this model to just these
        - except : don't include these attributes/associations
-       - can use only and except as same time, but you can also stuff blueberries in your nose         
+       - can use only and except as same time, but you could also clean your nose with a pipe cleaner         
 
 ```javascript
   // file config/environment.js
