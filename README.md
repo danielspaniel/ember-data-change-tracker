@@ -126,7 +126,7 @@ Usage:
     - The options available are: 
       - trackHasMany ( true / false [default])  => should hasMany associations be tracked
       - auto ( true / false [default]) => should tracking be turned on my default
-       - auto tracking means when any model is saved/updated/reloaded the tracker will save
+        - auto tracking means when any model is saved/updated/reloaded the tracker will save
           the current state, allowing you to rollback anytime 
 
   - Model configuration
