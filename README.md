@@ -86,7 +86,9 @@ Example: ( remove from a hasMany )
 
   - The method ```rollback()``` is added to model
   - If your not using auto track you have to call ```startTrack()``` before editing 
-  - Performace wise, it's fast. I turned to take a sip of bubbly and poof it was done. 
+  - Performace wise, it's way faster than you think it should be. 
+    - Tested on model with hundreds of items in a hasMany association.
+    - Though you might want to think twice when tracking one with thousands 
     
 Usage: 
  
@@ -227,5 +229,4 @@ Usage:
    - When pushing data to the store directly to create a model ( usually done when using 
      websockets ) you need to call ```model.saveChanges()``` manually after creating that 
      new model
-     
-      
+
