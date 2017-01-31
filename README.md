@@ -121,10 +121,8 @@ Usage:
 
 ### Configuration
   - Global configuration 
-    - By default the global settings are:
-```javascript 
-  { trackHasMany: false, auto: false }
-  ```
+    - By default the global settings are: 
+      - { trackHasMany: false, auto: false }
     - The options available are: 
       - trackHasMany ( true / false [default])  => should hasMany associations be tracked
       - auto ( true / false [default]) => should tracking be turned on my default
