@@ -355,15 +355,32 @@ test('clears all saved keys on delete', function(assert) {
 
 test('#rollback', function(assert) {
   Ember.run(() => {
-    let profile1 = make('profile');
+    let info = {foo: 1};
+
+    let profile = make('profile');
     let profile2 = make('profile');
+
     let projects = makeList('project', 2);
     let [project1] = projects;
+
     let pets = makeList('cat', 4);
     let [cat, cat2] = pets;
-    let bigCompany = make('big-company');
-    let smallCompany = make('small-company');
-    let user = make('user', { profile: profile1, company: bigCompany, pets, projects });
+
+    let company = make('big-company');
+    let company2 = make('small-company');
+
+    let list = [1,2,3,4];
+    let location = build('location', {place: 'home'}).get();
+
+    let user = make('user', {
+      info,
+      list,
+      location,
+      profile,
+      company,
+      pets,
+      projects
+    });
 
     let savedUser = user.serialize();
 
@@ -373,11 +390,14 @@ test('#rollback', function(assert) {
 
     user.setProperties({
       'info.foo': 3,
-      company: smallCompany,
+      'location.place': 'zanzibar',
+      company: company2,
       profile: profile2,
       projects: [project1],
       pets: [cat, cat2]
     });
+
+    user.get('list').addObject(5);
 
     user.rollback();
 
