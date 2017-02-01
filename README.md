@@ -8,7 +8,7 @@
       - Auto tracking is turned off 
       - Nothing happens until you tell a model to start tracking
     - Auto track mode
-      - Set up in configuration as { auto: true }    
+      - Set up in [configuration](https://github.com/danielspaniel/ember-data-factory-guy#configuration) as { auto: true }    
    
 
 This addon aims to fill in the gaps in the change tracking / rollback that ember data does now.
@@ -19,7 +19,7 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
   - has a ```rollbackAttributes()``` method to rollback attributes
   
  - This addon:
-    - tracks modifications in attributes that are object/json
+    - tracks modifications in attributes that are object/json/custom type
     - tracks replacement of belongsTo associations
     - tracks replacement/changes in hasMany associations
     - adds a ```changed()``` method to DS.Model
@@ -232,6 +232,4 @@ Usage:
    - When pushing data to the store directly to create a model ( usually done when using 
      websockets ) you need to call ```model.saveChanges()``` manually after creating that 
      new model
-               
-
                
