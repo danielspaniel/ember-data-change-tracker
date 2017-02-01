@@ -209,11 +209,14 @@ Then when you are updating the user model
 ```javascript
 user.set('info.foo', 1);
 user.serialize(); //=> '{ info: {"foo:1"} }'
-
-// without this mixin enabled the json would look like:
-// '{ name: 'dude', info: {"foo:1"}, company: "1" companyType: "company"', profile: "1" }'
-// where all the attributes and association are included whether they changed or not
 ```
+
+Without this mixin enabled the json would look like:
+```javascript
+ { name: "dude", info: {"foo:1"}, company: "1" companyType: "company", profile: "1" }
+```
+where all the attributes and association are included whether they changed or not
+
 
 ## Extra's 
   - Adds a few more helpful methods to ember data model
