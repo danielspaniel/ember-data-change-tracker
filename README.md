@@ -229,8 +229,11 @@ Usage:
 ```
  
 ## Known Issues
-  - Ember less than 2.10
+  - Ember less than 2.10 AND you are using auto track mode
    - When pushing data to the store directly to create a model ( usually done when using 
-     websockets ) you need to call ```model.saveChanges()``` manually after creating that 
-     new model
+     websockets .. but same issue if using factory guy) you need to call ```model.saveChanges()``` 
+     manually after creating that new model   
+               
+              
+
                
