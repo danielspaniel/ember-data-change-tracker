@@ -30,7 +30,8 @@ export default class Tracker {
    */
   static envConfig(model) {
     let config = this.container(model).resolveRegistration('config:environment');
-    return config.changeTracker || {};
+    // sometimes the config is not available ?? not sure why
+    return config && config.changeTracker || {};
   }
 
   /**

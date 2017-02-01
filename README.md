@@ -226,7 +226,7 @@ Usage:
   user.set('info.foo', 8)      
   user.didChange('info') //=> true
   user.savedTrackerValue('info') //=> {foo: 1}  original value of info    
-```
+```           
  
 ## Known Issues
   - Ember less than 2.10 AND you are using auto track mode
@@ -234,6 +234,5 @@ Usage:
      websockets .. but same issue if using factory guy) you need to call ```model.saveChanges()``` 
      manually after creating that new model   
                
-              
 
                
