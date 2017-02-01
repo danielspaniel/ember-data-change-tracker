@@ -255,7 +255,8 @@ export default class Tracker {
    *
    * @param {DS.Model} model
    * @param {String} key attribute/association name
-   * @param {Boolean} changed
+   * @param {Object} [changed] changed object
+   * @param {Object} [info] model tracker meta data object
    * @returns {*}
    */
   static didChange(model, key, changed, info) {
