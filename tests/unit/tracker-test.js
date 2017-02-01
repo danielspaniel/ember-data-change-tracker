@@ -57,12 +57,12 @@ test('#getTrackerKeys', sinon.test(function(assert) {
   let modelConfig = this.stub(Tracker, 'modelConfig');
 
   let tests = [
-    [ {}, {}, 'info company profile projects pets'],
-    [{ trackHasMany: false } , {}, 'info company profile'],
+    [ {}, {}, 'info blob company profile projects pets'],
+    [{ trackHasMany: false } , {}, 'info blob company profile'],
     [{ trackHasMany: true } , { only: ['info'] }, 'info'],
     [{}, { only: ['info'] }, 'info'],
-    [{}, { except: ['info'] }, 'company profile projects pets'],
-    [{auto: true}, {}, 'info company profile projects pets', true],
+    [{}, { except: ['info'] }, 'blob company profile projects pets'],
+    [{auto: true}, {}, 'info blob company profile projects pets', true],
   ];
 
   for (let test of tests) {
@@ -85,13 +85,13 @@ test('#serialize, #deserialize values', sinon.test(function(assert) {
   let pets = makeList('pet', 2);
 
   let tests = [
-    ['info', null, null, {}],
-    ['info', { dude: 1 }, '{"dude":1}', { dude: 1 }],
-    ['profile', null, null, null],
+    ['info', null, "null"],
+    ['info', { dude: 1 }, '{"dude":1}'],
+    ['profile', null, null],
     ['profile', profile, profile.id],
-    ['company', null, null, null],
-    ['company', company, { id: company.id, type: company.constructor.modelName }], // `{"id":"${company.id}","type":"${company.constructor.modelName}"}`
-    ['projects', undefined, null, null],
+    ['company', null, null],
+    ['company', company, { id: company.id, type: company.constructor.modelName }],
+    ['projects', undefined, null],
     ['projects', projects, A(projects).mapBy('id')],
     ['pets', pets, pets.map((p)=> {return {id: p.id, type: p.constructor.modelName};})],
   ];

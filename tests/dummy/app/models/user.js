@@ -9,6 +9,7 @@ export default Model.extend({
   style: attr('string'),
   // object type
   info: attr('object'),
+  blob: attr('json'),
   // fragments
   list: array('number'),
   location: fragment('location'),

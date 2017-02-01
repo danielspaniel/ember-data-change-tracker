@@ -49,8 +49,8 @@ test('only sets up tracking meta data once on model type', function(assert) {
   let model = new Model();
 
   assert.ok(!model.constructor.alreadySetupTrackingMeta);
-  sinon.stub(Tracker,'options').returns({auto: true});
-  let getTrackerInfo = sinon.stub(Tracker,'getTrackerInfo').returns({autoSave: true});
+  sinon.stub(Tracker, 'options').returns({ auto: true });
+  let getTrackerInfo = sinon.stub(Tracker, 'getTrackerInfo').returns({ autoSave: true });
 
   let dog = make('dog');
   assert.ok(dog.constructor.alreadySetupTrackingMeta, 'auto save set up metaData');
@@ -68,12 +68,12 @@ test('#setupTracking sets correct trackerKeys on constructor', function(assert) 
   let user = make('user');
   let metaData = Tracker.metaInfo(user);
 
-  assert.deepEqual(Object.keys(metaData), 'info company profile projects pets'.split(' '));
-  assertMetaKey(metaData.info,'attribute', 'object', assert);
-  assertMetaKey(metaData.company,'belongsTo', undefined, assert);
-  assertMetaKey(metaData.profile,'belongsTo', undefined, assert);
-  assertMetaKey(metaData.projects,'hasMany', undefined, assert);
-  assertMetaKey(metaData.pets,'hasMany', undefined, assert);
+  assert.deepEqual(Object.keys(metaData), 'info blob company profile projects pets'.split(' '));
+  assertMetaKey(metaData.info, 'attribute', 'object', assert);
+  assertMetaKey(metaData.company, 'belongsTo', undefined, assert);
+  assertMetaKey(metaData.profile, 'belongsTo', undefined, assert);
+  assertMetaKey(metaData.projects, 'hasMany', undefined, assert);
+  assertMetaKey(metaData.pets, 'hasMany', undefined, assert);
 });
 
 test('#saveChanges saves attributes/assocations when model is ready on ajax load', function(assert) {
@@ -195,7 +195,7 @@ test('#saveChanges saves attributes/assocations when model newly created', funct
   let info = { dude: 1 };
 
   let user;
-  Ember.run(()=> {
+  Ember.run(() => {
     user = FactoryGuy.store.createRecord('user', { info, profile, company, projects, pets });
   });
 
@@ -236,7 +236,7 @@ test('#save method resets changed if auto tracking', function(assert) {
   const done = assert.async();
   mockSetup();
 
-  Ember.run(()=> {
+  Ember.run(() => {
     let company = make('company');
     let info = { dude: 1 };
     let projects = makeList('project', 2);
@@ -251,7 +251,7 @@ test('#save method resets changed if auto tracking', function(assert) {
     info.dude = 2;
 
     mockUpdate(user);
-    user.save().then(()=> {
+    user.save().then(() => {
       assert.ok(!user.changed().info, 'clears changed info after save');
       assert.ok(!user.changed().company, 'clears changed company after save');
       assert.ok(!user.changed().projects, 'clears changed projects after save');
@@ -270,6 +270,16 @@ test('#changed detects modifying attribute of type undefined', function(assert) 
   blob.foo = 2;
 
   let changed = company.changed().blob;
+  assert.ok(changed);
+});
+
+test('#changed detects modifying attribute of type that does not serialize to string', function(assert) {
+  let blob = { foo: 1 };
+  let user = make('user', { blob });
+
+  blob.foo = 2;
+
+  let changed = user.changed().blob;
   assert.ok(changed);
 });
 
@@ -319,6 +329,50 @@ test('#changed ( replacing )', function(assert) {
   }
 });
 
+//test('#changed incremental saves', function(assert) {
+//  let company = make('small-company');
+////  let projects = makeList('project', 2);
+////  let pets = makeList('pet', 2);
+////  let [cat, dog] = pets;
+////  let pets3 = [dog, cat];
+//  let info = { dude: 1 };
+//  let user = make('user', {info, company});
+//
+//  let tests = [
+////    ['info', null, true],
+////    ['info', info, true],
+////    ['info', info, false],
+////    ['company', null, null, false],
+////    ['company', null, company, true],
+////    ['company', company, null, true],
+////    ['company', company, company, false],
+////    ['projects', [], [], false],
+////    ['projects', [], projects, true],
+////    ['projects', projects, [], true],
+////    ['projects', projects, projects, false],
+////    ['pets', [], [], false],
+////    ['pets', [], pets, true],
+////    ['pets', pets, [], true],
+////    ['pets', pets, [cat], true],
+////    ['pets', [cat], [cat, dog], true],
+////    ['pets', pets, pets3, false],
+//  ];
+//
+//  for (let test of tests) {
+//    let [key, newValue, expected] = test;
+//    Ember.run(()=> user.set(key, newValue));
+//    let obj = user.changed();
+//    console.log(user.savedTrackerValue('options'), 'changed', obj);
+//    assert.equal(obj.hasOwnProperty(key),expected);
+//    user.saveChanges();
+//
+////    let [key, firstValue, nextValue, expected] = test;
+////    let user = make('user', { [key]: firstValue });
+////    setModel(user, key, nextValue);
+////    assert.equal(!!user.changed()[key], expected);
+//  }
+//});
+
 test('keepOnlyChanged serializer mixin', function(assert) {
   let company = make('company');
   let blob = { dude: 1 };
@@ -345,8 +399,8 @@ test('clears all saved keys on delete', function(assert) {
 
   assert.ok(!!user.get(ModelTrackerKey));
   mockDelete(user);
-  Ember.run(()=> {
-    user.destroyRecord().then(()=> {
+  Ember.run(() => {
+    user.destroyRecord().then(() => {
       assert.ok(!user.get(ModelTrackerKey));
       done();
     });
@@ -355,7 +409,8 @@ test('clears all saved keys on delete', function(assert) {
 
 test('#rollback', function(assert) {
   Ember.run(() => {
-    let info = {foo: 1};
+    let info = { foo: 1 };
+    let blob = { dude: 'A' };
 
     let profile = make('profile');
     let profile2 = make('profile');
@@ -369,11 +424,12 @@ test('#rollback', function(assert) {
     let company = make('big-company');
     let company2 = make('small-company');
 
-    let list = [1,2,3,4];
-    let location = build('location', {place: 'home'}).get();
+    let list = [1, 2, 3, 4];
+    let location = build('location', { place: 'home' }).get();
 
     let user = make('user', {
       info,
+      blob,
       list,
       location,
       profile,
@@ -383,6 +439,8 @@ test('#rollback', function(assert) {
     });
 
     let savedUser = user.serialize();
+    // blob is speacial because it's serializer (json) does not stringify
+    delete savedUser.blob;
 
     console.time('track');
 
@@ -390,6 +448,7 @@ test('#rollback', function(assert) {
 
     user.setProperties({
       'info.foo': 3,
+      'blob.dude': 'B',
       'location.place': 'zanzibar',
       company: company2,
       profile: profile2,
@@ -403,8 +462,12 @@ test('#rollback', function(assert) {
 
     console.timeEnd('track');
 
+    let afterRollbackUser = user.serialize();
+    delete afterRollbackUser.blob;
+
     assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
-    assert.deepEqual(savedUser, user.serialize());
+    assert.deepEqual(savedUser, afterRollbackUser);
+    assert.deepEqual(user.get('blob'), { dude: 'A' });
   });
 });
 

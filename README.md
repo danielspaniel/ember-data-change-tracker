@@ -233,6 +233,26 @@ Usage:
    - When pushing data to the store directly to create a model ( usually done when using 
      websockets .. but same issue if using factory guy) you need to call ```model.saveChanges()``` 
      manually after creating that new model   
-               
+  - Testing 
+    - In unit / integration tests you have to manually initialize change-tracker
+
+For example:
+ 
+```javascript
+
+import {moduleForModel, test} from 'ember-qunit';
+import { make, manualSetup } from 'ember-data-factory-guy';
+import {initializer as changeInitializer} from 'ember-data-change-tracker';
+
+moduleForModel('project', 'Unit | Model | project', {
+  integration: true,
+
+  beforeEach() {
+    manualSetup(this.container);
+    changeInitializer();
+  }
+});
+
+```                           
 
                

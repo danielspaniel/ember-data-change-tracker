@@ -136,6 +136,9 @@ export default class Tracker {
     let value;
     if (info.type === 'attribute') {
       value = info.transform.serialize(model.get(key));
+      if (typeof value !== 'string') {
+        value = JSON.stringify(value);
+      }
     } else {
       value = info.transform.serialize(model, key, info);
     }
