@@ -31,6 +31,7 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
       - auto track mode
       - manual track mode ( the default )
     - Uses no observers, and no computed properties
+    - Is tested far beyong the minimum required by the CSOA
        
 ## Installation
 
@@ -125,7 +126,8 @@ Usage:
     user.get('info') //=> {foo: 1}
     user.get('profile') //=> profile1
     user.get('company') //=> bigCompany
-    user.get('pets') //=> back to 4 pets
+    user.get('projects') //=> first 2 projects
+    user.get('pets') //=> back to the same 4 pets
 
 ```
 
