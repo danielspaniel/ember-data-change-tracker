@@ -3,7 +3,7 @@
 [![Build Status](https://secure.travis-ci.org/danielspaniel/ember-data-change-tracker.png?branch=master)](http://travis-ci.org/danielspaniel/ember-data-change-tracker) [![Ember Observer Score](http://emberobserver.com/badges/ember-data-change-tracker.svg)](http://emberobserver.com/addons/ember-data-change-tracker) [![npm version](https://badge.fury.io/js/ember-data-change-tracker.svg)](http://badge.fury.io/js/ember-data-change-tracker)
 
 **New**  
-  - By popular demand, added a new manual mode
+  - By popular demand, added manual mode
     - Manual mode ( which is the default ) 
       - Auto tracking is turned off 
       - Nothing happens until you tell a model to start tracking
@@ -38,7 +38,7 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
 
 ## Why?
 
-    Say there is a user model like this:
+  Say there is a user model like this:
 
 ```javascript
   export default Model.extend({
@@ -232,5 +232,6 @@ Usage:
    - When pushing data to the store directly to create a model ( usually done when using 
      websockets ) you need to call ```model.saveChanges()``` manually after creating that 
      new model
+               
 
                
