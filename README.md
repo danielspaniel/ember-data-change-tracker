@@ -221,10 +221,11 @@ user.serialize(); //=> '{ info: {"foo:1"} }'
 
 Usage:
 ```javascript
+  user.startTracking(); // saves all keys that are being tracked
   user.savedTrackerValue('info') //=> {foo: 1}  original value of info
   user.set('info.foo', 8)      
   user.didChange('info') //=> true
-  user.savedTrackerValue('info') //=> {foo: 1}  original value of info still the same   
+  user.savedTrackerValue('info') //=> {foo: 1}  original value of info    
 ```
  
 ## Known Issues
