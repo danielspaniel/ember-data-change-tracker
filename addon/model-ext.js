@@ -15,7 +15,7 @@ Model.reopen({
   },
 
   /**
-   * Did any attribute/associations change?
+   * Did any attribute/association change?
    *
    * returns object with:
    *  {key: value} = {attribute: true}
@@ -38,7 +38,14 @@ Model.reopen({
   },
 
   /**
-   * Rollback the changes that ember-data-change-tracker has been keeping track of
+   * Rollback all the changes on this model, for the keys you are
+   * tracking.
+   * If you pass in a key, only roll back that key.
+   *
+   * NOTE: Be sure you understand what keys you are tracking.
+   * By default, tracker will save all keys, but if you set up
+   * a model to 'only' track a limited set of keys, then the rollback
+   * will only be limited to those keys
    *
    * @param {String} [key] attribute/association name to rollback
    */
@@ -55,13 +62,13 @@ Model.reopen({
     this.store.push(data);
   },
 
+  // alias for saveChanges method
   startTrack() {
     this.saveChanges();
   },
 
   /**
-   * Provide access to tracker's saveChanges method to allow you to
-   * call this method manually
+   * Save the current state of the model
    *
    * NOTE: This is needed when manually pushing data
    * to the store and using Ember < 2.10
@@ -72,7 +79,7 @@ Model.reopen({
   },
 
   /**
-   * Get value the last known value tracker is saving for this key
+   * Get value of the last known value tracker is saving for this key
    *
    * @param {String} key attribute/association name
    * @returns {*}
@@ -81,6 +88,7 @@ Model.reopen({
     return Tracker.lastValue(this, key);
   },
 
+  // save state when model is loaded or created if using auto save
   setupTrackerMetaData: Ember.on('ready', function() {
     if (Tracker.autoSave(this)) {
       Tracker.setupTracking(this);
@@ -88,6 +96,7 @@ Model.reopen({
     }
   }),
 
+  // when model updates, update the tracked state if using autosave
   saveOnUpdate: Ember.on('didUpdate', function() {
     if (Tracker.autoSave(this)) {
       this.saveChanges();
@@ -105,6 +114,7 @@ Model.reopen({
     return promise;
   },
 
+  // when model deletes, remove any tracked state
   clearSavedAttributes: Ember.on('didDelete', function() {
     Tracker.clear(this);
   })

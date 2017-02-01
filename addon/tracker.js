@@ -23,7 +23,7 @@ export default class Tracker {
   }
 
   /**
-   * Get Ember application configuration
+   * Get tracker configuration from Ember application configuration
    *
    * @param {DS.Model} model
    * @returns {*|{}}
@@ -44,7 +44,7 @@ export default class Tracker {
   }
 
   /**
-   * Is this model in auto save mode
+   * Is this model in auto save mode?
    *
    * @param model
    * @returns {Boolean}
@@ -62,8 +62,7 @@ export default class Tracker {
    * If not, use object transform.
    *
    * A transform function is required for serializing and deserializing
-   * the attribute in order to save past values and also to retrieve
-   * them for comparison with current.
+   * the attribute in order to save past values and then renew them on rollback
    *
    * @param {DS.Model} model
    * @param {String} attributeType like: 'object', 'json' or could be undefined
@@ -75,8 +74,8 @@ export default class Tracker {
   }
 
   /**
-   * Find the meta data for a key (attributes/association) that tracker is
-   * tracking on this model
+   * Find the meta data for all keys or a single key (attributes/association)
+   * that tracker is tracking on this model
    *
    * @param {DS.Model} model
    * @param {string} [key] only this key's info and no other
@@ -93,13 +92,15 @@ export default class Tracker {
   /**
    * On the model you can set options like:
    *
-   *   changeTracker: {only: ['info']}
+   *   changeTracker: {auto: true}
+   *   changeTracker: {auto: true, only: ['info']}
    *   changeTracker: {except: ['info']}
    *   changeTracker: {except: ['info'], trackHasMany: true}
    *
    * In config environment you can set options like:
    *
-   *   changeTracker: {trackHasMany: true} // default is false
+   *   changeTracker: {auto: true, trackHasMany: false}
+   *   // default is:  {auto: false, trackHasMany: true}
    *
    * @param {DS.Model} model
    * @returns {*}
@@ -124,8 +125,7 @@ export default class Tracker {
    * For attributes, using the transform function that each custom
    * attribute should have.
    *
-   * For belongsTo ( polymorphic ) using object with {type, id}
-   * For hasMany ( polymorphic ) using array of objects with {type, id}
+   * For belongsTo, and hasMany using using custom transform
    *
    * @param {DS.Model} model
    * @param {String} key attribute/association name
@@ -141,10 +141,17 @@ export default class Tracker {
     return value;
   }
 
+  // has tracking already been setup on this model?
   static trackingIsSetup(model) {
     return model.constructor.alreadySetupTrackingMeta;
   }
 
+  /**
+   * Setup tracking meta data for this model,
+   * unless it's already been setup
+   *
+   * @param {DS.Model} model
+   */
   static setupTracking(model) {
     if (!this.trackingIsSetup(model)) {
       model.constructor.alreadySetupTrackingMeta = true;
@@ -178,6 +185,12 @@ export default class Tracker {
     return [trackerKeys, hasManyList];
   }
 
+  /**
+   * Get the tracker meta data associated with this model
+   *
+   * @param {DS.Model} model
+   * @returns {{autoSave, keyMeta: {}}}
+   */
   static getTrackerInfo(model) {
     let [trackableInfo, hasManyList] = this.extractKeys(model);
     let trackerOpts = this.options(model);
@@ -204,6 +217,16 @@ export default class Tracker {
     return { autoSave: trackerOpts.auto, keyMeta };
   }
 
+  /**
+   * Get the transform for an attribute or association.
+   * The attribute transforms are held by ember-data, and
+   * the tracker uses custom transform for relationships
+   *
+   * @param {DS.Model} model
+   * @param {String} key attribute/association name
+   * @param {Object} info tracker meta data for this key
+   * @returns {*}
+   */
   static getTransform(model, key, info) {
     let transform;
 
@@ -224,10 +247,11 @@ export default class Tracker {
   }
 
   /**
+   * Did the key change since the last time state was saved?
    *
-   * @param model
-   * @param key
-   * @param changed
+   * @param {DS.Model} model
+   * @param {String} key attribute/association name
+   * @param {Boolean} changed
    * @returns {*}
    */
   static didChange(model, key, changed, info) {
