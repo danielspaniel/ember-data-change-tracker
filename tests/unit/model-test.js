@@ -10,21 +10,6 @@ import sinon from 'sinon';
 
 modelInitializer();
 
-//let forceTracking = (modelName, info) => {
-//  let Model = FactoryGuy.store.modelFor(modelName);
-//  let model = new Model();
-//  let constructor = model.constructor;
-//  constructor.alreadySetupTrackingMeta = false;
-//  constructor.trackerAutoSave = info.auto;
-//  sinon.stub(Tracker, 'modelConfig').returns({ only: info.keys, auto: info.auto, trackHasMany: info.hasMany });
-//};
-//  forceTracking('user', {
-//    keys: Ember.String.w('info company profile projects pets'),
-//    auto: true,
-//    hasMany: true,
-//  });
-//  Tracker.modelConfig.restore();
-
 let assertMetaKey = function(data, expectedType, expectedName, assert) {
   assert.equal(data.type, expectedType);
   assert.equal(data.name, expectedName);
@@ -262,7 +247,7 @@ test('#save method resets changed if auto tracking', function(assert) {
   });
 });
 
-test('#changed detects modifying attribute of type undefined', function(assert) {
+test('#changed ( modifying ) attribute of type undefined', function(assert) {
   let blob = { foo: 1 };
   let company = make('company', { blob });
   company.startTrack();
@@ -273,7 +258,7 @@ test('#changed detects modifying attribute of type undefined', function(assert) 
   assert.ok(changed);
 });
 
-test('#changed detects modifying attribute of type that does not serialize to string', function(assert) {
+test('#changed ( modifying ) attribute of type that does not serialize to string', function(assert) {
   let blob = { foo: 1 };
   let user = make('user', { blob });
 
@@ -283,7 +268,7 @@ test('#changed detects modifying attribute of type that does not serialize to st
   assert.ok(changed);
 });
 
-test('#changed detects modifying attribute of type "object"', function(assert) {
+test('#changed ( modifying ) attribute of type "object"', function(assert) {
   let info = { dude: 1 };
   let user = make('user', { info });
   info.dude = 3;

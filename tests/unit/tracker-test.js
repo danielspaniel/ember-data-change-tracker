@@ -75,7 +75,7 @@ test('#getTrackerKeys', sinon.test(function(assert) {
   }
 }));
 
-test('#serialize, #deserialize values', sinon.test(function(assert) {
+test('#serialize', sinon.test(function(assert) {
   let envConfig = this.stub(Tracker, 'envConfig');
   envConfig.returns({trackHasMany: true, auto: true});
 
