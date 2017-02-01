@@ -8,7 +8,7 @@
       - Auto tracking is turned off 
       - Nothing happens until you tell a model to start tracking
     - Auto track mode
-      - Set up in [configuration](https://github.com/danielspaniel/ember-data-factory-guy#configuration) as { auto: true }    
+      - Set up in [configuration](https://github.com/danielspaniel/ember-data-change-tracker#configuration) as { auto: true }    
    
 
 This addon aims to fill in the gaps in the change tracking / rollback that ember data does now.
