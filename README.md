@@ -136,14 +136,14 @@ Usage:
   
   - Global configuration 
     - By default the global settings are: 
-      - { trackHasMany: true, auto: false }
+      - { *trackHasMany*: _true_, *auto*: _false_ }
         - Essentially this says, track everything in the model but only when I tell you
         - Since this is manual mode you probably want to track everything 
           since you are focused on one edit at a time, hence trackHasMany is on
     - The options available are: 
-      - trackHasMany : should hasMany associations be tracked? ( true is default )
+      - *trackHasMany* : should hasMany associations be tracked? ( _true_ is default )
         - this is just a shortcut to exclude all the hasMany relations
-      - auto : should tracking be turned on by default? ( false is default )
+      - *auto* : should tracking be turned on by default? ( _false_ is default )
         - auto tracking means when any model is saved/updated/reloaded the tracker will save
           the current state, allowing you to rollback anytime 
 
@@ -151,10 +151,10 @@ Usage:
     - Takes precedence over global
       - So, globally auto track could be off, but on one model you can turn it on
     - The options available are: 
-       - trackHasMany : same as global trackHasMany  
-       - auto : same as global auto  
-       - only : limit the attributes/associations tracked on this model to just these
-       - except : don't include these attributes/associations
+       - *trackHasMany* : same as global trackHasMany  
+       - *auto* : same as global auto  
+       - *only* : limit the attributes/associations tracked on this model to just these
+       - *except* : don't include these attributes/associations
        - You can use 'only' and 'except' at the same time, but you could also clean your nose with a pipe cleaner         
 
 ```javascript
@@ -259,4 +259,5 @@ moduleForModel('project', 'Unit | Model | project', {
 });
 
 ```                           
+
                
