@@ -77,7 +77,7 @@ Example: ( remove from a hasMany )
 ### Rollback
 
   - The method ```rollback()``` is added to model
-  - If your not using auto track you have to call ```startTrack()``` before editing 
+  - If you're not using auto track you have to call ```startTrack()``` before editing 
   - Performace wise, it's way faster than you think it should be. 
     - Tested on model with hundreds of items in a hasMany association.
     - Though you might want to think twice when tracking one with thousands 
@@ -166,14 +166,14 @@ Usage:
   // file app/models/user.js
   export default Model.extend({
     changeTracker: {only: ['info', 'company', 'pets']}, // settings for user models
+
     name: attr('string'),
-    style: attr('string'),
     info: attr('object'),
     json: attr(),
     company: belongsTo('company', { async: false, polymorphic: true }),
     profile: belongsTo('profile', { async: true }),
     projects: hasMany('project', { async: false }),
-    pets: hasMany('pet', { async: true })
+    pets: hasMany('pet', { async: true, polymorphic: true })
   });
 ```
 
