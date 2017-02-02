@@ -49,18 +49,8 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
        company: belongsTo('company', { async: false, polymorphic: true }),  // ember-data does not track replacement
        profile: belongsTo('profile', { async: true }), // ember-data does not track replacement
        projects: hasMany('project', { async: false }), // ember-data does not track additions/deletions
-       pets: hasMany('pet', { async: true }) // ember-data does not track additions/deletions
+       pets: hasMany('pet', { async: true, polymorphic: true }) // ember-data does not track additions/deletions
    });
-```
-
-   And you have a user with attributes/associations:
-
-```javascript
-  let company = //=> company model
-  let company2 = //=> different company model
-  let info = {foo: 1} // some object
-  let projects = //=> collection of project models
-  let user = //=> user model with info => info , company => company, and projects => projects
 ```
 
 ### Changed
@@ -100,6 +90,7 @@ Usage:
 ```javascript 
     let info = {foo: 1};
     let projects = makeList('project', 2);
+    let [project1] = projects;
     let pets = makeList('cat', 4);
     let [cat, cat2] = pets;
     let bigCompany = make('big-company');
@@ -117,7 +108,7 @@ Usage:
       company: smallCompany,
       profile: profile2,
       projects: [project1],
-      pets: [cat, cat2]
+      pets: [cat1, cat2]
     });
 
     user.rollback();
@@ -263,4 +254,4 @@ moduleForModel('project', 'Unit | Model | project', {
 
 ```                           
 
-     
+               
