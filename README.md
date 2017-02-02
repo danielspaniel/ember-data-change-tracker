@@ -53,6 +53,10 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
    });
 ```
 
+  You can not currently rollback the info, json, if they are modified , 
+    or company, profile, projects or pets if they change.
+  
+  
 ### Changed
   
   - The method ```changed()``` is added to model
