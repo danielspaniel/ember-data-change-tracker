@@ -222,7 +222,7 @@ where all the attributes and association are included whether they changed or no
 
 Usage:
 ```javascript
-  user.startTracking(); // saves all keys that are being tracked
+  user.startTrack(); // saves all keys that are being tracked
   user.savedTrackerValue('info') //=> {foo: 1}  original value of info
   user.set('info.foo', 8)      
   user.didChange('info') //=> true
@@ -243,11 +243,10 @@ For example:
 ```javascript
 
 import {moduleForModel, test} from 'ember-qunit';
-import { make, manualSetup } from 'ember-data-factory-guy';
+import {make, manualSetup} from 'ember-data-factory-guy';
 import {initializer as changeInitializer} from 'ember-data-change-tracker';
 
 moduleForModel('project', 'Unit | Model | project', {
-  integration: true,
 
   beforeEach() {
     manualSetup(this.container);
