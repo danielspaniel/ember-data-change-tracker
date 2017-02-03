@@ -6,7 +6,8 @@
     "ember-addon",
     "ember-data",
     "change tracking",
-    "dirty tracking"
+    "dirty tracking",
+    "rollback"
   ],
   "license": "MIT",
   "author": "Daniel Sudol <dansudol@yahoo.com>",
