@@ -120,31 +120,6 @@ export default class Tracker {
     return opts;
   }
 
-  /**
-   * Serialize the value to be able to tell if the value changed.
-   *
-   * For attributes, using the transform function that each custom
-   * attribute should have.
-   *
-   * For belongsTo, and hasMany using using custom transform
-   *
-   * @param {DS.Model} model
-   * @param {String} key attribute/association name
-   */
-  static serialize(model, key) {
-    let info = this.metaInfo(model, key);
-    let value;
-    if (info.type === 'attribute') {
-      value = info.transform.serialize(model.get(key));
-      if (typeof value !== 'string') {
-        value = JSON.stringify(value);
-      }
-    } else {
-      value = info.transform.serialize(model, key, info);
-    }
-    return value;
-  }
-
   // has tracking already been setup on this model?
   static trackingIsSetup(model) {
     return model.constructor.alreadySetupTrackingMeta;
@@ -165,6 +140,46 @@ export default class Tracker {
     }
   }
 
+  /**
+   * Get the tracker meta data associated with this model
+   *
+   * @param {DS.Model} model
+   * @returns {{autoSave, keyMeta: {}}}
+   */
+  static getTrackerInfo(model) {
+    let [trackableInfo, hasManyList] = this.extractKeys(model);
+    let trackerOpts = this.options(model);
+
+    let all = new Set(Object.keys(trackableInfo));
+    let except = new Set(trackerOpts.except || []);
+    let only = new Set(trackerOpts.only || [...all]);
+
+    if (!trackerOpts.trackHasMany) {
+      except = new Set([...except, ...hasManyList]);
+    }
+
+    all = new Set([...all].filter(a => !except.has(a)));
+    all = new Set([...all].filter(a => only.has(a)));
+
+    let keyMeta = {};
+    Object.keys(trackableInfo).forEach(key => {
+      if (all.has(key)) {
+        let info = trackableInfo[key];
+        info.transform = this.getTransform(model, key, info);
+        keyMeta[key] = info;
+      }
+    });
+
+    return { autoSave: trackerOpts.auto, keyMeta };
+  }
+
+  /**
+   * Go through the models attributes and relationships so see
+   * which of these keys could be trackable
+   *
+   * @param {DS.Model} model
+   * @returns {[*,*]} meta data about possible keys to track
+   */
   static extractKeys(model) {
     let { constructor } = model;
     let trackerKeys = {};
@@ -187,38 +202,6 @@ export default class Tracker {
     });
 
     return [trackerKeys, hasManyList];
-  }
-
-  /**
-   * Get the tracker meta data associated with this model
-   *
-   * @param {DS.Model} model
-   * @returns {{autoSave, keyMeta: {}}}
-   */
-  static getTrackerInfo(model) {
-    let [trackableInfo, hasManyList] = this.extractKeys(model);
-    let trackerOpts = this.options(model);
-    let all = new Set(Object.keys(trackableInfo));
-    let except = new Set(trackerOpts.except || []);
-    let only = new Set(trackerOpts.only || [...all]);
-
-    if (!trackerOpts.trackHasMany) {
-      except = new Set([...except, ...hasManyList]);
-    }
-
-    all = new Set([...all].filter(a => !except.has(a)));
-    all = new Set([...all].filter(a => only.has(a)));
-
-    let keyMeta = {};
-    Object.keys(trackableInfo).forEach(key => {
-      if (all.has(key)) {
-        let info = trackableInfo[key];
-        info.transform = this.getTransform(model, key, info);
-        keyMeta[key] = info;
-      }
-    });
-
-    return { autoSave: trackerOpts.auto, keyMeta };
   }
 
   /**
@@ -266,7 +249,7 @@ export default class Tracker {
     }
     let keyInfo = info && info[key] || this.metaInfo(model, key);
     if (keyInfo) {
-      let current = this.serialize(model, key);
+      let current = this.serialize(model, key, keyInfo);
       let last = this.lastValue(model, key);
       switch (keyInfo.type) {
         case 'attribute':
@@ -279,6 +262,31 @@ export default class Tracker {
   }
 
   /**
+   * Serialize the value to be able to tell if the value changed.
+   *
+   * For attributes, using the transform function that each custom
+   * attribute should have.
+   *
+   * For belongsTo, and hasMany using using custom transform
+   *
+   * @param {DS.Model} model
+   * @param {String} key attribute/association name
+   */
+  static serialize(model, key, keyInfo) {
+    let info = keyInfo || this.metaInfo(model, key);
+    let value;
+    if (info.type === 'attribute') {
+      value = info.transform.serialize(model.get(key));
+      if (typeof value !== 'string') {
+        value = JSON.stringify(value);
+      }
+    } else {
+      value = info.transform.serialize(model, key, info);
+    }
+    return value;
+  }
+
+  /**
    * Retrieve the last known value for this model key
    *
    * @param {DS.Model} model
@@ -287,6 +295,18 @@ export default class Tracker {
    */
   static lastValue(model, key) {
     return (model.get(ModelTrackerKey) || {})[key];
+  }
+
+  /**
+   * Save change tracker attributes
+   *
+   * @param {DS.Model} model
+   */
+  static saveChanges(model) {
+    let metaInfo = this.metaInfo(model);
+    Object.keys(metaInfo).forEach((key) => {
+      Tracker.saveKey(model, key);
+    });
   }
 
   /**
@@ -308,21 +328,5 @@ export default class Tracker {
    */
   static clear(model) {
     model.set(ModelTrackerKey, undefined);
-  }
-
-  static startTrack(model) {
-    model.saveChanges();
-  }
-
-  /**
-   * Save change tracker attributes
-   *
-   * @param {DS.Model} model
-   */
-  static saveChanges(model) {
-    let metaInfo = this.metaInfo(model);
-    Object.keys(metaInfo).forEach((key) => {
-      Tracker.saveKey(model, key);
-    });
   }
 }

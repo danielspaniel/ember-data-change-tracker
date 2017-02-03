@@ -40,17 +40,15 @@ Model.reopen({
   /**
    * Rollback all the changes on this model, for the keys you are
    * tracking.
-   * If you pass in a key, only roll back that key.
    *
    * NOTE: Be sure you understand what keys you are tracking.
    * By default, tracker will save all keys, but if you set up
    * a model to 'only' track a limited set of keys, then the rollback
    * will only be limited to those keys
    *
-   * @param {String} [key] attribute/association name to rollback
    */
-  rollback(key = null) {
-    let trackerInfo = Tracker.metaInfo(this, key);
+  rollback() {
+    let trackerInfo = Tracker.metaInfo(this);
     this.rollbackAttributes();
     let props = { id: this.id };
     Object.keys(trackerInfo).forEach((key) => {
@@ -96,7 +94,7 @@ Model.reopen({
     }
   }),
 
-  // when model updates, update the tracked state if using autosave
+  // when model updates, update the tracked state if using auto save
   saveOnUpdate: Ember.on('didUpdate', function() {
     if (Tracker.autoSave(this)) {
       this.saveChanges();
