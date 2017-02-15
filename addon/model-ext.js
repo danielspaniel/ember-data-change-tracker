@@ -50,14 +50,14 @@ Model.reopen({
   rollback() {
     let trackerInfo = Tracker.metaInfo(this);
     this.rollbackAttributes();
-    let props = { id: this.id };
+    let data = { id: this.id };
     Object.keys(trackerInfo).forEach((key) => {
       if (this.didChange(key, null, trackerInfo)) {
-        props[key] = Tracker.lastValue(this, key);
+        data[key] = Tracker.lastValue(this, key);
       }
     });
-    let data = this.store.normalize(this.constructor.modelName, props);
-    this.store.push(data);
+    let normalized = Tracker.normalize(this, data);
+    this.store.push(normalized);
   },
 
   // alias for saveChanges method

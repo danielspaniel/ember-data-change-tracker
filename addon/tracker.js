@@ -5,7 +5,7 @@ const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
 const alreadyTrackedRegex = /^-mf-|string|boolean|date|^number$/;
 const knownTrackerOpts = Ember.A(['only', 'auto', 'except', 'trackHasMany']);
-const defaultOpts = { trackHasMany: true, auto: false };
+const defaultOpts            = { trackHasMany: true, auto: false };
 
 /**
  * Helper class for change tracking models
@@ -72,6 +72,28 @@ export default class Tracker {
   static transformFn(model, attributeType) {
     let transformType = attributeType || 'object';
     return model.store.serializerFor(model.constructor.modelName).transformFor(transformType);
+  }
+
+  /**
+   * The rollback data will be an object with keys as attribute and relationship names
+   * with values for those keys.
+   *
+   *    For example:
+   *
+   *    { id: 1, name: 'Acme Inc', company: 1, pets: [1,2] }
+   *
+   * Basically a REST style payload. So, convert that to JSONAPI so it can be
+   * pushed to the store
+   *
+   * @param {DS.Model} model
+   * @param {Object} data rollback data
+   */
+  static normalize(model, data) {
+    let modelClass = model.store.modelFor(model.constructor.modelName);
+    let container = this.container(model);
+    let serializer = container.lookup('serializer:-rest');
+    serializer.set('store', model.store);
+    return serializer.normalize(modelClass, data);
   }
 
   /**

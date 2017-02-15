@@ -16,5 +16,11 @@ export default Ember.Mixin.create({
     if (this.keepValue(snapshot.record, relationship.key)) {
       return this._super(...arguments);
     }
+  },
+
+  serializeHasMany: function(snapshot, json, relationship) {
+    if (this.keepValue(snapshot.record, relationship.key)) {
+      return this._super(...arguments);
+    }
   }
 });

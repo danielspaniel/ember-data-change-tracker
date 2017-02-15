@@ -160,7 +160,9 @@ test('#saveChanges saves attributes/assocations when model info is pushed to sto
     pets
   });
 
-  let normalized = FactoryGuy.store.normalize('user', userJson.get());
+  let Model = FactoryGuy.store.modelFor('user');
+  let modelClass = new Model({ store: FactoryGuy.store });
+  let normalized = Tracker.normalize(modelClass, userJson.get());
 
   Ember.run(() => {
     let user = FactoryGuy.store.push(normalized);
@@ -236,6 +238,7 @@ test('#save method resets changed if auto tracking', function(assert) {
     info.dude = 2;
 
     mockUpdate(user);
+
     user.save().then(() => {
       assert.ok(!user.changed().info, 'clears changed info after save');
       assert.ok(!user.changed().company, 'clears changed company after save');
@@ -360,21 +363,26 @@ test('#changed ( replacing )', function(assert) {
 
 test('keepOnlyChanged serializer mixin', function(assert) {
   let company = make('company');
+  let details = makeList('detail', 2);
   let blob = { dude: 1 };
   let project = make('project');
 
   let tests = [
-    ['blob', null, true, 'undefined to null attribute is a change ( according to ember-data )'],
-    ['blob', blob, true, 'replace attribute'],
-    ['company', null, false, 'undefined to null relationship is NOT a change'],
-    ['company', company, true, 'change belongsTo']
+    ['attributes', 'blob', null, true, 'undefined to null attribute is a change ( according to ember-data )'],
+    ['attributes', 'blob', blob, true, 'replace attribute'],
+    ['relationships', 'company', null, false, 'undefined to null belongsTo is NOT a change'],
+    ['relationships', 'company', company, true, 'change belongsTo'],
+    ['relationships', 'details', [], false, 'undefined to empty array hasMany is not a change'],
+    ['relationships', 'details', details, true, 'change hasMany']
   ];
 
   for (let test of tests) {
-    let [key, value, expected, message] = test;
+    let [category, key, value, expected, message] = test;
     setModel(project, key, value);
     let attributes = project.serialize();
-    assert.equal(attributes.hasOwnProperty(key), expected, message);
+    let data = attributes.data[category];
+
+    assert.equal(!!(data && data.hasOwnProperty(key)), expected, message);
   }
 });
 
@@ -425,7 +433,7 @@ test('#rollback', function(assert) {
 
     let savedUser = user.serialize();
     // blob is speacial because it's serializer (json) does not stringify
-    delete savedUser.blob;
+    delete savedUser.data.attributes.blob;
 
     console.time('track');
 
@@ -448,7 +456,7 @@ test('#rollback', function(assert) {
     console.timeEnd('track');
 
     let afterRollbackUser = user.serialize();
-    delete afterRollbackUser.blob;
+    delete afterRollbackUser.data.attributes.blob;
 
     assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
     assert.deepEqual(savedUser, afterRollbackUser);
