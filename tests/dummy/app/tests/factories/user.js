@@ -9,6 +9,17 @@ FactoryGuy.define('user', {
   },
 
   traits: {
+    empty: {
+      style: null,
+      name: null,
+      info: null,
+      blob: null,
+      list: null,
+      location: null,
+      things: null,
+      projects: undefined,
+      pets: undefined
+    },
     silly: {
       style: 'silly'
     },

@@ -400,7 +400,7 @@ test('clears all saved keys on delete', function(assert) {
   });
 });
 
-test('#rollback', function(assert) {
+test('#rollback from things to different things', function(assert) {
   Ember.run(() => {
     let info = { foo: 1 };
     let blob = { dude: 'A' };
@@ -464,3 +464,49 @@ test('#rollback', function(assert) {
   });
 });
 
+test('#rollback hasMany to empty', function(assert) {
+  Ember.run(() => {
+    let projects = makeList('project', 3);
+    let pets = makeList('cat', 4);
+
+    let user = make('user', 'empty');
+
+    console.time('track');
+
+    user.startTrack();
+
+    user.setProperties({ projects, pets });
+
+    user.rollback();
+
+    console.timeEnd('track');
+
+    assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
+    assert.deepEqual(user.get('projects').mapBy('id'), []);
+    assert.deepEqual(user.get('pets').mapBy('id'), []);
+  });
+});
+
+test('#rollback hasMany when have at least one and add some more', function(assert) {
+  Ember.run(() => {
+    let [project1, project2] = makeList('project', 2);
+    let [pet1, pet2] = makeList('cat', 2);
+
+    let user = make('user', 'empty', {pets: [pet1], projects: [project1]});
+
+    console.time('track');
+
+    user.startTrack();
+
+    user.get('projects').addObject(project2);
+    user.get('pets').addObject(pet2);
+
+    user.rollback();
+
+    console.timeEnd('track');
+
+    assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
+    assert.deepEqual(user.get('projects').mapBy('id'), [project1.id]);
+    assert.deepEqual(user.get('pets').mapBy('id'), [pet1.id]);
+  });
+});
