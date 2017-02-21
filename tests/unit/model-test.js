@@ -510,3 +510,38 @@ test('#rollback hasMany when have at least one and add some more', function(asse
     assert.deepEqual(user.get('pets').mapBy('id'), [pet1.id]);
   });
 });
+
+
+test('#dirtiness computed works properly', function(assert) {
+  Ember.run(() => {
+    let [project1, project2] = makeList('project', 2);
+    let [profile1, profile2] = makeList('profile', 2);
+
+    let user = make('user', 'empty', {profile: profile1, projects: [project1]});
+
+    assert.equal(user.get('isDirty'), false);
+    assert.equal(user.get('hasDirtyAttributes'), false);
+    assert.equal(user.get('hasDirtyRelations'), false);
+
+    user.startTrack();
+
+    user.set('name', 'Michael');
+    assert.equal(user.get('isDirty'), true);
+    assert.equal(user.get('hasDirtyAttributes'), true);
+    assert.equal(user.get('hasDirtyRelations'), false);
+    user.rollback();
+
+    user.set('profile', profile2);
+    assert.equal(user.get('isDirty'), true);
+    assert.equal(user.get('hasDirtyAttributes'), false);
+    assert.equal(user.get('hasDirtyRelations'), true);
+    user.rollback();
+
+    user.get('projects').addObject(project2);
+
+    assert.equal(user.get('isDirty'), true);
+    assert.equal(user.get('hasDirtyAttributes'), false);
+    assert.equal(user.get('hasDirtyRelations'), true);
+
+  });
+});
