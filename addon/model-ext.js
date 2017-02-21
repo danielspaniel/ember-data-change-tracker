@@ -3,6 +3,71 @@ import Model from 'ember-data/model';
 import Tracker from './tracker';
 
 Model.reopen({
+
+  init() {
+    this._super.apply(this, arguments);
+    this.initializeDirtiness();
+  },
+
+  initializeDirtiness() {
+    const relations = [];
+    const relationsObserver = [];
+    const attrs = [];
+
+    this.eachRelationship((name, descriptor) => {
+      if (descriptor.type === 'hasMany') {
+        relations.push(descriptor.key);
+        relationsObserver.push(descriptor.key + '.content.[]');
+      } else {
+        relations.push(descriptor.key);
+        relationsObserver.push(descriptor.key + '.content');
+      }
+    });
+
+    this.eachAttribute((name) => {
+      return attrs.push(name);
+    });
+
+    const hasDirtyRelations = () => {
+      const changed = this.changed();
+      return !!relations.find(key => changed[key]);
+    };
+
+    const hasDirtyAttributes = () => {
+      const changed = this.changed();
+      return !!attrs.find(key => changed[key]);
+    };
+
+    Ember.defineProperty(
+      this,
+      'hasDirtyAttributes',
+      Ember.computed.apply(Ember, attrs.concat([hasDirtyAttributes]))
+    );
+
+    Ember.defineProperty(
+      this,
+      'hasDirtyRelations',
+      Ember.computed.apply(Ember, relationsObserver.concat([hasDirtyRelations]))
+    );
+
+  },
+
+  isDirty: Ember.computed(
+    'hasDirtyAttributes', 'hasDirtyRelations',
+    function () {
+      return this.get('hasDirtyAttributes') || this.get('hasDirtyRelations');
+    }),
+
+  dirtinessListeners: Ember.on(
+    'didCreate',
+    'didUpdate',
+    'didLoad',
+    'didDelete',
+    function () {
+      this.notifyPropertyChange('hasDirtyAttributes');
+      this.notifyPropertyChange('hasDirtyRelations');
+    }),
+
   /**
    * Did an attribute/association change?
    *
