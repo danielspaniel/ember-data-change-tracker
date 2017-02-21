@@ -513,7 +513,13 @@ test('#rollback hasMany when have at least one and add some more', function(asse
 
 
 test('#dirtiness computed works properly', function(assert) {
+  const done = assert.async();
+  mockSetup();
+
   Ember.run(() => {
+
+    // synchronous tests on client
+
     let [project1, project2] = makeList('project', 2);
     let [profile1, profile2] = makeList('profile', 2);
 
@@ -542,6 +548,27 @@ test('#dirtiness computed works properly', function(assert) {
     assert.equal(user.get('isDirty'), true);
     assert.equal(user.get('hasDirtyAttributes'), false);
     assert.equal(user.get('hasDirtyRelations'), true);
+
+    // asynchronous tests with commit to server
+
+    mockUpdate(user);
+    user.get('projects').clear();
+    user.set('name', 'Peter');
+    user.set('profile', null);
+
+    assert.equal(user.get('isDirty'), true);
+    assert.equal(user.get('hasDirtyAttributes'), true);
+    assert.equal(user.get('hasDirtyRelations'), true);
+
+    user.save().then(() => {
+      assert.equal(user.get('isDirty'), false);
+      assert.equal(user.get('hasDirtyAttributes'), false);
+      assert.equal(user.get('hasDirtyRelations'), false);
+
+      mockTeardown();
+      done();
+
+    });
 
   });
 });
