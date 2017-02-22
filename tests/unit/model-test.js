@@ -379,6 +379,7 @@ test('keepOnlyChanged serializer mixin', function(assert) {
 
   for (let test of tests) {
     let [category, key, value, expected, message] = test;
+    project.startTrack();
     setModel(project, key, value);
     let attributes = project.serialize();
     let data = attributes.data[category];
@@ -493,7 +494,7 @@ test('#rollback hasMany when have at least one and add some more', function(asse
     let [project1, project2] = makeList('project', 2);
     let [pet1, pet2] = makeList('cat', 2);
 
-    let user = make('user', 'empty', {pets: [pet1], projects: [project1]});
+    let user = make('user', 'empty', { pets: [pet1], projects: [project1] });
 
     console.time('track');
 
@@ -513,36 +514,118 @@ test('#rollback hasMany when have at least one and add some more', function(asse
 });
 
 
-test('#dirtiness computed works properly', function(assert) {
+test('#isDirty property is available when the option enableIsDirty is true', function(assert) {
+  let company = make('company');
+  let user = make('user', 'empty');
+
+  assert.equal(Ember.typeOf(user.isDirty), 'object');
+  assert.equal(company.isDirty, undefined);
+});
+
+test('#isDirty computed works (with auto save model)', function(assert) {
   Ember.run(() => {
     let [project1, project2] = makeList('project', 2);
     let [profile1, profile2] = makeList('profile', 2);
 
-    let user = make('user', 'empty', {profile: profile1, projects: [project1]});
+    let user = make('user', 'empty', { profile: profile1, projects: [project1] });
 
     assert.equal(user.get('isDirty'), false);
     assert.equal(user.get('hasDirtyAttributes'), false);
     assert.equal(user.get('hasDirtyRelations'), false);
 
-    user.startTrack();
-
     user.set('name', 'Michael');
-    assert.equal(user.get('isDirty'), true);
-    assert.equal(user.get('hasDirtyAttributes'), true);
-    assert.equal(user.get('hasDirtyRelations'), false);
-    user.rollback();
-
     user.set('profile', profile2);
-    assert.equal(user.get('isDirty'), true);
-    assert.equal(user.get('hasDirtyAttributes'), false);
-    assert.equal(user.get('hasDirtyRelations'), true);
-    user.rollback();
-
     user.get('projects').addObject(project2);
 
     assert.equal(user.get('isDirty'), true);
-    assert.equal(user.get('hasDirtyAttributes'), false);
+    assert.equal(user.get('hasDirtyAttributes'), true);
     assert.equal(user.get('hasDirtyRelations'), true);
+  });
+});
 
+test('#isDirty resets on rollback (with auto save model)', function(assert) {
+  Ember.run(() => {
+    let [project1, project2] = makeList('project', 2);
+    let [profile1, profile2] = makeList('profile', 2);
+
+    let user = make('user', 'empty', { profile: profile1, projects: [project1] });
+
+    user.set('name', 'Michael');
+    user.set('profile', profile2);
+    user.get('projects').addObject(project2);
+
+    user.rollback();
+
+    assert.equal(user.get('isDirty'), false);
+    assert.equal(user.get('hasDirtyAttributes'), false);
+    assert.equal(user.get('hasDirtyRelations'), false);
+  });
+});
+
+test('#isDirty resets on update (with auto save model)', function(assert) {
+  let done = assert.async();
+  mockSetup();
+
+  Ember.run(() => {
+    let [project1, project2] = makeList('project', 2);
+    let [profile1, profile2] = makeList('profile', 2);
+
+    let user = make('user', 'empty', { profile: profile1, projects: [project1] });
+
+    user.set('name', 'Michael');
+    user.set('profile', profile2);
+    user.get('projects').addObject(project2);
+
+    mockUpdate(user);
+
+    user.save().then(() => {
+      assert.equal(user.get('isDirty'), false);
+      assert.equal(user.get('hasDirtyAttributes'), false);
+      assert.equal(user.get('hasDirtyRelations'), false);
+      mockTeardown();
+      done();
+    });
+  });
+});
+
+test('#isDirty computed works (with non auto save model)', function(assert) {
+  Ember.run(() => {
+    let [company1, company2] = makeList('company', 2);
+    let [detail1, detail2] = makeList('detail', 2);
+
+    let project = make('project', { details: [detail1], company: company1 });
+    project.startTrack();
+
+    assert.equal(project.get('isDirty'), false);
+    assert.equal(project.get('hasDirtyAttributes'), false);
+    assert.equal(project.get('hasDirtyRelations'), false);
+
+    project.set('title', 'Blob in Space');
+    project.set('company', company2);
+    project.get('details').addObject(detail2);
+
+    assert.equal(project.get('isDirty'), true);
+    assert.equal(project.get('hasDirtyAttributes'), true);
+    assert.equal(project.get('hasDirtyRelations'), true);
+  });
+});
+
+test('#isDirty resets on rollback (with non auto save model)', function(assert) {
+  Ember.run(() => {
+    let [company1, company2] = makeList('company', 2);
+    let [detail1, detail2] = makeList('detail', 2);
+
+    let project = make('project', { details: [detail1], company: company1 });
+    project.startTrack();
+
+    project.set('title', 'Blob in Space');
+    project.set('company', company2);
+    project.get('details').addObject(detail2);
+
+    project.rollback();
+
+    assert.equal(project.get('isDirty'), false);
+    assert.equal(project.get('hasDirtyAttributes'), false);
+    assert.equal(project.get('hasDirtyRelations'), false);
   });
 });
