@@ -3,9 +3,9 @@ import {valuesChanged, hasManyChanged, relationShipTransform} from './utilities'
 
 const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
-const alreadyTrackedRegex = /^-mf-|string|boolean|date|^number$/;
-const knownTrackerOpts = Ember.A(['only', 'auto', 'except', 'trackHasMany']);
-const defaultOpts            = { trackHasMany: true, auto: false };
+const alreadyTrackedRegex    = /^-mf-|string|boolean|date|^number$/,
+      knownTrackerOpts       = Ember.A(['only', 'auto', 'except', 'trackHasMany', 'enableIsDirty']),
+      defaultOpts            = { trackHasMany: true, auto: false, enableIsDirty: false };
 
 /**
  * Helper class for change tracking models
@@ -50,12 +50,26 @@ export default class Tracker {
    * @param model
    * @returns {Boolean}
    */
-  static autoSave(model) {
+  static isAutoSaveEnabled(model) {
     if (model.constructor.trackerAutoSave === undefined) {
       let options = this.options(model);
       model.constructor.trackerAutoSave = options.auto;
     }
     return model.constructor.trackerAutoSave;
+  }
+
+  /**
+   * Is this model have isDirty option enabled?
+   *
+   * @param model
+   * @returns {Boolean}
+   */
+  static isIsDirtyEnabled(model) {
+    if (model.constructor.trackerEnableIsDirty === undefined) {
+      let options = this.options(model);
+      model.constructor.trackerEnableIsDirty = options.enableIsDirty;
+    }
+    return model.constructor.trackerEnableIsDirty;
   }
 
   /**
@@ -116,14 +130,22 @@ export default class Tracker {
    * On the model you can set options like:
    *
    *   changeTracker: {auto: true}
+   *   changeTracker: {auto: true, enableIsDirty: true}
    *   changeTracker: {auto: true, only: ['info']}
    *   changeTracker: {except: ['info']}
    *   changeTracker: {except: ['info'], trackHasMany: true}
    *
    * In config environment you can set options like:
    *
-   *   changeTracker: {auto: true, trackHasMany: false}
-   *   // default is:  {auto: false, trackHasMany: true}
+   *   changeTracker: {auto: true, trackHasMany: false, enableIsDirty: true}
+   *   // default is:  {auto: false, trackHasMany: true, enableIsDirty: false}
+   *
+   * The default is set to trackHasMany but not auto track, since
+   * that is the most do nothing approach and when you do call `model.startTrack()`
+   * it is assumed you want to track everything.
+   *
+   * Also, by default the isDirty computed property is not setup. You have to enable
+   * it globally or on a model
    *
    * @param {DS.Model} model
    * @returns {*}
@@ -135,7 +157,7 @@ export default class Tracker {
 
     let unknownOpts = Object.keys(opts).filter((v) => !knownTrackerOpts.includes(v));
     Ember.assert(`[ember-data-change-tracker] changeTracker options can have
-      'only', 'except' , 'auto', or 'trackHasMany' but you are declaring: ${unknownOpts}`,
+      'only', 'except' , 'auto', 'enableIsDirty' or 'trackHasMany' but you are declaring: ${unknownOpts}`,
       Ember.isEmpty(unknownOpts)
     );
 
@@ -159,6 +181,7 @@ export default class Tracker {
       let info = Tracker.getTrackerInfo(model);
       model.constructor.trackerKeys = info.keyMeta;
       model.constructor.trackerAutoSave = info.autoSave;
+      model.constructor.trackerEnableIsDirty = info.enableIsDirty;
     }
   }
 
@@ -192,7 +215,8 @@ export default class Tracker {
       }
     });
 
-    return { autoSave: trackerOpts.auto, keyMeta };
+    let { enableIsDirty } = trackerOpts;
+    return { autoSave: trackerOpts.auto, enableIsDirty, keyMeta };
   }
 
   /**
@@ -351,4 +375,68 @@ export default class Tracker {
   static clear(model) {
     model.set(ModelTrackerKey, undefined);
   }
+
+  /**
+   * Set up the computed properties:
+   *
+   *  'isDirty', 'hasDirtyAttributes', 'hasDirtyRelations'
+   *
+   * only if the application or model configuration has opted into
+   * enable these properties, with the enableIsDirty flag
+   *
+   * @param {DS.Model} model
+   */
+  static initializeDirtiness(model) {
+    const relations = [];
+    const relationsObserver = [];
+    const attrs = [];
+
+    model.eachRelationship((name, descriptor) => {
+      if (descriptor.type === 'hasMany') {
+        relations.push(descriptor.key);
+        relationsObserver.push(descriptor.key + '.content.[]');
+      } else {
+        relations.push(descriptor.key);
+        relationsObserver.push(descriptor.key + '.content');
+      }
+    });
+
+    model.eachAttribute((name) => {
+      return attrs.push(name);
+    });
+
+    const hasDirtyRelations = function() {
+      const changed = model.changed();
+      return !!relations.find(key => changed[key]);
+    };
+
+    const hasDirtyAttributes = function() {
+      const changed = model.changed();
+      return !!attrs.find(key => changed[key]);
+    };
+
+    const isDirty = function() {
+      return model.get('hasDirtyAttributes') || model.get('hasDirtyRelations');
+    };
+
+    Ember.defineProperty(
+      model,
+      'hasDirtyAttributes',
+      Ember.computed.apply(Ember, attrs.concat([hasDirtyAttributes]))
+    );
+
+    Ember.defineProperty(
+      model,
+      'hasDirtyRelations',
+      Ember.computed.apply(Ember, relationsObserver.concat([hasDirtyRelations]))
+    );
+
+    Ember.defineProperty(
+      model,
+      'isDirty',
+      Ember.computed.apply(Ember, ['hasDirtyAttributes', 'hasDirtyRelations', isDirty])
+    );
+
+  }
+
 }

@@ -3,6 +3,7 @@ import Model from 'ember-data/model';
 import Tracker from './tracker';
 
 Model.reopen({
+
   /**
    * Did an attribute/association change?
    *
@@ -56,7 +57,7 @@ Model.reopen({
         // For now, blow away the hasMany relationship before resetting it
         // since pushing is not clearing and resetting at the moment
         // this slows down the hasMany rollback by about 25%, but still
-        // fast (~100ms) even with 500 of items
+        // fast => (~100ms) with 500 items in a hasMany
         if (trackerInfo[key].type === 'hasMany') {
           this.set(key, []);
         }
@@ -95,7 +96,10 @@ Model.reopen({
 
   // save state when model is loaded or created if using auto save
   setupTrackerMetaData: Ember.on('ready', function() {
-    if (Tracker.autoSave(this)) {
+    if (Tracker.isIsDirtyEnabled(this)) {
+      Tracker.initializeDirtiness(this);
+    }
+    if (Tracker.isAutoSaveEnabled(this)) {
       Tracker.setupTracking(this);
       this.saveChanges();
     }
@@ -103,7 +107,7 @@ Model.reopen({
 
   // when model updates, update the tracked state if using auto save
   saveOnUpdate: Ember.on('didUpdate', function() {
-    if (Tracker.autoSave(this)) {
+    if (Tracker.isAutoSaveEnabled(this)) {
       this.saveChanges();
     }
   }),
@@ -112,7 +116,7 @@ Model.reopen({
   reload() {
     let promise = this._super();
     promise.then(() => {
-      if (Tracker.autoSave(this)) {
+      if (Tracker.isAutoSaveEnabled(this)) {
         this.saveChanges();
       }
     });

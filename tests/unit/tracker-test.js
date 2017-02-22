@@ -27,11 +27,13 @@ test('#options with valid options', sinon.test(function(assert) {
   let modelConfig = this.stub(Tracker, 'modelConfig');
 
   let tests = [
-    [ {}, {}, { trackHasMany: true, auto: false}],
-    [{ trackHasMany: false } , {}, { trackHasMany: false, auto: false }],
-    [{ trackHasMany: true } , { only: ['info'] }, { auto: false, trackHasMany: true, only: ['info'] }],
-    [{}, { only: ['info'] }, { only: ['info'], auto: false, trackHasMany: true }],
-    [{}, { except: ['info'] }, { except: ['info'], auto: false, trackHasMany: true }],
+    [{}, {}, { trackHasMany: true, auto: false, enableIsDirty: false }],
+    [{ trackHasMany: false }, {}, { trackHasMany: false, auto: false, enableIsDirty: false }],
+    [{ trackHasMany: true }, { only: ['info'] }, { auto: false, trackHasMany: true, only: ['info'], enableIsDirty: false }],
+    [{}, { only: ['info'] }, { only: ['info'], auto: false, trackHasMany: true, enableIsDirty: false }],
+    [{}, { except: ['info'] }, { except: ['info'], auto: false, trackHasMany: true, enableIsDirty: false }],
+    [{ enableIsDirty: true }, { except: ['info'] }, { except: ['info'], auto: false, trackHasMany: true, enableIsDirty: true }],
+    [{}, { enableIsDirty: true }, { auto: false, trackHasMany: true, enableIsDirty: true }],
   ];
 
   for (let test of tests) {
@@ -46,7 +48,7 @@ test('#options with invalid options', function(assert) {
   let company = make('company');
 
   company.set('changeTracker', { dude: "where's my car" });
-  assert.throws(()=>Tracker.options(company), `[ember-data-change-tracker] 
+  assert.throws(() => Tracker.options(company), `[ember-data-change-tracker] 
     changeTracker options can have 'only', 'except' , 'auto', or 
     'trackHasMany' but you are declaring: dude`);
 });
@@ -57,27 +59,35 @@ test('#getTrackerKeys', sinon.test(function(assert) {
   let modelConfig = this.stub(Tracker, 'modelConfig');
 
   let tests = [
-    [ {}, {}, 'info blob company profile projects pets'],
-    [{ trackHasMany: false } , {}, 'info blob company profile'],
-    [{ trackHasMany: true } , { only: ['info'] }, 'info'],
+    [{}, {}, 'info blob company profile projects pets'],
+    [{ trackHasMany: false }, {}, 'info blob company profile'],
+    [{ trackHasMany: true }, { only: ['info'] }, 'info'],
     [{}, { only: ['info'] }, 'info'],
     [{}, { except: ['info'] }, 'blob company profile projects pets'],
-    [{auto: true}, {}, 'info blob company profile projects pets', true],
+    [{ auto: true }, {}, 'info blob company profile projects pets', true],
+    [{ enableIsDirty: true }, {}, 'info blob company profile projects pets', false, true],
   ];
 
   for (let test of tests) {
-    let [envOpts, modelOpts, expectedKeys, expectedAutoSave=false] = test;
+    let [
+          envOpts,
+          modelOpts,
+          expectedKeys,
+          expectedAutoSave      = false,
+          expectedEnableIsDirty = false
+        ]                       = test;
     envConfig.returns(envOpts);
     modelConfig.returns(modelOpts);
     let info = Tracker.getTrackerInfo(user);
     assert.deepEqual(Object.keys(info.keyMeta), w(expectedKeys), 'has correct keys');
     assert.equal(info.autoSave, expectedAutoSave, 'auto save setting');
+    assert.equal(info.enableIsDirty, expectedEnableIsDirty, 'enableIsDirty setting');
   }
 }));
 
 test('#serialize', sinon.test(function(assert) {
   let envConfig = this.stub(Tracker, 'envConfig');
-  envConfig.returns({trackHasMany: true, auto: true});
+  envConfig.returns({ trackHasMany: true, auto: true });
 
   let company = make('company');
   let profile = make('profile');
@@ -93,7 +103,9 @@ test('#serialize', sinon.test(function(assert) {
     ['company', company, { id: company.id, type: company.constructor.modelName }],
     ['projects', undefined, null],
     ['projects', projects, A(projects).mapBy('id')],
-    ['pets', pets, pets.map((p)=> {return {id: p.id, type: p.constructor.modelName};})],
+    ['pets', pets, pets.map((p) => {
+      return { id: p.id, type: p.constructor.modelName };
+    })],
   ];
 
   for (let test of tests) {
