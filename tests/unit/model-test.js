@@ -30,10 +30,6 @@ let setModel = (model, attr, value) => {
 };
 
 test('only sets up tracking meta data once on model type', function(assert) {
-  let Model = FactoryGuy.store.modelFor('dog');
-  let model = new Model();
-
-  assert.ok(!model.constructor.alreadySetupTrackingMeta);
   sinon.stub(Tracker, 'options').returns({ auto: true });
   let getTrackerInfo = sinon.stub(Tracker, 'getTrackerInfo').returns({ autoSave: true });
 
@@ -160,9 +156,7 @@ test('#saveChanges saves attributes/assocations when model info is pushed to sto
     pets
   });
 
-  let Model = FactoryGuy.store.modelFor('user');
-  let modelClass = new Model({ store: FactoryGuy.store });
-  let normalized = Tracker.normalize(modelClass, userJson.get());
+  let normalized = Tracker.normalize(make('user'), userJson.get());
 
   Ember.run(() => {
     let user = FactoryGuy.store.push(normalized);
