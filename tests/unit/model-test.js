@@ -326,6 +326,7 @@ test("touched but unchanged relationships should not serialize when keepOnlyChan
       data: { id: '1', type: 'company' }
     }
   });
+  delete json.included; // We don't want to sideload (create) the company
 
   mockFindRecord('project').returns({ json });
 
@@ -334,9 +335,12 @@ test("touched but unchanged relationships should not serialize when keepOnlyChan
       assert.equal(project.belongsTo('company').value(), null, 'relationship should not be loaded');
       assert.equal(project.belongsTo('company').id(), '1', 'relationship record id should be set through linkage');
 
-      // We only want to peek the record, not load it
-      mockFindRecord('company').returns({ id: '1' });
-      project.startTrack();
+      project.startTrack(); // Start tracking before the full relationship is loaded
+
+      let json = build('company', { id: '1', type: 'company', name: 'foo' });
+      FactoryGuy.store.pushPayload('company', json);
+
+      mockFindRecord('company').returns({ json });
 
       FactoryGuy.store.find('company', '1').then((company) => {
         assert.equal(project.belongsTo('company').id(), company.get('id'), 'ids should match');
