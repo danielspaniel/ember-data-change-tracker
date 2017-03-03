@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 export const modelTransform = function(model, polymorphic) {
   if (polymorphic) {
-    return { id: model.id, type: model.constructor.modelName };
+    return { id: model.id, type: model.modelName || model.constructor.modelName };
   }
   return model.id;
 };
@@ -10,7 +10,7 @@ export const modelTransform = function(model, polymorphic) {
 export const relationShipTransform = {
   belongsTo: {
     serialize(model, key, options) {
-      let value = model.belongsTo(key).value();
+      let value = model.belongsTo(key).belongsToRelationship.inverseRecord;
       return value && modelTransform(value, options.polymorphic);
     },
 

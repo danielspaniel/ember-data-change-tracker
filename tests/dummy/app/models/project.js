@@ -6,6 +6,6 @@ export default Model.extend({
   changeTracker: { trackHasMany: true, auto: false, enableIsDirty: true },
   title: attr('string'),
   blob: attr(),
-  company: belongsTo('company', { async: false }),
+  company: belongsTo('company', { async: true }),
   details: hasMany('detail')
 });

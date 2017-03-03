@@ -97,6 +97,7 @@ Model.reopen({
   // save state when model is loaded or created if using auto save
   setupTrackerMetaData: Ember.on('ready', function() {
     if (Tracker.isIsDirtyEnabled(this)) {
+      // this is experimental
       Tracker.initializeDirtiness(this);
     }
     if (Tracker.isAutoSaveEnabled(this)) {

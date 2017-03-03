@@ -317,50 +317,50 @@ test('#changed ( replacing )', function(assert) {
   }
 });
 
+test("touched but unchanged relationships should not serialize when keepOnlyChanged mixin is used", function(assert) {
+  let done = assert.async();
+  mockSetup({ logLevel: 0 });
 
-//test('#changed incremental saves', function(assert) {
-//  let company = make('small-company');
-////  let projects = makeList('project', 2);
-////  let pets = makeList('pet', 2);
-////  let [cat, dog] = pets;
-////  let pets3 = [dog, cat];
-//  let info = { dude: 1 };
-//  let user = make('user', {info, company});
-//
-//  let tests = [
-////    ['info', null, true],
-////    ['info', info, true],
-////    ['info', info, false],
-////    ['company', null, null, false],
-////    ['company', null, company, true],
-////    ['company', company, null, true],
-////    ['company', company, company, false],
-////    ['projects', [], [], false],
-////    ['projects', [], projects, true],
-////    ['projects', projects, [], true],
-////    ['projects', projects, projects, false],
-////    ['pets', [], [], false],
-////    ['pets', [], pets, true],
-////    ['pets', pets, [], true],
-////    ['pets', pets, [cat], true],
-////    ['pets', [cat], [cat, dog], true],
-////    ['pets', pets, pets3, false],
-//  ];
-//
-//  for (let test of tests) {
-//    let [key, newValue, expected] = test;
-//    Ember.run(()=> user.set(key, newValue));
-//    let obj = user.changed();
-//    console.log(user.savedTrackerValue('options'), 'changed', obj);
-//    assert.equal(obj.hasOwnProperty(key),expected);
-//    user.saveChanges();
-//
-////    let [key, firstValue, nextValue, expected] = test;
-////    let user = make('user', { [key]: firstValue });
-////    setModel(user, key, nextValue);
-////    assert.equal(!!user.changed()[key], expected);
-//  }
-//});
+  let json = build('project', {
+    company: {
+      data: { id: '1', type: 'company' }
+    }
+  });
+
+  mockFindRecord('project').returns({ json });
+
+  Ember.run(() => {
+    FactoryGuy.store.find('project', json.get('id')).then((project) => {
+      assert.equal(project.belongsTo('company').value(), null, 'relationship should not be loaded');
+      assert.equal(project.belongsTo('company').id(), '1', 'relationship record id should be set through linkage');
+
+      // We only want to peek the record, not load it
+      mockFindRecord('company').returns({ id: '1' });
+      project.startTrack();
+
+      FactoryGuy.store.find('company', '1').then((company) => {
+        assert.equal(project.belongsTo('company').id(), company.get('id'), 'ids should match');
+
+        project.set('company', company);
+        project.set('title', 'test');
+
+        assert.equal(project.belongsTo('company').id(), company.get('id'), 'ids should still match');
+
+        let { data } = project.serialize();
+        let relationships = data.relationships || {};
+        let attributes = data.attributes || {};
+
+        assert.ok(relationships.company == null, 'unchanged relationship should not be serialized');
+        assert.ok(attributes.title != null, 'changed attribute should be serialized');
+
+        setTimeout(() => {
+          mockTeardown();
+          done();
+        }, 50);
+      });
+    });
+  });
+});
 
 test('keepOnlyChanged serializer mixin', function(assert) {
   let company = make('company');
@@ -522,7 +522,7 @@ test('#isDirty property is available when the option enableIsDirty is true', fun
   assert.equal(company.isDirty, undefined);
 });
 
-test('#isDirty computed works (with auto save model)', function(assert) {
+test('#isDirty computed works on normal attributes (with auto save model)', function(assert) {
   Ember.run(() => {
     let [project1, project2] = makeList('project', 2);
     let [profile1, profile2] = makeList('profile', 2);
