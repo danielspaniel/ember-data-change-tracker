@@ -3,13 +3,11 @@
 [![Build Status](https://secure.travis-ci.org/danielspaniel/ember-data-change-tracker.png?branch=master)](http://travis-ci.org/danielspaniel/ember-data-change-tracker) [![Ember Observer Score](http://emberobserver.com/badges/ember-data-change-tracker.svg)](http://emberobserver.com/addons/ember-data-change-tracker) [![npm version](https://badge.fury.io/js/ember-data-change-tracker.svg)](http://badge.fury.io/js/ember-data-change-tracker)
 
 **New**  
-  - By popular demand, added manual mode
-    - Manual mode ( which is the default ) 
-      - Auto tracking is turned off 
-      - Nothing happens until you tell a model to start tracking
-    - Auto track mode
+  - Experimental feature
+    - isDirty, hasDirtyRelations computed properties  
       - Set up in [configuration](https://github.com/danielspaniel/ember-data-change-tracker#configuration) as { auto: true }    
-   
+      - It is experimental and a has one crippling defect, it can not track object type
+        attributes. But if you don't have object types it works fine.  
 
 This addon aims to fill in the gaps in the change tracking / rollback that ember data does now.
  
@@ -24,13 +22,14 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
     - tracks replacement/changes in hasMany associations
     - adds a ```changed()``` method to DS.Model
     - adds a ```rollback()``` method to DS.Model
+    - adds a ```isDirty``` computed proprety to DS.Model ( only if enabled in configuration )
+    - adds a ```hasDirtyRelations``` computed proprety to DS.Model ( only if enabled in configuration )
     - Only works with 
       - ember-data versions 2.7+ ( if you have polymphic relationships )
       - ember-data versions 2.5+ ( if you don't )
     - Can be used in two modes 
       - auto track mode
       - manual track mode ( the default )
-    - Uses no observers, no computed properties and no gluten
        
 ## Installation
 
@@ -130,7 +129,7 @@ Usage:
   
   - Global configuration 
     - By default the global settings are: 
-      - { **trackHasMany**: *true*, **auto**: *false* }
+      - { **trackHasMany**: *true*, **auto**: *false*, **enableIsDirty**: *false* }
         - Essentially this says, track everything in the model but only when I tell you
         - Since this is manual mode you probably want to track everything 
           since you are focused on one edit at a time, hence trackHasMany is on
@@ -140,7 +139,12 @@ Usage:
       - **auto** : should tracking be turned on by default? ( _false_ is default )
         - auto tracking means when any model is saved/updated/reloaded the tracker will save
           the current state, allowing you to rollback anytime 
-
+      - **enableIsDirty** : sets up computed properties on a model
+        - ```hasDirtyRelations```  for checking on changed relationships  
+        - ```isDirty```            for checking on any changes
+          - NOTE: not working for object type attributes, since those are too 
+            difficult to track
+            
   - Model configuration
     - Takes precedence over global
       - So, globally auto track could be off, but on one model you can turn it on
