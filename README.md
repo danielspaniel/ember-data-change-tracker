@@ -5,7 +5,7 @@
 **New**  
   - Experimental feature
     - isDirty, hasDirtyRelations computed properties  
-      - Set up in [configuration](https://github.com/danielspaniel/ember-data-change-tracker#configuration) as { auto: true }    
+      - Set up in [configuration](https://github.com/danielspaniel/ember-data-change-tracker#configuration) as { enableIsDirty: true }    
       - It is experimental and a has one crippling defect, it can not track object type
         attributes. But if you don't have object types it works fine.  
 
