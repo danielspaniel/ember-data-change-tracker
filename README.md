@@ -22,8 +22,8 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
     - tracks replacement/changes in hasMany associations
     - adds a ```changed()``` method to DS.Model
     - adds a ```rollback()``` method to DS.Model
-    - adds a ```isDirty``` computed proprety to DS.Model ( only if enabled in configuration )
-    - adds a ```hasDirtyRelations``` computed proprety to DS.Model ( only if enabled in configuration )
+    - adds a ```isDirty``` computed property to DS.Model ( only if enabled in configuration )
+    - adds a ```hasDirtyRelations``` computed property to DS.Model ( only if enabled in configuration )
     - Only works with 
       - ember-data versions 2.7+ ( if you have polymphic relationships )
       - ember-data versions 2.5+ ( if you don't )
