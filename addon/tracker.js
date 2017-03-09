@@ -195,20 +195,20 @@ export default class Tracker {
     let [trackableInfo, hasManyList] = this.extractKeys(model);
     let trackerOpts = this.options(model);
 
-    let all = new Set(Object.keys(trackableInfo));
-    let except = new Set(trackerOpts.except || []);
-    let only = new Set(trackerOpts.only || [...all]);
+    let all = Object.keys(trackableInfo);
+    let except = trackerOpts.except || [];
+    let only = trackerOpts.only || [...all];
 
     if (!trackerOpts.trackHasMany) {
-      except = new Set([...except, ...hasManyList]);
+      except = [...except, ...hasManyList];
     }
 
-    all = new Set([...all].filter(a => !except.has(a)));
-    all = new Set([...all].filter(a => only.has(a)));
+    all = [...all].filter(a => !except.includes(a));
+    all = [...all].filter(a => only.includes(a));
 
     let keyMeta = {};
     Object.keys(trackableInfo).forEach(key => {
-      if (all.has(key)) {
+      if (all.includes(key)) {
         let info = trackableInfo[key];
         info.transform = this.getTransform(model, key, info);
         keyMeta[key] = info;
