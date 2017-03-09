@@ -191,33 +191,38 @@ export default class Tracker {
    * @param {DS.Model} model
    * @returns {{autoSave, keyMeta: {}}}
    */
-  static getTrackerInfo(model) {
-    let [trackableInfo, hasManyList] = this.extractKeys(model);
-    let trackerOpts = this.options(model);
+static getTrackerInfo(model) {
+  let [trackableInfo, hasManyList] = this.extractKeys(model);
+  let trackerOpts = this.options(model);
 
-    let all = new Set(Object.keys(trackableInfo));
-    let except = new Set(trackerOpts.except || []);
-    let only = new Set(trackerOpts.only || [...all]);
+  let __allKeys = Object.keys(trackableInfo);
 
-    if (!trackerOpts.trackHasMany) {
-      except = new Set([...except, ...hasManyList]);
-    }
+  let __exceptKeys = trackerOpts.except || [];
+  let __onlyKeys = trackerOpts.only || __allKeys;
 
-    all = new Set([...all].filter(a => !except.has(a)));
-    all = new Set([...all].filter(a => only.has(a)));
-
-    let keyMeta = {};
-    Object.keys(trackableInfo).forEach(key => {
-      if (all.has(key)) {
-        let info = trackableInfo[key];
-        info.transform = this.getTransform(model, key, info);
-        keyMeta[key] = info;
-      }
+  if (!trackerOpts.trackHasMany) {
+    __exceptKeys = Ember.A().uniq.call(__exceptKeys.concat(hasManyList));
+  }
+  __allKeys = __allKeys
+    .filter((key) => {
+      return !__exceptKeys.includes(key);
+    })
+    .filter((key) => {
+      return __onlyKeys.includes(key);
     });
 
-    let { enableIsDirty } = trackerOpts;
-    return { autoSave: trackerOpts.auto, enableIsDirty, keyMeta };
-  }
+  let keyMeta = {};
+  Object.keys(trackableInfo).forEach((key) => {
+    if (__allKeys.includes(key)) {
+      let info = trackableInfo[key];
+      info.transform = this.getTransform(model, key, info);
+      keyMeta[key] = info;
+    }
+  });
+
+  let {enableIsDirty} = trackerOpts;
+  return {autoSave: trackerOpts.auto, enableIsDirty, keyMeta};
+}
 
   /**
    * Go through the models attributes and relationships so see
