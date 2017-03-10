@@ -128,6 +128,7 @@ Usage:
  - Computed properties to check if the model has changed
  - Not enabled by default 
   - Need to set enableIsDirty ( true ) on model or global [configuration](https://github.com/danielspaniel/ember-data-change-tracker#configuration)
+ - The only attributes that can NOT be tracked with isDirty are object/array
    attributes
  
  Usage:
