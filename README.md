@@ -15,6 +15,7 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
   - tracks changes for numbers/strings/date/boolean attributes
   - has a ```changeAttributes()``` method to see what changed => [ last, current ]
   - has a ```rollbackAttributes()``` method to rollback attributes
+  - has a ```hasDirtyAttributes``` computed property 
   
  - This addon:
     - tracks modifications in attributes that are object/json/custom type
