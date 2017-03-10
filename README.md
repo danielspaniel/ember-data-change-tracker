@@ -124,6 +124,53 @@ Usage:
 
 ```
 
+### isDirty, hasDirtyRelations
+ - Computed properties to check if the model has changed
+ - Not enabled by default 
+  - Need to set enableIsDirty ( true ) on model or global configuration
+ - The only attributes that can NOT be tracked with isDirty are object/array
+   attributes
+ 
+ Usage:
+  
+  ```javascript 
+
+    let info = {foo: 1};
+    let pets = makeList('cat', 4);
+    let [cat, cat2] = pets;
+    let bigCompany = make('big-company');
+    let smallCompany = make('small-company');
+
+    let user = make('user', { company: bigCompany, pets });
+
+    user.startTrack();   
+
+    // edit things  
+    user.set('name', "new name");
+    user.get('isDirty'); //=> true
+    
+    user.rollback();
+    user.get('isDirty'); //=> false
+    
+    user.set('company', smallCompany);
+    user.get('hasDirtyRelations'); //=> true
+    user.get('isDirty'); //=> true
+
+    user.rollback();
+    user.get('isDirty'); //=> false
+
+    user.set('pets', [cat, cat2]);
+    user.get('hasDirtyRelations'); //=> true
+    user.get('isDirty'); //=> true
+    
+    user.rollback();
+    user.get('isDirty'); //=> false
+
+    // things that don't work      
+    user.set('info.foo', 3); 
+    user.get('isDirty'); //=> false ( object/array attributes don't work for computed isDirty )
+
+```
 
 ### Configuration
   
@@ -143,7 +190,7 @@ Usage:
         - ```hasDirtyRelations```  for checking on changed relationships  
         - ```isDirty```            for checking on any changes
           - NOTE: not working for object type attributes, since those are too 
-            difficult to track
+            difficult to observe for the purpose of computed properties
             
   - Model configuration
     - Takes precedence over global
