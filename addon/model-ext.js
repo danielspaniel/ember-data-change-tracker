@@ -51,20 +51,8 @@ Model.reopen({
   rollback() {
     let trackerInfo = Tracker.metaInfo(this);
     this.rollbackAttributes();
-    let data = { id: this.id };
-    Object.keys(trackerInfo).forEach((key) => {
-      if (this.didChange(key, null, trackerInfo)) {
-        // For now, blow away the hasMany relationship before resetting it
-        // since pushing is not clearing and resetting at the moment
-        // this slows down the hasMany rollback by about 25%, but still
-        // fast => (~100ms) with 500 items in a hasMany
-        if (trackerInfo[key].type === 'hasMany') {
-          this.set(key, []);
-        }
-        data[key] = Tracker.lastValue(this, key);
-      }
-    });
-    let normalized = Tracker.normalize(this, data);
+    let rollbackData = Tracker.rollbackData(this, trackerInfo);
+    let normalized = Tracker.normalize(this, rollbackData);
     this.store.push(normalized);
   },
 

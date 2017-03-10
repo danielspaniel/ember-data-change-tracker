@@ -3,9 +3,9 @@ import {valuesChanged, hasManyChanged, relationShipTransform} from './utilities'
 
 const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
-const alreadyTrackedRegex    = /^-mf-|string|boolean|date|^number$/,
-      knownTrackerOpts       = Ember.A(['only', 'auto', 'except', 'trackHasMany', 'enableIsDirty']),
-      defaultOpts            = { trackHasMany: true, auto: false, enableIsDirty: false };
+const alreadyTrackedRegex = /^-mf-|string|boolean|date|^number$/,
+      knownTrackerOpts    = Ember.A(['only', 'auto', 'except', 'trackHasMany', 'enableIsDirty']),
+      defaultOpts         = { trackHasMany: true, auto: false, enableIsDirty: false };
 
 /**
  * Helper class for change tracking models
@@ -341,6 +341,35 @@ export default class Tracker {
    */
   static lastValue(model, key) {
     return (model.get(ModelTrackerKey) || {})[key];
+  }
+
+  /**
+   * Gather all the rollback data
+   *
+   * @param {DS.Model} model
+   * @param trackerInfo
+   * @returns {{*}}
+   */
+  static rollbackData(model, trackerInfo) {
+    let data = { id: model.id };
+    Object.keys(trackerInfo).forEach((key) => {
+      let keyInfo = trackerInfo[key];
+      if (this.didChange(model, key, null, trackerInfo)) {
+        // For now, blow away the hasMany relationship before resetting it
+        // since pushing is not clearing and resetting at the moment
+        // this slows down the hasMany rollback by about 25%, but still
+        // fast => (~100ms) with 500 items in a hasMany
+        if (keyInfo.type === 'hasMany') {
+          model.set(key, []);
+        }
+        let lastValue = Tracker.lastValue(model, key);
+        if (keyInfo.type === 'attribute' && !keyInfo.name) { // attr() undefined type
+          lastValue = keyInfo.transform.deserialize(lastValue);
+        }
+        data[key] = lastValue;
+      }
+    });
+    return data;
   }
 
   /**

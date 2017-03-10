@@ -511,6 +511,20 @@ test('#rollback hasMany when have at least one and add some more', function(asse
   });
 });
 
+test('#rollback value for undefined attribute', function(assert) {
+  Ember.run(() => {
+    let blob = [1,2,3];
+    let company = make('company', {blob});
+    company.startTrack();
+
+    company.get('blob').push('4');
+    company.rollback();
+
+    assert.equal(company.get('currentState.stateName'), 'root.loaded.saved');
+    assert.deepEqual(company.get('blob'), [1,2,3]);
+  });
+});
+
 
 test('#isDirty property is available when the option enableIsDirty is true', function(assert) {
   let company = make('company');
