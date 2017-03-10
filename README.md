@@ -131,9 +131,9 @@ Usage:
  - The only attributes that can NOT be tracked with isDirty are object/array
    attributes
  
- Usage:
+Usage:
   
-  ```javascript 
+```javascript 
 
     let info = {foo: 1};
     let pets = makeList('cat', 4);
@@ -171,7 +171,6 @@ Usage:
     user.get('isDirty'); //=> false ( object/array attributes don't work for computed isDirty )
 
 ```
-
 
 ### Configuration
   
