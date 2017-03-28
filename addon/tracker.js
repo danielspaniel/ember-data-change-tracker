@@ -385,6 +385,16 @@ export default class Tracker {
   }
 
   /**
+   * Manually trigger the isDirty properties to refresh themselves
+   *
+   * @param {DS.Model} model
+   */
+  static triggerIsDirtyReset(model) {
+    model.notifyPropertyChange('hasDirtyAttributes');
+    model.notifyPropertyChange('hasDirtyRelations');
+  }
+
+  /**
    * Save current model key value in model's tracker hash
    *
    * @param {DS.Model} model

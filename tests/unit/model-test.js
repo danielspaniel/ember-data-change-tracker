@@ -588,6 +588,8 @@ test('#isDirty resets on update (with auto save model)', function(assert) {
     user.set('profile', profile2);
     user.get('projects').addObject(project2);
 
+    assert.equal(user.get('isDirty'), true);
+
     mockUpdate(user);
 
     user.save().then(() => {

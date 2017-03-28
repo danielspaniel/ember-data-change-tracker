@@ -69,6 +69,7 @@ Model.reopen({
    */
   saveChanges() {
     Tracker.setupTracking(this);
+    Tracker.triggerIsDirtyReset(this);
     Tracker.saveChanges(this);
   },
 
