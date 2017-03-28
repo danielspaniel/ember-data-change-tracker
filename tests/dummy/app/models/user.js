@@ -1,7 +1,7 @@
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import { belongsTo, hasMany } from 'ember-data/relationships';
-import {array, fragment, fragmentArray} from 'model-fragments/attributes';
+import {array, fragment, fragmentArray} from 'ember-data-model-fragments/attributes';
 
 export default Model.extend({
   changeTracker: {trackHasMany: true, auto: true, enableIsDirty: true},
