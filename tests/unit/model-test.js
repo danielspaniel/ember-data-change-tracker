@@ -513,15 +513,15 @@ test('#rollback hasMany when have at least one and add some more', function(asse
 
 test('#rollback value for undefined attribute', function(assert) {
   Ember.run(() => {
-    let blob = [1,2,3];
-    let company = make('company', {blob});
+    let blob = [1, 2, 3];
+    let company = make('company', { blob });
     company.startTrack();
 
     company.get('blob').push('4');
     company.rollback();
 
     assert.equal(company.get('currentState.stateName'), 'root.loaded.saved');
-    assert.deepEqual(company.get('blob'), [1,2,3]);
+    assert.deepEqual(company.get('blob'), [1, 2, 3]);
   });
 });
 
@@ -641,5 +641,32 @@ test('#isDirty resets on rollback (with non auto save model)', function(assert) 
     assert.equal(project.get('isDirty'), false);
     assert.equal(project.get('hasDirtyAttributes'), false);
     assert.equal(project.get('hasDirtyRelations'), false);
+  });
+});
+
+test('#isDirty resets on update (with non auto save model)', function(assert) {
+  let done = assert.async();
+  mockSetup();
+
+  Ember.run(() => {
+    let [company1, company2] = makeList('company', 2);
+    let [detail1, detail2] = makeList('detail', 2);
+
+    let project = make('project', { details: [detail1], company: company1 });
+    project.startTrack();
+
+    project.set('title', 'Blob in Space');
+    project.set('company', company2);
+    project.get('details').addObject(detail2);
+
+    mockUpdate(project);
+
+    project.save().then(() => {
+      assert.equal(project.get('isDirty'), false);
+      assert.equal(project.get('hasDirtyAttributes'), false);
+      assert.equal(project.get('hasDirtyRelations'), false);
+      mockTeardown();
+      done(); 
+    });
   });
 });

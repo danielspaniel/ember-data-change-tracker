@@ -97,7 +97,7 @@ Model.reopen({
 
   // when model updates, update the tracked state if using auto save
   saveOnUpdate: Ember.on('didUpdate', function() {
-    if (Tracker.isAutoSaveEnabled(this)) {
+    if (Tracker.isAutoSaveEnabled(this) || Tracker.isIsDirtyEnabled(this)) {
       this.saveChanges();
     }
   }),
