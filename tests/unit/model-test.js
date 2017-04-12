@@ -279,35 +279,34 @@ test('#changed ( replacing )', function(assert) {
   let projects = makeList('project', 2);
   let pets = makeList('pet', 2);
   let [cat, dog] = pets;
-  let pets3 = [dog, cat];
   let info = { dude: 1 };
 
   let tests = [
-    ['info', undefined, null, true],
-    ['info', undefined, info, true],
-    ['info', info, null, true],
-    ['company', null, null, false],
-    ['company', null, company, true],
-    ['company', company, null, true],
-    ['company', company, company, false],
-    ['projects', [], [], false],
-    ['projects', [], projects, true],
-    ['projects', projects, [], true],
-    ['projects', projects, projects, false],
-    ['pets', [], [], false],
-    ['pets', [], pets, true],
-    ['pets', pets, [], true],
-    ['pets', pets, [cat], true],
-    ['pets', [cat], [cat, dog], true],
-    ['pets', pets, pets3, false],
+    ['info', undefined, null, true,'undefined to null for an object attribute is not a change'],
+    ['info', undefined, info, true,'add item for an object attribute is a change'],
+    ['info', info, null, true,'remove value from object attribute is a change'],
+    ['company', null, null, false,'no item still no item in a belongsTo is not a change'],
+    ['company', null, company, true, 'add item in a belongsTo is a change'],
+    ['company', company, null, true, 'remove item in a belongsTo is a change'],
+    ['company', company, company, false, 'same item in a belongsTo is not a change'],
+    ['projects', [], [], false, 'empty staying empty in a hasMany is not a change'],
+    ['projects', [], projects, true, 'adding many to a hasMany is a change'],
+    ['projects', projects, [], true, 'removing all from a hasMany is a change'],
+    ['projects', projects, projects, false, 'same items in a hasMany is not a change'],
+    ['pets', [], [], false, 'from none to none in a polymorphic hasMany is not a change'],
+    ['pets', [], [cat, dog], true, 'adding many to a polymorphic hasMany is a change'],
+    ['pets', [cat, dog], [], true, 'removing all from a polymorphichasMany is a change'],
+    ['pets', [cat, dog], [cat], true, 'removing one from a polymorphic hasMany is a change'],
+    ['pets', [cat], [cat, dog], true, 'adding to a polymorphic hasMany is a change'],
+    ['pets', [dog, cat], [cat, dog], false, 'order of polymorphic hasMany change is not a change'],
   ];
 
   for (let test of tests) {
-    let [key, firstValue, nextValue, expected] = test;
+    let [key, firstValue, nextValue, expected, message] = test;
     let user = make('user', { [key]: firstValue });
 
     setModel(user, key, nextValue);
-    assert.equal(!!user.changed()[key], expected);
+    assert.equal(!!user.changed()[key], expected, message);
   }
 });
 
