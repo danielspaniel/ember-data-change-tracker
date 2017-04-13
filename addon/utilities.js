@@ -20,7 +20,7 @@ export const relationShipTransform = {
   hasMany: {
     serialize(model, key, options) {
       let value = model.hasMany(key).value();
-      return value && value.map((item) => modelTransform(item, options.polymorphic));
+      return value && value.map(item => modelTransform(item, options.polymorphic));
     },
 
     deserialize() {
@@ -35,11 +35,14 @@ export const isEmpty = function(value) {
   return Ember.isEmpty(value);
 };
 
-export const serializedModelChanged = function(one, other) {
-  return one.id !== other.id || one.type !== other.type;
+export const didSerializedModelChange = function(one, other, polymorphic) {
+  if (polymorphic) {
+    return one.id !== other.id || one.type !== other.type;
+  }
+  return one !== other;
 };
 
-export const hasManyChanged = function(one, other, polymorphic) {
+export const didModelsChange = function(one, other, polymorphic) {
   if (isEmpty(one) && isEmpty(other)) {
     return false;
   }
@@ -48,23 +51,16 @@ export const hasManyChanged = function(one, other, polymorphic) {
     return true;
   }
 
-  if (polymorphic) {
-    for (let i = 0, len = one.length; i < len; i++) {
-      if (serializedModelChanged(one[i], other[i])) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   for (let i = 0, len = one.length; i < len; i++) {
-    if (one[i] !== other[i]) {
+    if (didSerializedModelChange(one[i], other[i], polymorphic)) {
       return true;
     }
   }
+
+  return false;
 };
 
-export const valuesChanged = function(one, other, polymorphic) {
+export const didModelChange = function(one, other, polymorphic) {
   if (isEmpty(one) && isEmpty(other)) {
     return false;
   }
@@ -72,8 +68,6 @@ export const valuesChanged = function(one, other, polymorphic) {
   if (!one && other || one && !other) {
     return true;
   }
-  if (polymorphic) {
-    return serializedModelChanged(one, other);
-  }
-  return one !== other;
+
+  return didSerializedModelChange(one, other, polymorphic);
 };

@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import {valuesChanged, hasManyChanged, relationShipTransform} from './utilities';
+import {didModelChange, didModelsChange, relationShipTransform} from './utilities';
 
 const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
@@ -300,9 +300,9 @@ export default class Tracker {
       switch (keyInfo.type) {
         case 'attribute':
         case 'belongsTo':
-          return valuesChanged(current, last, keyInfo.polymorphic);
+          return didModelChange(current, last, keyInfo.polymorphic);
         case 'hasMany':
-          return hasManyChanged(current, last, keyInfo.polymorphic);
+          return didModelsChange(current, last, keyInfo.polymorphic);
       }
     }
   }

@@ -1,9 +1,9 @@
-import {valuesChanged, hasManyChanged} from 'ember-data-change-tracker/utilities';
+import {didModelChange, didModelsChange} from 'ember-data-change-tracker/utilities';
 import {test, module} from 'ember-qunit';
 
 module('Unit | Utilities');
 
-test('#valuesChanged', function(assert) {
+test('#didModelChange', function(assert) {
 
   let tests = [
     [null, null, false, false, 'two nulls'],
@@ -17,12 +17,12 @@ test('#valuesChanged', function(assert) {
 
   for (let test of tests) {
     let [value1, value2, polymorphic, expected, message] = test;
-    let result = valuesChanged(value1, value2, polymorphic);
+    let result = didModelChange(value1, value2, polymorphic);
     assert.equal(result, expected, message);
   }
 });
 
-test('#hasManyChanged', function(assert) {
+test('#didModelsChange', function(assert) {
 
   let tests = [
     [null, [], false, false, 'null and []'],
@@ -36,7 +36,7 @@ test('#hasManyChanged', function(assert) {
 
   for (let test of tests) {
     let [value1, value2, polymorphic, expected, message] = test;
-    let result = hasManyChanged(value1, value2, polymorphic);
+    let result = didModelsChange(value1, value2, polymorphic);
     assert.equal(result, expected, message);
   }
 });
