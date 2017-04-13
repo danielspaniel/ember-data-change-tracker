@@ -49,8 +49,6 @@ export const hasManyChanged = function(one, other, polymorphic) {
   }
 
   if (polymorphic) {
-    one = Ember.A(one).sortBy('id');
-    other = Ember.A(other).sortBy('id');
     for (let i = 0, len = one.length; i < len; i++) {
       if (serializedModelChanged(one[i], other[i])) {
         return true;
@@ -59,8 +57,6 @@ export const hasManyChanged = function(one, other, polymorphic) {
     return false;
   }
 
-  one.sort();
-  other.sort();
   for (let i = 0, len = one.length; i < len; i++) {
     if (one[i] !== other[i]) {
       return true;

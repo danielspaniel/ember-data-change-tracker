@@ -298,7 +298,7 @@ test('#changed ( replacing )', function(assert) {
     ['pets', [cat, dog], [], true, 'removing all from a polymorphichasMany is a change'],
     ['pets', [cat, dog], [cat], true, 'removing one from a polymorphic hasMany is a change'],
     ['pets', [cat], [cat, dog], true, 'adding to a polymorphic hasMany is a change'],
-    ['pets', [dog, cat], [cat, dog], false, 'order of polymorphic hasMany change is not a change'],
+    ['pets', [dog, cat], [cat, dog], true, 'change to the order of polymorphic hasMany is a change'],
   ];
 
   for (let test of tests) {
@@ -665,7 +665,7 @@ test('#isDirty resets on update (with non auto save model)', function(assert) {
       assert.equal(project.get('hasDirtyAttributes'), false);
       assert.equal(project.get('hasDirtyRelations'), false);
       mockTeardown();
-      done(); 
+      done();
     });
   });
 });
