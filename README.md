@@ -259,7 +259,7 @@ user.serialize(); //=> '{ info: {"foo:1"} }'
 
 Without this mixin enabled the json would look like:
 ```javascript
- { name: "dude", info: {"foo:1"}, company: "1" companyType: "company", profile: "1" }
+  { name: "dude", info: {"foo:1"}, company: "1" companyType: "company", profile: "1" }
 ```
 where all the attributes and association are included whether they changed or not
 

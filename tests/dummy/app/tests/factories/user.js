@@ -17,8 +17,8 @@ FactoryGuy.define('user', {
       list: null,
       location: null,
       things: null,
-      projects: undefined,
-      pets: undefined
+      projects: [],
+      pets: []
     },
     silly: {
       style: 'silly'
