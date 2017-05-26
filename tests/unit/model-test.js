@@ -158,14 +158,12 @@ test('#saveChanges saves attributes/assocations when model info is pushed to sto
 
   let normalized = Tracker.normalize(make('user'), userJson.get());
 
-  Ember.run(() => {
-    let user = FactoryGuy.store.push(normalized);
-    assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
-    assert.deepEqual(user.savedTrackerValue('company'), { id: company.id, type: 'company' });
-    assert.deepEqual(user.savedTrackerValue('profile'), profile.id);
-    assert.deepEqual(user.savedTrackerValue('projects'), projects.map(v => v.id));
-    assert.deepEqual(user.savedTrackerValue('pets'), [{ id: pets[0].id, type: 'pet' }]);
-  });
+  let user = Ember.run(() => FactoryGuy.store.push(normalized));
+  assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
+  assert.deepEqual(user.savedTrackerValue('company'), { id: company.id, type: 'company' });
+  assert.deepEqual(user.savedTrackerValue('profile'), profile.id);
+  assert.deepEqual(user.savedTrackerValue('projects'), projects.map(v => v.id));
+  assert.deepEqual(user.savedTrackerValue('pets'), [{ id: pets[0].id, type: 'pet' }]);
 });
 
 test('#saveChanges saves attributes/assocations when model newly created', function(assert) {
@@ -175,10 +173,8 @@ test('#saveChanges saves attributes/assocations when model newly created', funct
   let pets = makeList('pet', 1);
   let info = { dude: 1 };
 
-  let user;
-  Ember.run(() => {
-    user = FactoryGuy.store.createRecord('user', { info, profile, company, projects, pets });
-  });
+  let params = { info, profile, company, projects, pets };
+  let user = Ember.run(() => FactoryGuy.store.createRecord('user', params));
 
   assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
   assert.deepEqual(user.savedTrackerValue('company'), { id: company.id, type: 'company' });
@@ -282,10 +278,10 @@ test('#changed ( replacing )', function(assert) {
   let info = { dude: 1 };
 
   let tests = [
-    ['info', undefined, null, true,'undefined to null for an object attribute is not a change'],
-    ['info', undefined, info, true,'add item for an object attribute is a change'],
-    ['info', info, null, true,'remove value from object attribute is a change'],
-    ['company', null, null, false,'no item still no item in a belongsTo is not a change'],
+    ['info', undefined, null, true, 'undefined to null for an object attribute is not a change'],
+    ['info', undefined, info, true, 'add item for an object attribute is a change'],
+    ['info', info, null, true, 'remove value from object attribute is a change'],
+    ['company', null, null, false, 'no item still no item in a belongsTo is not a change'],
     ['company', null, company, true, 'add item in a belongsTo is a change'],
     ['company', company, null, true, 'remove item in a belongsTo is a change'],
     ['company', company, company, false, 'same item in a belongsTo is not a change'],
