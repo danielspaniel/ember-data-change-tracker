@@ -431,9 +431,9 @@ export default class Tracker {
     const attrs = [];
 
     model.eachRelationship((name, descriptor) => {
-      if (descriptor.type === 'hasMany') {
+      if (descriptor.kind === 'hasMany') {
         relations.push(descriptor.key);
-        relationsObserver.push(descriptor.key + '.content.[]');
+        relationsObserver.push(descriptor.key + '.content.@each.id');
       } else {
         relations.push(descriptor.key);
         relationsObserver.push(descriptor.key + '.content');
