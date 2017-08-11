@@ -401,8 +401,9 @@ export default class Tracker {
    * @param {String} key attribute/association name
    */
   static saveKey(model, key) {
-    let tracker = model.get(ModelTrackerKey) || {};
-    tracker[key] = this.serialize(model, key);
+    let tracker = model.get(ModelTrackerKey) || {},
+        isNew = model.get('isNew');
+    tracker[key] = isNew ? undefined : this.serialize(model, key);
     model.set(ModelTrackerKey, tracker);
   }
 
@@ -431,9 +432,9 @@ export default class Tracker {
     const attrs = [];
 
     model.eachRelationship((name, descriptor) => {
-      if (descriptor.type === 'hasMany') {
+      if (descriptor.kind === 'hasMany') {
         relations.push(descriptor.key);
-        relationsObserver.push(descriptor.key + '.content.[]');
+        relationsObserver.push(descriptor.key + '.content.@each.id');
       } else {
         relations.push(descriptor.key);
         relationsObserver.push(descriptor.key + '.content');

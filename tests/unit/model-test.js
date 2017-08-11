@@ -2,7 +2,7 @@ import Ember from 'ember';
 import FactoryGuy, {
   build, make, makeList, mockUpdate, mockFindRecord, mockReload,
   mockDelete, manualSetup, mockSetup, mockTeardown
-}  from 'ember-data-factory-guy';
+} from 'ember-data-factory-guy';
 import {initializer as modelInitializer} from 'ember-data-change-tracker';
 import {test, moduleForModel} from 'ember-qunit';
 import Tracker, {ModelTrackerKey} from 'ember-data-change-tracker/tracker';
@@ -166,7 +166,23 @@ test('#saveChanges saves attributes/assocations when model info is pushed to sto
   assert.deepEqual(user.savedTrackerValue('pets'), [{ id: pets[0].id, type: 'pet' }]);
 });
 
-test('#saveChanges saves attributes/assocations when model newly created', function(assert) {
+test('#saveChanges sets attributes/assocations to undefined when model newly created', function(assert) {
+  let company = make('company');
+  let profile = make('profile');
+  let projects = makeList('project', 1);
+  let pets = makeList('pet', 1);
+  let info = { dude: 1 };
+  let params = { info, profile, company, projects, pets };
+  let user = Ember.run(() => FactoryGuy.store.createRecord('user', params));
+
+  assert.deepEqual(user.savedTrackerValue('info'), undefined);
+  assert.deepEqual(user.savedTrackerValue('company'), undefined);
+  assert.deepEqual(user.savedTrackerValue('profile'), undefined);
+  assert.deepEqual(user.savedTrackerValue('projects'), undefined);
+  assert.deepEqual(user.savedTrackerValue('pets'), undefined);
+});
+
+test('#didChange when setting properties on newly created model', function(assert) {
   let company = make('company');
   let profile = make('profile');
   let projects = makeList('project', 1);
@@ -176,14 +192,14 @@ test('#saveChanges saves attributes/assocations when model newly created', funct
   let params = { info, profile, company, projects, pets };
   let user = Ember.run(() => FactoryGuy.store.createRecord('user', params));
 
-  assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
-  assert.deepEqual(user.savedTrackerValue('company'), { id: company.id, type: 'company' });
-  assert.deepEqual(user.savedTrackerValue('profile'), profile.id);
-  assert.deepEqual(user.savedTrackerValue('projects'), projects.map(v => v.id));
-  assert.deepEqual(user.savedTrackerValue('pets'), [{ id: pets[0].id, type: 'pet' }]);
+  assert.ok(user.didChange('info'));
+  assert.ok(user.didChange('company'));
+  assert.ok(user.didChange('profile'));
+  assert.ok(user.didChange('projects'));
+  assert.ok(user.didChange('pets'));
 });
 
-test('#didChange ( replacing )', function(assert) {
+test('#didChange when replacing properties in existing model', function(assert) {
   let company = make('small-company');
   let projects = makeList('project', 2);
   let pets = makeList('pet', 2);
@@ -531,21 +547,78 @@ test('#isDirty property is available when the option enableIsDirty is true', fun
 
 test('#isDirty computed works on normal attributes (with auto save model)', function(assert) {
   Ember.run(() => {
-    let [project1, project2] = makeList('project', 2);
-    let [profile1, profile2] = makeList('profile', 2);
-
-    let user = make('user', 'empty', { profile: profile1, projects: [project1] });
+    let user = make('user', 'empty');
 
     assert.equal(user.get('isDirty'), false);
     assert.equal(user.get('hasDirtyAttributes'), false);
-    assert.equal(user.get('hasDirtyRelations'), false);
 
     user.set('name', 'Michael');
-    user.set('profile', profile2);
-    user.get('projects').addObject(project2);
 
     assert.equal(user.get('isDirty'), true);
     assert.equal(user.get('hasDirtyAttributes'), true);
+  });
+});
+
+test('#isDirty computed works when changing belongsTo relationship (with auto save model)', function(assert) {
+  Ember.run(() => {
+    let [profile1, profile2] = makeList('profile', 2);
+
+    let user = make('user', 'empty', { profile: profile1 });
+
+    assert.equal(user.get('isDirty'), false);
+    assert.equal(user.get('hasDirtyRelations'), false);
+
+    user.set('profile', profile2);
+
+    assert.equal(user.get('isDirty'), true);
+    assert.equal(user.get('hasDirtyRelations'), true);
+  });
+});
+
+test('#isDirty computed works when removing belongsTo relationship (with auto save model)', function(assert) {
+  Ember.run(() => {
+    let [profile1] = makeList('profile', 1);
+
+    let user = make('user', 'empty', { profile: profile1 });
+
+    assert.equal(user.get('isDirty'), false);
+    assert.equal(user.get('hasDirtyRelations'), false);
+
+    user.set('profile', null);
+
+    assert.equal(user.get('isDirty'), true);
+    assert.equal(user.get('hasDirtyRelations'), true);
+  });
+});
+
+test('#isDirty computed works when adding to hasMany relationship (with auto save model)', function(assert) {
+  Ember.run(() => {
+    let [project1, project2] = makeList('project', 2);
+
+    let user = make('user', 'empty', { projects: [project1] });
+
+    assert.equal(user.get('isDirty'), false);
+    assert.equal(user.get('hasDirtyRelations'), false);
+
+    user.get('projects').addObject(project2);
+
+    assert.equal(user.get('isDirty'), true);
+    assert.equal(user.get('hasDirtyRelations'), true);
+  });
+});
+
+test('#isDirty computed works when removing from hasMany relationship (with auto save model)', function(assert) {
+  Ember.run(() => {
+    let [project1, project2] = makeList('project', 2);
+
+    let user = make('user', 'empty', { projects: [project1, project2] });
+
+    assert.equal(user.get('isDirty'), false);
+    assert.equal(user.get('hasDirtyRelations'), false);
+
+    user.get('projects').removeObject(project2);
+
+    assert.equal(user.get('isDirty'), true);
     assert.equal(user.get('hasDirtyRelations'), true);
   });
 });
