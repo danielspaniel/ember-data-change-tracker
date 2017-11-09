@@ -446,12 +446,12 @@ export default class Tracker {
     });
 
     const hasDirtyRelations = function() {
-      const changed = model.changed();
+      const changed = model.modelChanges();
       return !!relations.find(key => changed[key]);
     };
 
     const hasDirtyAttributes = function() {
-      const changed = model.changed();
+      const changed = model.modelChanges();
       return !!attrs.find(key => changed[key]);
     };
 

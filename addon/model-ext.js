@@ -25,7 +25,7 @@ Model.reopen({
    *
    * @returns {*}
    */
-  changed() {
+  modelChanges() {
     let changed = Object.assign({}, this.changedAttributes());
     let trackerInfo = Tracker.metaInfo(this);
     for (let key in trackerInfo) {

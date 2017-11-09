@@ -246,10 +246,10 @@ test('#save method resets changed if auto tracking', function(assert) {
     mockUpdate(user);
 
     user.save().then(() => {
-      assert.ok(!user.changed().info, 'clears changed info after save');
-      assert.ok(!user.changed().company, 'clears changed company after save');
-      assert.ok(!user.changed().projects, 'clears changed projects after save');
-      assert.ok(!user.changed().pets, 'clears changed pets after save');
+      assert.ok(!user.modelChanges().info, 'clears changed info after save');
+      assert.ok(!user.modelChanges().company, 'clears changed company after save');
+      assert.ok(!user.modelChanges().projects, 'clears changed projects after save');
+      assert.ok(!user.modelChanges().pets, 'clears changed pets after save');
       mockTeardown();
       done();
     });
@@ -263,7 +263,7 @@ test('#changed ( modifying ) attribute of type undefined', function(assert) {
 
   blob.foo = 2;
 
-  let changed = company.changed().blob;
+  let changed = company.modelChanges().blob;
   assert.ok(changed);
 });
 
@@ -273,7 +273,7 @@ test('#changed ( modifying ) attribute of type that does not serialize to string
 
   blob.foo = 2;
 
-  let changed = user.changed().blob;
+  let changed = user.modelChanges().blob;
   assert.ok(changed);
 });
 
@@ -282,7 +282,7 @@ test('#changed ( modifying ) attribute of type "object"', function(assert) {
   let user = make('user', { info });
   info.dude = 3;
 
-  let changed = (user.changed().info);
+  let changed = (user.modelChanges().info);
   assert.ok(changed);
 });
 
@@ -318,7 +318,7 @@ test('#changed ( replacing )', function(assert) {
     let user = make('user', { [key]: firstValue });
 
     setModel(user, key, nextValue);
-    assert.equal(!!user.changed()[key], expected, message);
+    assert.equal(!!user.modelChanges()[key], expected, message);
   }
 });
 
