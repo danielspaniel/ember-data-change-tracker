@@ -21,7 +21,7 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
     - tracks modifications in attributes that are object/json/custom type
     - tracks replacement of belongsTo associations
     - tracks replacement/changes in hasMany associations
-    - adds a ```changed()``` method to DS.Model
+    - adds a ```modelChanges()``` method to DS.Model
     - adds a ```rollback()``` method to DS.Model
     - adds a ```isDirty``` computed property to DS.Model ( only if enabled in configuration )
     - adds a ```hasDirtyRelations``` computed property to DS.Model ( only if enabled in configuration )
@@ -56,9 +56,9 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
     or company, profile, projects and pets if they change.
   
   
-### Changed
+### model changes
   
-  - The method ```changed()``` is added to model
+  - The method ```modelChanges()``` is added to model
   - Shows you any changes in an object attribute type
     - whether modified or replacing the value
     - attr() will default to 'object' type
@@ -73,7 +73,7 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
 Example: ( remove from a hasMany )
 ```javascript
   user.get('projects').removeObject(firstProject); // remove project1
-  user.changed() //=> {projects: true }
+  user.modelChanges() //=> {projects: true }
 ```
 
 
