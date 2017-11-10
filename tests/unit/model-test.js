@@ -1,4 +1,6 @@
 import Ember from 'ember';
+const {run} = Ember;
+
 import FactoryGuy, {
   build, make, makeList, mockUpdate, mockFindRecord, mockReload,
   mockDelete, manualSetup, mockSetup, mockTeardown
@@ -265,6 +267,22 @@ test('#changed ( modifying ) attribute of type undefined', function(assert) {
 
   let changed = company.modelChanges().blob;
   assert.ok(changed);
+});
+
+test('#changed ( modifying ) attribute of type undefined then saveChanges', function(assert) {
+  let company = make('company', { name: 'blu' }),
+    changed;
+  company.startTrack();
+
+  run(() => {
+    company.set('name', 'bla');
+    company.saveChanges();
+    //if we run twice the below, the test passes..
+    //company._internalModel.flushChangedAttributes();
+    //company._internalModel.flushChangedAttributes();
+    changed = company.changed().name;
+    assert.notOk(changed);
+  });
 });
 
 test('#changed ( modifying ) attribute of type that does not serialize to string', function(assert) {
