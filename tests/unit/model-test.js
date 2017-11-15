@@ -738,3 +738,11 @@ test('#isDirty resets on update (with non auto save model)', function(assert) {
     });
   });
 });
+
+test('Fails because of assertion error when run in isolation', function(assert) {
+  assert.expect(1);
+
+  Ember.run(() => FactoryGuy.store.createRecord('user'));
+  assert.ok(true);
+});
+
