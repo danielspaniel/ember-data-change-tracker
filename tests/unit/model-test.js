@@ -1,11 +1,12 @@
 import Ember from 'ember';
+import { run } from '@ember/runloop';
 import FactoryGuy, {
   build, make, makeList, mockUpdate, mockFindRecord, mockReload,
   mockDelete, manualSetup, mockSetup, mockTeardown
 } from 'ember-data-factory-guy';
-import {initializer as modelInitializer} from 'ember-data-change-tracker';
-import {test, moduleForModel} from 'ember-qunit';
-import Tracker, {ModelTrackerKey} from 'ember-data-change-tracker/tracker';
+import { initializer as modelInitializer } from 'ember-data-change-tracker';
+import { test, moduleForModel } from 'ember-qunit';
+import Tracker, { ModelTrackerKey } from 'ember-data-change-tracker/tracker';
 import sinon from 'sinon';
 
 modelInitializer();
@@ -26,12 +27,12 @@ moduleForModel('user', 'Unit | Model', {
 });
 
 let setModel = (model, attr, value) => {
-  Ember.run(() => model.set(attr, value));
+  run(() => model.set(attr, value));
 };
 
 test('only sets up tracking meta data once on model type', function(assert) {
-  sinon.stub(Tracker, 'options').returns({ auto: true });
-  let getTrackerInfo = sinon.stub(Tracker, 'getTrackerInfo').returns({ autoSave: true });
+  sinon.stub(Tracker, 'options').returns({auto: true});
+  let getTrackerInfo = sinon.stub(Tracker, 'getTrackerInfo').returns({autoSave: true});
 
   let dog = make('dog');
   assert.ok(dog.constructor.alreadySetupTrackingMeta, 'auto save set up metaData');
@@ -57,123 +58,112 @@ test('#setupTracking sets correct trackerKeys on constructor', function(assert) 
   assertMetaKey(metaData.pets, 'hasMany', undefined, assert);
 });
 
-test('#saveChanges saves attributes/assocations when model is ready on ajax load', function(assert) {
-  let done = assert.async();
+test('#saveChanges saves attributes/assocations when model is ready on ajax load', async function(assert) {
+  mockSetup({logLevel: 0});
 
-  mockSetup({ logLevel: 0 });
-
-  let info = { dude: 1 };
-  let company = make('company');
-  let profile = make('profile');
-  let projects = makeList('project', 2);
-  let pets = makeList('pet', 1);
+  let info     = {dude: 1},
+      company  = make('company'),
+      profile  = make('profile'),
+      projects = makeList('project', 2),
+      pets     = makeList('pet', 1);
 
   let json = build('user', {
     info,
     profile: profile.get('id'),
-    company: { id: company.get('id'), type: 'company' },
+    company: {id: company.get('id'), type: 'company'},
     projects,
     pets
   });
 
-  mockFindRecord('user').returns({ json });
+  mockFindRecord('user').returns({json});
 
-  Ember.run(() => {
-    FactoryGuy.store.find('user', json.get('id')).then((user) => {
-      assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
-      assert.deepEqual(user.savedTrackerValue('company'), { id: company.id, type: 'company' });
-      assert.deepEqual(user.savedTrackerValue('profile'), profile.id);
-      assert.deepEqual(user.savedTrackerValue('projects'), projects.map(v => v.id));
-      assert.deepEqual(user.savedTrackerValue('pets'), [{ id: pets[0].id, type: 'pet' }]);
+  let user = await run(async () => FactoryGuy.store.find('user', json.get('id')));
+  assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
+  assert.deepEqual(user.savedTrackerValue('company'), {id: company.id, type: 'company'});
+  assert.deepEqual(user.savedTrackerValue('profile'), profile.id);
+  assert.deepEqual(user.savedTrackerValue('projects'), projects.map(v => v.id));
+  assert.deepEqual(user.savedTrackerValue('pets'), [{id: pets[0].id, type: 'pet'}]);
 
-      mockTeardown();
-      done();
-    });
-  });
+  mockTeardown();
 });
 
-test('#saveChanges saves attributes/assocations when model is ready on model reload', function(assert) {
-  let done = assert.async();
-  mockSetup({ logLevel: 0 });
+test('#saveChanges saves attributes/assocations when model is ready on model reload', async function(assert) {
+  mockSetup({logLevel: 0});
 
-  let info = { dude: 1 };
-  let company = make('company');
-  let profile = make('profile');
-  let projects = makeList('project', 2);
-  let pets = makeList('pet', 1);
+  let info     = {dude: 1},
+      company  = make('company'),
+      profile  = make('profile'),
+      projects = makeList('project', 2),
+      pets     = makeList('pet', 1);
 
   let user = make('user', {
     info,
     profile: profile.get('id'),
-    company: { id: company.get('id'), type: 'company' },
+    company: {id: company.get('id'), type: 'company'},
     projects,
     pets
   });
 
-  let info2 = { dude: 2 };
-  let company2 = make('company');
-  let profile2 = make('profile');
-  let projects2 = makeList('project', 2);
-  let pets2 = makeList('pet', 1);
+  let info2     = {dude: 2},
+      company2  = make('company'),
+      profile2  = make('profile'),
+      projects2 = makeList('project', 2),
+      pets2     = makeList('pet', 1);
 
   let newUserAttrs = build('user', {
     id: user.get('id'),
     info: info2,
     profile: profile2.get('id'),
-    company: { id: company2.get('id'), type: 'company' },
+    company: {id: company2.get('id'), type: 'company'},
     projects: projects2,
     pets: pets2
   });
 
-  mockReload(user).returns({ json: newUserAttrs });
+  mockReload(user).returns({json: newUserAttrs});
 
-  Ember.run(() => {
-    user.reload().then((user) => {
-      assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info2));
-      assert.deepEqual(user.savedTrackerValue('company'), { id: company2.id, type: 'company' });
-      assert.deepEqual(user.savedTrackerValue('profile'), profile2.id);
-      assert.deepEqual(user.savedTrackerValue('projects'), projects2.map(v => v.id));
-      assert.deepEqual(user.savedTrackerValue('pets'), [{ id: pets2[0].id, type: 'pet' }]);
+  await run(async () => user.reload());
+  assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info2));
+  assert.deepEqual(user.savedTrackerValue('company'), {id: company2.id, type: 'company'});
+  assert.deepEqual(user.savedTrackerValue('profile'), profile2.id);
+  assert.deepEqual(user.savedTrackerValue('projects'), projects2.map(v => v.id));
+  assert.deepEqual(user.savedTrackerValue('pets'), [{id: pets2[0].id, type: 'pet'}]);
 
-      mockTeardown();
-      done();
-    });
-  });
+  mockTeardown();
 });
 
 test('#saveChanges saves attributes/assocations when model info is pushed to store', function(assert) {
-  let company = make('company');
-  let profile = make('profile');
-  let projects = makeList('project', 1);
-  let pets = makeList('pet', 1);
-  let info = { dude: 1 };
+  let company  = make('company'),
+      profile  = make('profile'),
+      projects = makeList('project', 1),
+      pets     = makeList('pet', 1),
+      info     = {dude: 1};
 
   let userJson = build('user', {
     info,
     profile: profile.get('id'),
-    company: { id: company.get('id'), type: 'company' },
+    company: {id: company.get('id'), type: 'company'},
     projects,
     pets
   });
 
   let normalized = Tracker.normalize(make('user'), userJson.get());
 
-  let user = Ember.run(() => FactoryGuy.store.push(normalized));
+  let user = run(() => FactoryGuy.store.push(normalized));
   assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(info));
-  assert.deepEqual(user.savedTrackerValue('company'), { id: company.id, type: 'company' });
+  assert.deepEqual(user.savedTrackerValue('company'), {id: company.id, type: 'company'});
   assert.deepEqual(user.savedTrackerValue('profile'), profile.id);
   assert.deepEqual(user.savedTrackerValue('projects'), projects.map(v => v.id));
-  assert.deepEqual(user.savedTrackerValue('pets'), [{ id: pets[0].id, type: 'pet' }]);
+  assert.deepEqual(user.savedTrackerValue('pets'), [{id: pets[0].id, type: 'pet'}]);
 });
 
 test('#saveChanges sets attributes/assocations to undefined when model newly created', function(assert) {
-  let company = make('company');
-  let profile = make('profile');
-  let projects = makeList('project', 1);
-  let pets = makeList('pet', 1);
-  let info = { dude: 1 };
-  let params = { info, profile, company, projects, pets };
-  let user = Ember.run(() => FactoryGuy.store.createRecord('user', params));
+  let company  = make('company'),
+      profile  = make('profile'),
+      projects = makeList('project', 1),
+      pets     = makeList('pet', 1),
+      info     = {dude: 1},
+      params   = {info, profile, company, projects, pets},
+      user     = run(() => FactoryGuy.store.createRecord('user', params));
 
   assert.deepEqual(user.savedTrackerValue('info'), undefined);
   assert.deepEqual(user.savedTrackerValue('company'), undefined);
@@ -183,14 +173,14 @@ test('#saveChanges sets attributes/assocations to undefined when model newly cre
 });
 
 test('#didChange when setting properties on newly created model', function(assert) {
-  let company = make('company');
-  let profile = make('profile');
-  let projects = makeList('project', 1);
-  let pets = makeList('pet', 1);
-  let info = { dude: 1 };
+  let company  = make('company'),
+      profile  = make('profile'),
+      projects = makeList('project', 1),
+      pets     = makeList('pet', 1),
+      info     = {dude: 1};
 
-  let params = { info, profile, company, projects, pets };
-  let user = Ember.run(() => FactoryGuy.store.createRecord('user', params));
+  let params = {info, profile, company, projects, pets};
+  let user = run(() => FactoryGuy.store.createRecord('user', params));
 
   assert.ok(user.didChange('info'));
   assert.ok(user.didChange('company'));
@@ -200,10 +190,10 @@ test('#didChange when setting properties on newly created model', function(asser
 });
 
 test('#didChange when replacing properties in existing model', function(assert) {
-  let company = make('small-company');
-  let projects = makeList('project', 2);
-  let pets = makeList('pet', 2);
-  let info = { dude: 1 };
+  let company  = make('small-company'),
+      projects = makeList('project', 2),
+      pets     = makeList('pet', 2),
+      info     = {dude: 1};
 
   let tests = [
     ['info', undefined, null, true],
@@ -218,47 +208,46 @@ test('#didChange when replacing properties in existing model', function(assert) 
 
   for (let test of tests) {
     let [key, firstValue, nextValue, expected] = test;
-    let user = make('user', { [key]: firstValue });
+    let user = make('user', {[key]: firstValue});
     user.saveChanges();
     setModel(user, key, nextValue);
     assert.equal(user.didChange(key), expected);
   }
 });
 
-test('#save method resets changed if auto tracking', function(assert) {
-  const done = assert.async();
+test('#save method resets changed if auto tracking', async function(assert) {
   mockSetup();
 
-  Ember.run(() => {
-    let company = make('company');
-    let info = { dude: 1 };
-    let projects = makeList('project', 2);
-    let noPets = [];
-    let pets = makeList('pet', 2);
-    let user = make('user', { company, info, projects, noPets });
+  let company  = make('company'),
+      info     = {dude: 1},
+      projects = makeList('project', 2),
+      noPets   = [],
+      pets     = makeList('pet', 2),
+      user     = make('user', {company, info, projects, noPets});
 
-    // change relationships and attribute
+  // change relationships and attribute
+  run(() => {
     user.set('company', null);
     user.set('projects', []);
     user.set('pets', pets);
-    info.dude = 2;
-
-    mockUpdate(user);
-
-    user.save().then(() => {
-      assert.ok(!user.modelChanges().info, 'clears changed info after save');
-      assert.ok(!user.modelChanges().company, 'clears changed company after save');
-      assert.ok(!user.modelChanges().projects, 'clears changed projects after save');
-      assert.ok(!user.modelChanges().pets, 'clears changed pets after save');
-      mockTeardown();
-      done();
-    });
   });
+
+  info.dude = 2;
+
+  mockUpdate(user);
+
+  await run(async () => user.save());
+  assert.ok(!user.modelChanges().info, 'clears changed info after save');
+  assert.ok(!user.modelChanges().company, 'clears changed company after save');
+  assert.ok(!user.modelChanges().projects, 'clears changed projects after save');
+  assert.ok(!user.modelChanges().pets, 'clears changed pets after save');
+  mockTeardown();
 });
 
 test('#changed ( modifying ) attribute of type undefined', function(assert) {
-  let blob = { foo: 1 };
-  let company = make('company', { blob });
+  let blob    = {foo: 1},
+      company = make('company', {blob});
+
   company.startTrack();
 
   blob.foo = 2;
@@ -268,8 +257,8 @@ test('#changed ( modifying ) attribute of type undefined', function(assert) {
 });
 
 test('#changed ( modifying ) attribute of type that does not serialize to string', function(assert) {
-  let blob = { foo: 1 };
-  let user = make('user', { blob });
+  let blob = {foo: 1},
+      user = make('user', {blob});
 
   blob.foo = 2;
 
@@ -278,8 +267,9 @@ test('#changed ( modifying ) attribute of type that does not serialize to string
 });
 
 test('#changed ( modifying ) attribute of type "object"', function(assert) {
-  let info = { dude: 1 };
-  let user = make('user', { info });
+  let info = {dude: 1},
+      user = make('user', {info});
+
   info.dude = 3;
 
   let changed = (user.modelChanges().info);
@@ -287,11 +277,11 @@ test('#changed ( modifying ) attribute of type "object"', function(assert) {
 });
 
 test('#changed ( replacing )', function(assert) {
-  let company = make('small-company');
-  let projects = makeList('project', 2);
-  let pets = makeList('pet', 2);
-  let [cat, dog] = pets;
-  let info = { dude: 1 };
+  let company    = make('small-company'),
+      projects   = makeList('project', 2),
+      pets       = makeList('pet', 2),
+      [cat, dog] = pets,
+      info       = {dude: 1};
 
   let tests = [
     ['info', undefined, null, true, 'undefined to null for an object attribute is not a change'],
@@ -315,66 +305,58 @@ test('#changed ( replacing )', function(assert) {
 
   for (let test of tests) {
     let [key, firstValue, nextValue, expected, message] = test;
-    let user = make('user', { [key]: firstValue });
+    let user = make('user', {[key]: firstValue});
 
     setModel(user, key, nextValue);
     assert.equal(!!user.modelChanges()[key], expected, message);
   }
 });
 
-test("touched but unchanged relationships should not serialize when keepOnlyChanged mixin is used", function(assert) {
-  let done = assert.async();
-  mockSetup({ logLevel: 0 });
+test("touched but unchanged relationships should not serialize when keepOnlyChanged mixin is used", async function(assert) {
+  mockSetup({logLevel: 0});
 
   let json = build('project', {
     company: {
-      data: { id: '1', type: 'company' }
+      data: {id: '1', type: 'company'}
     }
   });
+
   delete json.included; // We don't want to sideload (create) the company
 
-  mockFindRecord('project').returns({ json });
+  mockFindRecord('project').returns({json});
 
-  Ember.run(() => {
-    FactoryGuy.store.find('project', json.get('id')).then((project) => {
-      assert.equal(project.belongsTo('company').value(), null, 'relationship should not be loaded');
-      assert.equal(project.belongsTo('company').id(), '1', 'relationship record id should be set through linkage');
+  let project = await run(async () => FactoryGuy.store.find('project', json.get('id')));
+  assert.equal(project.belongsTo('company').value(), null, 'relationship should not be loaded');
+  assert.equal(project.belongsTo('company').id(), '1', 'relationship record id should be set through linkage');
 
-      project.startTrack(); // Start tracking before the full relationship is loaded
+  project.startTrack(); // Start tracking before the full relationship is loaded
 
-      let json = build('company', { id: '1', type: 'company', name: 'foo' });
-      FactoryGuy.store.pushPayload('company', json);
+  let companyJson = build('company', {id: '1', type: 'company', name: 'foo'});
+  run(() => FactoryGuy.store.pushPayload('company', companyJson));
 
-      mockFindRecord('company').returns({ json });
+  mockFindRecord('company').returns({json});
 
-      FactoryGuy.store.find('company', '1').then((company) => {
-        assert.equal(project.belongsTo('company').id(), company.get('id'), 'ids should match');
+  let company = await run(async () => FactoryGuy.store.find('company', '1'));
+  assert.equal(project.belongsTo('company').id(), company.get('id'), 'ids should match');
 
-        project.set('company', company);
-        project.set('title', 'test');
+  project.setProperties({company, title: 'test'});
 
-        assert.equal(project.belongsTo('company').id(), company.get('id'), 'ids should still match');
+  assert.equal(project.belongsTo('company').id(), company.get('id'), 'ids should still match');
 
-        let { data } = project.serialize();
-        let relationships = data.relationships || {};
-        let attributes = data.attributes || {};
+  let {data} = project.serialize();
+  let relationships = data.relationships || {};
+  let attributes = data.attributes || {};
 
-        assert.ok(relationships.company == null, 'unchanged relationship should not be serialized');
-        assert.ok(attributes.title != null, 'changed attribute should be serialized');
+  assert.ok(relationships.company == null, 'unchanged relationship should not be serialized');
+  assert.ok(attributes.title != null, 'changed attribute should be serialized');
 
-        setTimeout(() => {
-          mockTeardown();
-          done();
-        }, 50);
-      });
-    });
-  });
+  mockTeardown();
 });
 
 test('keepOnlyChanged serializer mixin', function(assert) {
   let company = make('company');
   let details = makeList('detail', 2);
-  let blob = { dude: 1 };
+  let blob = {dude: 1};
   let project = make('project');
 
   let tests = [
@@ -397,39 +379,35 @@ test('keepOnlyChanged serializer mixin', function(assert) {
   }
 });
 
-test('clears all saved keys on delete', function(assert) {
-  let done = assert.async();
-  let user = make('user', { info: { d: 2 } });
+test('clears all saved keys on delete', async function(assert) {
+  let user = make('user', {info: {d: 2}});
 
   assert.ok(!!user.get(ModelTrackerKey));
   mockDelete(user);
-  Ember.run(() => {
-    user.destroyRecord().then(() => {
-      assert.ok(!user.get(ModelTrackerKey));
-      done();
-    });
-  });
+
+  await run(async () => user.destroyRecord());
+  assert.ok(!user.get(ModelTrackerKey));
 });
 
 test('#rollback from things to different things', function(assert) {
-  Ember.run(() => {
-    let info = { foo: 1 };
-    let blob = { dude: 'A' };
+  run(() => {
+    let info        = {foo: 1},
+        blob        = {dude: 'A'},
 
-    let profile = make('profile');
-    let profile2 = make('profile');
+        profile     = make('profile'),
+        profile2    = make('profile'),
 
-    let projects = makeList('project', 2);
-    let [project1] = projects;
+        projects    = makeList('project', 2),
+        [project1]  = projects,
 
-    let pets = makeList('cat', 4);
-    let [cat, cat2] = pets;
+        pets        = makeList('cat', 4),
+        [cat, cat2] = pets,
 
-    let company = make('big-company');
-    let company2 = make('small-company');
+        company     = make('big-company'),
+        company2    = make('small-company'),
 
-    let list = [1, 2, 3, 4];
-    let location = build('location', { place: 'home' }).get();
+        list        = [1, 2, 3, 4],
+        location    = build('location', {place: 'home'}).get();
 
     let user = make('user', {
       info,
@@ -471,270 +449,234 @@ test('#rollback from things to different things', function(assert) {
 
     assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
     assert.deepEqual(savedUser, afterRollbackUser);
-    assert.deepEqual(user.get('blob'), { dude: 'A' });
+    assert.deepEqual(user.get('blob'), {dude: 'A'});
   });
 });
 
 test('#rollback hasMany to empty', function(assert) {
-  Ember.run(() => {
-    let projects = makeList('project', 3);
-    let pets = makeList('cat', 4);
 
-    let user = make('user', 'empty');
+  let projects = makeList('project', 3),
+      pets     = makeList('cat', 4),
+      user     = make('user', 'empty');
 
-    console.time('track');
+  console.time('track');
 
-    user.startTrack();
+  user.startTrack();
 
-    user.setProperties({ projects, pets });
+  run(() => user.setProperties({projects, pets}));
 
-    user.rollback();
+  run(() => user.rollback());
 
-    console.timeEnd('track');
+  console.timeEnd('track');
 
-    assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
-    assert.deepEqual(user.get('projects').mapBy('id'), []);
-    assert.deepEqual(user.get('pets').mapBy('id'), []);
-  });
+  assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
+  assert.deepEqual(user.get('projects').mapBy('id'), []);
+  assert.deepEqual(user.get('pets').mapBy('id'), []);
 });
 
 test('#rollback hasMany when have at least one and add some more', function(assert) {
-  Ember.run(() => {
-    let [project1, project2] = makeList('project', 2);
-    let [pet1, pet2] = makeList('cat', 2);
+  let [project1, project2] = makeList('project', 2),
+      [pet1, pet2]         = makeList('cat', 2),
 
-    let user = make('user', 'empty', { pets: [pet1], projects: [project1] });
+      user                 = make('user', 'empty', {pets: [pet1], projects: [project1]});
 
-    console.time('track');
+  console.time('track');
 
-    user.startTrack();
+  user.startTrack();
 
-    user.get('projects').addObject(project2);
-    user.get('pets').addObject(pet2);
+  user.get('projects').addObject(project2);
+  user.get('pets').addObject(pet2);
 
-    user.rollback();
+  run(() => user.rollback());
 
-    console.timeEnd('track');
+  console.timeEnd('track');
 
-    assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
-    assert.deepEqual(user.get('projects').mapBy('id'), [project1.id]);
-    assert.deepEqual(user.get('pets').mapBy('id'), [pet1.id]);
-  });
+  assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
+  assert.deepEqual(user.get('projects').mapBy('id'), [project1.id]);
+  assert.deepEqual(user.get('pets').mapBy('id'), [pet1.id]);
 });
 
 test('#rollback value for undefined attribute', function(assert) {
-  Ember.run(() => {
-    let blob = [1, 2, 3];
-    let company = make('company', { blob });
-    company.startTrack();
+  let blob    = [1, 2, 3],
+      company = make('company', {blob});
 
-    company.get('blob').push('4');
-    company.rollback();
+  company.startTrack();
 
-    assert.equal(company.get('currentState.stateName'), 'root.loaded.saved');
-    assert.deepEqual(company.get('blob'), [1, 2, 3]);
-  });
+  company.get('blob').push('4');
+
+  run(() => company.rollback());
+
+  assert.equal(company.get('currentState.stateName'), 'root.loaded.saved');
+  assert.deepEqual(company.get('blob'), [1, 2, 3]);
 });
 
 
 test('#isDirty property is available when the option enableIsDirty is true', function(assert) {
-  let company = make('company');
-  let user = make('user', 'empty');
+  let company = make('company'),
+      user    = make('user', 'empty');
 
   assert.equal(Ember.typeOf(user.isDirty), 'object');
   assert.equal(company.isDirty, undefined);
 });
 
 test('#isDirty computed works on normal attributes (with auto save model)', function(assert) {
-  Ember.run(() => {
-    let user = make('user', 'empty');
+  let user = make('user', 'empty');
 
-    assert.equal(user.get('isDirty'), false);
-    assert.equal(user.get('hasDirtyAttributes'), false);
+  assert.equal(user.get('isDirty'), false);
+  assert.equal(user.get('hasDirtyAttributes'), false);
 
-    user.set('name', 'Michael');
+  run(() => user.set('name', 'Michael'));
 
-    assert.equal(user.get('isDirty'), true);
-    assert.equal(user.get('hasDirtyAttributes'), true);
-  });
+  assert.equal(user.get('isDirty'), true);
+  assert.equal(user.get('hasDirtyAttributes'), true);
 });
 
 test('#isDirty computed works when changing belongsTo relationship (with auto save model)', function(assert) {
-  Ember.run(() => {
-    let [profile1, profile2] = makeList('profile', 2);
+  let [profile1, profile2] = makeList('profile', 2),
+      user                 = make('user', 'empty', {profile: profile1});
 
-    let user = make('user', 'empty', { profile: profile1 });
+  assert.equal(user.get('isDirty'), false);
+  assert.equal(user.get('hasDirtyRelations'), false);
 
-    assert.equal(user.get('isDirty'), false);
-    assert.equal(user.get('hasDirtyRelations'), false);
+  run(() => user.set('profile', profile2));
 
-    user.set('profile', profile2);
+  assert.equal(user.get('isDirty'), true);
+  assert.equal(user.get('hasDirtyRelations'), true);
 
-    assert.equal(user.get('isDirty'), true);
-    assert.equal(user.get('hasDirtyRelations'), true);
-  });
 });
 
 test('#isDirty computed works when removing belongsTo relationship (with auto save model)', function(assert) {
-  Ember.run(() => {
-    let [profile1] = makeList('profile', 1);
+  let [profile1] = makeList('profile', 1),
+      user       = make('user', 'empty', {profile: profile1});
 
-    let user = make('user', 'empty', { profile: profile1 });
+  assert.equal(user.get('isDirty'), false);
+  assert.equal(user.get('hasDirtyRelations'), false);
 
-    assert.equal(user.get('isDirty'), false);
-    assert.equal(user.get('hasDirtyRelations'), false);
+  run(() => user.set('profile', null));
 
-    user.set('profile', null);
-
-    assert.equal(user.get('isDirty'), true);
-    assert.equal(user.get('hasDirtyRelations'), true);
-  });
+  assert.equal(user.get('isDirty'), true);
+  assert.equal(user.get('hasDirtyRelations'), true);
 });
 
 test('#isDirty computed works when adding to hasMany relationship (with auto save model)', function(assert) {
-  Ember.run(() => {
-    let [project1, project2] = makeList('project', 2);
+  let [project1, project2] = makeList('project', 2),
+      user                 = make('user', 'empty', {projects: [project1]});
 
-    let user = make('user', 'empty', { projects: [project1] });
+  assert.equal(user.get('isDirty'), false);
+  assert.equal(user.get('hasDirtyRelations'), false);
 
-    assert.equal(user.get('isDirty'), false);
-    assert.equal(user.get('hasDirtyRelations'), false);
+  user.get('projects').addObject(project2);
 
-    user.get('projects').addObject(project2);
-
-    assert.equal(user.get('isDirty'), true);
-    assert.equal(user.get('hasDirtyRelations'), true);
-  });
+  assert.equal(user.get('isDirty'), true);
+  assert.equal(user.get('hasDirtyRelations'), true);
 });
 
 test('#isDirty computed works when removing from hasMany relationship (with auto save model)', function(assert) {
-  Ember.run(() => {
-    let [project1, project2] = makeList('project', 2);
+  let [project1, project2] = makeList('project', 2);
 
-    let user = make('user', 'empty', { projects: [project1, project2] });
+  let user = make('user', 'empty', {projects: [project1, project2]});
 
-    assert.equal(user.get('isDirty'), false);
-    assert.equal(user.get('hasDirtyRelations'), false);
+  assert.equal(user.get('isDirty'), false);
+  assert.equal(user.get('hasDirtyRelations'), false);
 
-    user.get('projects').removeObject(project2);
+  user.get('projects').removeObject(project2);
 
-    assert.equal(user.get('isDirty'), true);
-    assert.equal(user.get('hasDirtyRelations'), true);
-  });
+  assert.equal(user.get('isDirty'), true);
+  assert.equal(user.get('hasDirtyRelations'), true);
 });
 
 test('#isDirty resets on rollback (with auto save model)', function(assert) {
-  Ember.run(() => {
-    let [project1, project2] = makeList('project', 2);
-    let [profile1, profile2] = makeList('profile', 2);
+  let [project1, project2] = makeList('project', 2),
+      [profile1, profile2] = makeList('profile', 2),
+      user                 = make('user', 'empty', {profile: profile1, projects: [project1]});
 
-    let user = make('user', 'empty', { profile: profile1, projects: [project1] });
+  run(() => user.setProperties({name: 'Michael', profile: profile2}));
+  user.get('projects').addObject(project2);
 
-    user.set('name', 'Michael');
-    user.set('profile', profile2);
-    user.get('projects').addObject(project2);
+  user.rollback();
 
-    user.rollback();
+  assert.equal(user.get('isDirty'), false);
+  assert.equal(user.get('hasDirtyAttributes'), false);
+  assert.equal(user.get('hasDirtyRelations'), false);
 
-    assert.equal(user.get('isDirty'), false);
-    assert.equal(user.get('hasDirtyAttributes'), false);
-    assert.equal(user.get('hasDirtyRelations'), false);
-  });
 });
 
-test('#isDirty resets on update (with auto save model)', function(assert) {
-  let done = assert.async();
+test('#isDirty resets on update (with auto save model)', async function(assert) {
   mockSetup();
 
-  Ember.run(() => {
-    let [project1, project2] = makeList('project', 2);
-    let [profile1, profile2] = makeList('profile', 2);
+  let [project1, project2] = makeList('project', 2),
+      [profile1, profile2] = makeList('profile', 2),
+      user                 = make('user', 'empty', {profile: profile1, projects: [project1]});
 
-    let user = make('user', 'empty', { profile: profile1, projects: [project1] });
+  run(() => user.setProperties({name: 'Michael', profile: profile2}));
+  user.get('projects').addObject(project2);
 
-    user.set('name', 'Michael');
-    user.set('profile', profile2);
-    user.get('projects').addObject(project2);
+  assert.equal(user.get('isDirty'), true);
 
-    assert.equal(user.get('isDirty'), true);
+  mockUpdate(user);
 
-    mockUpdate(user);
+  await run(async () => user.save());
+  assert.equal(user.get('isDirty'), false);
+  assert.equal(user.get('hasDirtyAttributes'), false);
+  assert.equal(user.get('hasDirtyRelations'), false);
 
-    user.save().then(() => {
-      assert.equal(user.get('isDirty'), false);
-      assert.equal(user.get('hasDirtyAttributes'), false);
-      assert.equal(user.get('hasDirtyRelations'), false);
-      mockTeardown();
-      done();
-    });
-  });
+  mockTeardown();
 });
 
 test('#isDirty computed works (with non auto save model)', function(assert) {
-  Ember.run(() => {
-    let [company1, company2] = makeList('company', 2);
-    let [detail1, detail2] = makeList('detail', 2);
 
-    let project = make('project', { details: [detail1], company: company1 });
-    project.startTrack();
+  let [company1, company2] = makeList('company', 2),
+      [detail1, detail2]   = makeList('detail', 2),
+      project              = make('project', {details: [detail1], company: company1});
 
-    assert.equal(project.get('isDirty'), false);
-    assert.equal(project.get('hasDirtyAttributes'), false);
-    assert.equal(project.get('hasDirtyRelations'), false);
+  project.startTrack();
 
-    project.set('title', 'Blob in Space');
-    project.set('company', company2);
-    project.get('details').addObject(detail2);
+  assert.equal(project.get('isDirty'), false);
+  assert.equal(project.get('hasDirtyAttributes'), false);
+  assert.equal(project.get('hasDirtyRelations'), false);
 
-    assert.equal(project.get('isDirty'), true);
-    assert.equal(project.get('hasDirtyAttributes'), true);
-    assert.equal(project.get('hasDirtyRelations'), true);
-  });
+  run(() => project.setProperties({title: 'Blob in Space', company: company2}));
+  project.get('details').addObject(detail2);
+
+  assert.equal(project.get('isDirty'), true);
+  assert.equal(project.get('hasDirtyAttributes'), true);
+  assert.equal(project.get('hasDirtyRelations'), true);
 });
 
 test('#isDirty resets on rollback (with non auto save model)', function(assert) {
-  Ember.run(() => {
-    let [company1, company2] = makeList('company', 2);
-    let [detail1, detail2] = makeList('detail', 2);
+  let [company1, company2] = makeList('company', 2),
+      [detail1, detail2]   = makeList('detail', 2),
+      project              = make('project', {details: [detail1], company: company1});
 
-    let project = make('project', { details: [detail1], company: company1 });
-    project.startTrack();
+  project.startTrack();
 
-    project.set('title', 'Blob in Space');
-    project.set('company', company2);
-    project.get('details').addObject(detail2);
+  run(() => project.setProperties({title: 'Blob in Space', company: company2}));
+  project.get('details').addObject(detail2);
 
-    project.rollback();
+  run(() => project.rollback());
 
-    assert.equal(project.get('isDirty'), false);
-    assert.equal(project.get('hasDirtyAttributes'), false);
-    assert.equal(project.get('hasDirtyRelations'), false);
-  });
+  assert.equal(project.get('isDirty'), false);
+  assert.equal(project.get('hasDirtyAttributes'), false);
+  assert.equal(project.get('hasDirtyRelations'), false);
 });
 
-test('#isDirty resets on update (with non auto save model)', function(assert) {
-  let done = assert.async();
+test('#isDirty resets on update (with non auto save model)', async function(assert) {
   mockSetup();
 
-  Ember.run(() => {
-    let [company1, company2] = makeList('company', 2);
-    let [detail1, detail2] = makeList('detail', 2);
+  let [company1, company2] = makeList('company', 2),
+      [detail1, detail2]   = makeList('detail', 2),
+      project              = make('project', {details: [detail1], company: company1});
 
-    let project = make('project', { details: [detail1], company: company1 });
-    project.startTrack();
+  project.startTrack();
 
-    project.set('title', 'Blob in Space');
-    project.set('company', company2);
-    project.get('details').addObject(detail2);
+  run(() => project.setProperties({title: 'Blob in Space', company: company2}));
+  project.get('details').addObject(detail2);
 
-    mockUpdate(project);
+  mockUpdate(project);
 
-    project.save().then(() => {
-      assert.equal(project.get('isDirty'), false);
-      assert.equal(project.get('hasDirtyAttributes'), false);
-      assert.equal(project.get('hasDirtyRelations'), false);
-      mockTeardown();
-      done();
-    });
-  });
+  await run(async () => project.save());
+  assert.equal(project.get('isDirty'), false);
+  assert.equal(project.get('hasDirtyAttributes'), false);
+  assert.equal(project.get('hasDirtyRelations'), false);
+  mockTeardown();
 });
