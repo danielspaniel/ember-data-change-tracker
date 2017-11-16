@@ -45,7 +45,7 @@
     "ember-cli-test-loader": "2.1.0",
     "ember-cli-uglify": "^1.2.0",
     "ember-data": "2.15",
-    "ember-data-factory-guy": "2.13.11",
+    "ember-data-factory-guy": "2.13.15",
     "ember-data-model-fragments": "2.14",
     "ember-disable-prototype-extensions": "^1.1.0",
     "ember-export-application-global": "^1.0.5",

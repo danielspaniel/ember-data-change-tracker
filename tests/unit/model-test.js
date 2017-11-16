@@ -2,7 +2,7 @@ import Ember from 'ember';
 import { run } from '@ember/runloop';
 import FactoryGuy, {
   build, make, makeList, mockUpdate, mockFindRecord, mockReload,
-  mockDelete, manualSetup, mockSetup, mockTeardown
+  mockDelete, manualSetup
 } from 'ember-data-factory-guy';
 import { initializer as modelInitializer } from 'ember-data-change-tracker';
 import { test, moduleForModel } from 'ember-qunit';
@@ -59,8 +59,6 @@ test('#setupTracking sets correct trackerKeys on constructor', function(assert) 
 });
 
 test('#saveChanges saves attributes/assocations when model is ready on ajax load', async function(assert) {
-  mockSetup({logLevel: 0});
-
   let info     = {dude: 1},
       company  = make('company'),
       profile  = make('profile'),
@@ -83,13 +81,9 @@ test('#saveChanges saves attributes/assocations when model is ready on ajax load
   assert.deepEqual(user.savedTrackerValue('profile'), profile.id);
   assert.deepEqual(user.savedTrackerValue('projects'), projects.map(v => v.id));
   assert.deepEqual(user.savedTrackerValue('pets'), [{id: pets[0].id, type: 'pet'}]);
-
-  mockTeardown();
 });
 
 test('#saveChanges saves attributes/assocations when model is ready on model reload', async function(assert) {
-  mockSetup({logLevel: 0});
-
   let info     = {dude: 1},
       company  = make('company'),
       profile  = make('profile'),
@@ -127,8 +121,6 @@ test('#saveChanges saves attributes/assocations when model is ready on model rel
   assert.deepEqual(user.savedTrackerValue('profile'), profile2.id);
   assert.deepEqual(user.savedTrackerValue('projects'), projects2.map(v => v.id));
   assert.deepEqual(user.savedTrackerValue('pets'), [{id: pets2[0].id, type: 'pet'}]);
-
-  mockTeardown();
 });
 
 test('#saveChanges saves attributes/assocations when model info is pushed to store', function(assert) {
@@ -216,8 +208,6 @@ test('#didChange when replacing properties in existing model', function(assert) 
 });
 
 test('#save method resets changed if auto tracking', async function(assert) {
-  mockSetup();
-
   let company  = make('company'),
       info     = {dude: 1},
       projects = makeList('project', 2),
@@ -241,7 +231,6 @@ test('#save method resets changed if auto tracking', async function(assert) {
   assert.ok(!user.modelChanges().company, 'clears changed company after save');
   assert.ok(!user.modelChanges().projects, 'clears changed projects after save');
   assert.ok(!user.modelChanges().pets, 'clears changed pets after save');
-  mockTeardown();
 });
 
 test('#changed ( modifying ) attribute of type undefined', function(assert) {
@@ -313,8 +302,6 @@ test('#changed ( replacing )', function(assert) {
 });
 
 test("touched but unchanged relationships should not serialize when keepOnlyChanged mixin is used", async function(assert) {
-  mockSetup({logLevel: 0});
-
   let json = build('project', {
     company: {
       data: {id: '1', type: 'company'}
@@ -349,8 +336,6 @@ test("touched but unchanged relationships should not serialize when keepOnlyChan
 
   assert.ok(relationships.company == null, 'unchanged relationship should not be serialized');
   assert.ok(attributes.title != null, 'changed attribute should be serialized');
-
-  mockTeardown();
 });
 
 test('keepOnlyChanged serializer mixin', function(assert) {
@@ -602,8 +587,6 @@ test('#isDirty resets on rollback (with auto save model)', function(assert) {
 });
 
 test('#isDirty resets on update (with auto save model)', async function(assert) {
-  mockSetup();
-
   let [project1, project2] = makeList('project', 2),
       [profile1, profile2] = makeList('profile', 2),
       user                 = make('user', 'empty', {profile: profile1, projects: [project1]});
@@ -619,8 +602,6 @@ test('#isDirty resets on update (with auto save model)', async function(assert) 
   assert.equal(user.get('isDirty'), false);
   assert.equal(user.get('hasDirtyAttributes'), false);
   assert.equal(user.get('hasDirtyRelations'), false);
-
-  mockTeardown();
 });
 
 test('#isDirty computed works (with non auto save model)', function(assert) {
@@ -661,8 +642,6 @@ test('#isDirty resets on rollback (with non auto save model)', function(assert) 
 });
 
 test('#isDirty resets on update (with non auto save model)', async function(assert) {
-  mockSetup();
-
   let [company1, company2] = makeList('company', 2),
       [detail1, detail2]   = makeList('detail', 2),
       project              = make('project', {details: [detail1], company: company1});
@@ -678,5 +657,4 @@ test('#isDirty resets on update (with non auto save model)', async function(asse
   assert.equal(project.get('isDirty'), false);
   assert.equal(project.get('hasDirtyAttributes'), false);
   assert.equal(project.get('hasDirtyRelations'), false);
-  mockTeardown();
 });

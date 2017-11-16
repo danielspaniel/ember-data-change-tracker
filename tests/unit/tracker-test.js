@@ -108,7 +108,7 @@ test('#serialize', function(assert) {
     ['profile', profile, profile.id],
     ['company', null, null],
     ['company', company, {id: company.id, type: company.constructor.modelName}],
-    //    ['projects', undefined, null],
+    ['projects', undefined, null],
     ['projects', projects, A(projects).mapBy('id')],
     ['pets', pets, pets.map((p) => ({id: p.id, type: p.constructor.modelName}))],
   ];
