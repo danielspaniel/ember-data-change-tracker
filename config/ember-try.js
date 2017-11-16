@@ -9,7 +9,7 @@ module.exports = {
       },
       npm: {
         devDependencies: {
-          'ember-source': '2.10',
+          'ember-source': '2.11',
           'ember-data': '2.7.0',
           'ember-data-model-fragments': '2.11',
           'ember-inflector': '1.9.4'
@@ -24,7 +24,7 @@ module.exports = {
       },
       npm: {
         devDependencies: {
-          'ember-source': '2.10',
+          'ember-source': '2.11',
           'ember-data': 'v2.8.1',
           'ember-data-model-fragments': '2.11',
           'ember-inflector': '1.9.4'
@@ -39,7 +39,7 @@ module.exports = {
       },
       npm: {
         devDependencies: {
-          'ember-source': '2.10',
+          'ember-source': '2.11',
           'ember-data': '2.10.0',
           'ember-data-model-fragments': '2.11'
         }
