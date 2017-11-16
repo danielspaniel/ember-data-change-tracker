@@ -1,8 +1,5 @@
 {
   "name": "ember-data-change-tracker",
   "dependencies": {
-  },
-  "devDependencies": {
-    "jquery-mockjax": "2.2.1"
   }
 }
