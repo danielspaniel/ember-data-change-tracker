@@ -85,7 +85,7 @@ export default class Tracker {
    */
   static transformFn(model, attributeType) {
     let transformType = attributeType || 'object';
-    return model.store.serializerFor(model.constructor.modelName).transformFor(transformType);
+    return this.container(model).lookup(`transform:${transformType}`);  
   }
 
   /**
