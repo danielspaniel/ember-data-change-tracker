@@ -1,52 +1,45 @@
-/*jshint node:true*/
+/* eslint-env node */
 module.exports = {
   scenarios: [
     {
       name: 'ember-data-2.7',
       bower: {
-        devDependencies: {
-          'ember': 'components/ember#2.10.2'
-        },
-        resolutions: {
-          'ember': '2.10'
-        }
+        devDependencies: {},
+        resolutions: {}
       },
       npm: {
         devDependencies: {
+          'ember-source': '2.10',
           'ember-data': '2.7.0',
-          'ember-data-model-fragments': '2.11'
+          'ember-data-model-fragments': '2.11',
+          'ember-inflector': '1.9.4'
         }
       }
     },
     {
       name: 'ember-data-2.8',
       bower: {
-        devDependencies: {
-          'ember': 'components/ember#2.10.2'
-        },
-        resolutions: {
-          'ember': '2.10'
-        }
+        devDependencies: {},
+        resolutions: {}
       },
       npm: {
         devDependencies: {
+          'ember-source': '2.10',
           'ember-data': 'v2.8.1',
-          'ember-data-model-fragments': '2.11'
+          'ember-data-model-fragments': '2.11',
+          'ember-inflector': '1.9.4'
         }
       }
     },
     {
       name: 'ember-data-2.10',
       bower: {
-        devDependencies: {
-          'ember': 'components/ember#2.10.2'
-        },
-        resolutions: {
-          'ember': '2.10'
-        }
+        devDependencies: {},
+        resolutions: {}
       },
       npm: {
         devDependencies: {
+          'ember-source': '2.10',
           'ember-data': '2.10.0',
           'ember-data-model-fragments': '2.11'
         }
