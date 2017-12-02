@@ -306,6 +306,4 @@ moduleForModel('project', 'Unit | Model | project', {
   }
 });
 
-```                           
-     
-            
+```                                   
