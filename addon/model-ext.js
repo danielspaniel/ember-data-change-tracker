@@ -26,7 +26,7 @@ Model.reopen({
    * @returns {*}
    */
   modelChanges() {
-    let changed = Object.assign({}, this.changedAttributes());
+    let changed = Ember.assign({}, this.changedAttributes());
     let trackerInfo = Tracker.metaInfo(this);
     for (let key in trackerInfo) {
       if (!changed[key] && trackerInfo.hasOwnProperty(key)) {
