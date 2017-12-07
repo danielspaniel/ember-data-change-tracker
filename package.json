@@ -1,6 +1,6 @@
 {
   "name": "ember-data-change-tracker",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Track changes and rollback object attributes and relationships. Ember data 2.5+",
   "keywords": [
     "ember-addon",
