@@ -435,6 +435,7 @@ export default class Tracker {
       if (descriptor.kind === 'hasMany') {
         relations.push(descriptor.key);
         relationsObserver.push(descriptor.key + '.content.@each.id');
+        relationsObserver.push(descriptor.key + '.@each.id');
       } else {
         relations.push(descriptor.key);
         relationsObserver.push(descriptor.key + '.content');
