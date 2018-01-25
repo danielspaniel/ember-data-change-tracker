@@ -460,25 +460,27 @@ test('#rollback hasMany to empty', function(assert) {
 });
 
 test('#rollback hasMany when have at least one and add some more', function(assert) {
-  let [project1, project2] = makeList('project', 2),
-      [pet1, pet2]         = makeList('cat', 2),
+  run(() => {
+    let [project1, project2] = makeList('project', 2),
+        [pet1, pet2]         = makeList('cat', 2),
 
-      user                 = make('user', 'empty', {pets: [pet1], projects: [project1]});
+        user                 = make('user', 'empty', {pets: [pet1], projects: [project1]});
+        
+    console.time('track');
 
-  console.time('track');
+    user.startTrack();
 
-  user.startTrack();
+    user.get('projects').addObject(project2);
+    user.get('pets').addObject(pet2);
 
-  user.get('projects').addObject(project2);
-  user.get('pets').addObject(pet2);
+    run(() => user.rollback());
 
-  run(() => user.rollback());
+    console.timeEnd('track');
 
-  console.timeEnd('track');
-
-  assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
-  assert.deepEqual(user.get('projects').mapBy('id'), [project1.id]);
-  assert.deepEqual(user.get('pets').mapBy('id'), [pet1.id]);
+    assert.equal(user.get('currentState.stateName'), 'root.loaded.saved');
+    assert.deepEqual(user.get('projects').mapBy('id'), [project1.id]);
+    assert.deepEqual(user.get('pets').mapBy('id'), [pet1.id]);
+  });
 });
 
 test('#rollback value for undefined attribute', function(assert) {
@@ -550,7 +552,7 @@ test('#isDirty computed works when adding to hasMany relationship (with auto sav
   assert.equal(user.get('isDirty'), false);
   assert.equal(user.get('hasDirtyRelations'), false);
 
-  user.get('projects').addObject(project2);
+  run(() => user.get('projects').addObject(project2));
 
   assert.equal(user.get('isDirty'), true);
   assert.equal(user.get('hasDirtyRelations'), true);
@@ -564,26 +566,27 @@ test('#isDirty computed works when removing from hasMany relationship (with auto
   assert.equal(user.get('isDirty'), false);
   assert.equal(user.get('hasDirtyRelations'), false);
 
-  user.get('projects').removeObject(project2);
+  run(() => user.get('projects').removeObject(project2));
 
   assert.equal(user.get('isDirty'), true);
   assert.equal(user.get('hasDirtyRelations'), true);
 });
 
 test('#isDirty resets on rollback (with auto save model)', function(assert) {
-  let [project1, project2] = makeList('project', 2),
-      [profile1, profile2] = makeList('profile', 2),
-      user                 = make('user', 'empty', {profile: profile1, projects: [project1]});
+  run(() =>  {
+    let [project1, project2] = makeList('project', 2),
+        [profile1, profile2] = makeList('profile', 2),
+        user                 = make('user', 'empty', {profile: profile1, projects: [project1]});
 
-  run(() => user.setProperties({name: 'Michael', profile: profile2}));
-  user.get('projects').addObject(project2);
+    run(() => user.setProperties({name: 'Michael', profile: profile2}));
+    user.get('projects').addObject(project2);
 
-  user.rollback();
+    user.rollback();
 
-  assert.equal(user.get('isDirty'), false);
-  assert.equal(user.get('hasDirtyAttributes'), false);
-  assert.equal(user.get('hasDirtyRelations'), false);
-
+    assert.equal(user.get('isDirty'), false);
+    assert.equal(user.get('hasDirtyAttributes'), false);
+    assert.equal(user.get('hasDirtyRelations'), false);
+  });
 });
 
 test('#isDirty resets on update (with auto save model)', async function(assert) {
@@ -592,7 +595,7 @@ test('#isDirty resets on update (with auto save model)', async function(assert) 
       user                 = make('user', 'empty', {profile: profile1, projects: [project1]});
 
   run(() => user.setProperties({name: 'Michael', profile: profile2}));
-  user.get('projects').addObject(project2);
+  run(() => user.get('projects').addObject(project2));
 
   assert.equal(user.get('isDirty'), true);
 

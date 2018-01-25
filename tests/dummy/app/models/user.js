@@ -17,6 +17,6 @@ export default Model.extend({
   // associations
   company: belongsTo('company', { async: true, polymorphic: true }),
   profile: belongsTo('profile', { async: false }),
-  projects: hasMany('project', { async: true }),
+  projects: hasMany('project', { async: false }),
   pets: hasMany('pet', { async: false, polymorphic: true })
 });
