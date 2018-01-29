@@ -1,11 +1,11 @@
 import Ember from 'ember';
-import {didModelChange, didModelsChange, relationShipTransform} from './utilities';
+import { didModelChange, didModelsChange, relationShipTransform } from './utilities';
 
 const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
 const alreadyTrackedRegex = /^-mf-|string|boolean|date|^number$/,
       knownTrackerOpts    = Ember.A(['only', 'auto', 'except', 'trackHasMany', 'enableIsDirty']),
-      defaultOpts         = { trackHasMany: true, auto: false, enableIsDirty: false };
+      defaultOpts         = {trackHasMany: true, auto: false, enableIsDirty: false};
 
 /**
  * Helper class for change tracking models
@@ -85,7 +85,7 @@ export default class Tracker {
    */
   static transformFn(model, attributeType) {
     let transformType = attributeType || 'object';
-    return this.container(model).lookup(`transform:${transformType}`);  
+    return this.container(model).lookup(`transform:${transformType}`);
   }
 
   /**
@@ -215,8 +215,8 @@ export default class Tracker {
       }
     });
 
-    let { enableIsDirty } = trackerOpts;
-    return { autoSave: trackerOpts.auto, enableIsDirty, keyMeta };
+    let {enableIsDirty} = trackerOpts;
+    return {autoSave: trackerOpts.auto, enableIsDirty, keyMeta};
   }
 
   /**
@@ -227,13 +227,13 @@ export default class Tracker {
    * @returns {[*,*]} meta data about possible keys to track
    */
   static extractKeys(model) {
-    let { constructor } = model;
+    let {constructor} = model;
     let trackerKeys = {};
     let hasManyList = [];
 
     constructor.eachAttribute((attribute, meta) => {
       if (!alreadyTrackedRegex.test(meta.type)) {
-        trackerKeys[attribute] = { type: 'attribute', name: meta.type };
+        trackerKeys[attribute] = {type: 'attribute', name: meta.type};
       }
     });
 
@@ -351,13 +351,13 @@ export default class Tracker {
    * @returns {{*}}
    */
   static rollbackData(model, trackerInfo) {
-    let data = { id: model.id };
+    let data = {id: model.id};
     Object.keys(trackerInfo).forEach((key) => {
       let keyInfo = trackerInfo[key];
       if (this.didChange(model, key, null, trackerInfo)) {
         // For now, blow away the hasMany relationship before resetting it
-        // since pushing is not clearing and resetting at the moment
-        // this slows down the hasMany rollback by about 25%, but still
+        // since just pushing new data is not resetting the relationship.
+        // This slows down the hasMany rollback by about 25%, but still
         // fast => (~100ms) with 500 items in a hasMany
         if (keyInfo.type === 'hasMany') {
           model.set(key, []);
@@ -402,7 +402,7 @@ export default class Tracker {
    */
   static saveKey(model, key) {
     let tracker = model.get(ModelTrackerKey) || {},
-        isNew = model.get('isNew');
+        isNew   = model.get('isNew');
     tracker[key] = isNew ? undefined : this.serialize(model, key);
     model.set(ModelTrackerKey, tracker);
   }
@@ -434,7 +434,11 @@ export default class Tracker {
     model.eachRelationship((name, descriptor) => {
       if (descriptor.kind === 'hasMany') {
         relations.push(descriptor.key);
-        relationsObserver.push(descriptor.key + '.content.@each.id');
+        if (descriptor.options.async) {
+          relationsObserver.push(descriptor.key + '.content.@each.id');
+        } else {
+          relationsObserver.push(descriptor.key + '.@each.id');
+        }
       } else {
         relations.push(descriptor.key);
         relationsObserver.push(descriptor.key + '.content');

@@ -1,3 +1,1 @@
-import jsonTransform from 'ember-data-change-tracker/transforms/json';
-
-export default jsonTransform;
+export { default } from 'ember-data-change-tracker/transforms/json';

@@ -1,3 +1,1 @@
-import objectTransform from 'ember-data-change-tracker/transforms/object';
-
-export default objectTransform;
+export { default } from 'ember-data-change-tracker/transforms/object';
