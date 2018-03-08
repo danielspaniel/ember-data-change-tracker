@@ -377,11 +377,13 @@ export default class Tracker {
    *
    * @param {DS.Model} model
    */
-  static saveChanges(model) {
+  static saveChanges(model, excludingKeys) {
     let metaInfo = this.metaInfo(model);
     Object.keys(metaInfo).forEach((key) => {
-      Tracker.saveKey(model, key);
-    });
+      if (!excludingKeys || !excludingKeys.includes(key)) {
+        Tracker.saveKey(model, key);
+      }
+	});
   }
 
   /**

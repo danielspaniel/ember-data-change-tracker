@@ -658,3 +658,66 @@ test('#isDirty resets on update (with non auto save model)', async function(asse
   assert.equal(project.get('hasDirtyAttributes'), false);
   assert.equal(project.get('hasDirtyRelations'), false);
 });
+
+test('when model.belongsTo is pushed to store, do not dirty', function(assert) {
+  let company1  = make('company');
+  let company2  = make('company');
+
+  let userJson = build('user', {id: '1111',name: 'bob',company: company1});
+
+  let normalized = Tracker.normalize(make('user'), userJson.get());
+
+  let user = run(() => FactoryGuy.store.push(normalized));
+  assert.deepEqual(user.get('name'), 'bob', 'newly pushed user has correct info');
+  assert.deepEqual(user.savedTrackerValue('company'), {id: company1.id, type: 'company'}, 'newly pushed user has correct company');
+  assert.notOk(user.get('isDirty'), 'newly pushed user is not dirty');
+
+  userJson = build('user', {id: '1111', company: company2});
+  normalized = Tracker.normalize(make('user'), userJson.get());
+  delete normalized.data.attributes.name;
+  let user3 = run(() => FactoryGuy.store.push(normalized));
+  user3.saveChanges();
+  assert.equal(user, user3, 'pushed update is the same user');
+  assert.deepEqual(user3.get('name'), 'bob', 'pushed updated user has correct info');
+  assert.deepEqual(user.savedTrackerValue('company'), {id: company2.id, type: 'company'}, 'tracker has correct company');
+  assert.deepEqual(user3.belongsTo('company').id(), "2", 'pushed updated user has correct company');
+  assert.notOk(user3.get('isDirty'), 'pushed update user is not dirty');
+});
+
+test('test model.saveChanges excludingKeys', function(assert) {
+  let company1  = make('company');
+  let company2  = make('company');
+  let profile1  = make('profile');
+  let profile2  = make('profile');
+
+  let userJson = build('user', {id: '1111',company:company1,profile: profile1});
+
+  let normalized = Tracker.normalize(make('user'), userJson.get());
+
+  let user = run(() => FactoryGuy.store.push(normalized));
+  assert.deepEqual(user.savedTrackerValue('company'), {id: company1.id, type: 'company'}, 'newly pushed user has correct company');
+  assert.deepEqual(user.savedTrackerValue('profile'), "1", 'newly pushed user has correct profile');
+  assert.notOk(user.get('isDirty'), 'newly pushed user is not dirty');
+
+  // now dirty the user.company
+  run(() => user.set('company', company2));
+  assert.ok(user.get('isDirty'), 'updated user is dirty');
+
+  userJson = build('user', {id: '1111', company: company1, profile: profile2});
+  normalized = Tracker.normalize(make('user'), userJson.get());
+  // remove company from payload, so only profile gets updated
+  delete normalized.data.relationships.company;
+  user = run(() => FactoryGuy.store.push(normalized));
+  // before we call saveChanges(), many things
+  assert.ok(user.get('isDirty'), 'pushed update user is dirty before saveChanges()');
+  assert.deepEqual(user.savedTrackerValue('company'), {id: company1.id, type: 'company'}, 'tracker has correct company');
+  assert.deepEqual(user.belongsTo('company').id(), "2", 'pushed updated user has correct company');
+  assert.deepEqual(user.savedTrackerValue('profile'), "1", 'before saveChanges, tracker has wrong profile');
+  assert.deepEqual(user.belongsTo('profile').id(), "2", 'before saveChanges, pushed updated user has correct profile');
+  user.saveChanges(['company']);
+  assert.deepEqual(user.savedTrackerValue('company'), {id: company1.id, type: 'company'}, 'after saveChanges, tracker has correct company');
+  assert.deepEqual(user.belongsTo('company').id(), "2", 'after saveChanges, pushed updated user has correct company');
+  assert.deepEqual(user.savedTrackerValue('profile'), "2", 'after saveChanges, tracker has correct profile');
+  assert.deepEqual(user.belongsTo('profile').id(), "2", 'after saveChanges, pushed updated user has correct profile');
+  assert.ok(user.get('isDirty'), 'pushed update user is dirty');
+});

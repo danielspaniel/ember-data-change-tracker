@@ -67,10 +67,10 @@ Model.reopen({
    * NOTE: This is needed when manually pushing data
    * to the store and using Ember < 2.10
    */
-  saveChanges() {
+  saveChanges(excludingKeys) {
     Tracker.setupTracking(this);
     Tracker.triggerIsDirtyReset(this);
-    Tracker.saveChanges(this);
+    Tracker.saveChanges(this, excludingKeys);
   },
 
   /**
