@@ -65,12 +65,20 @@ Model.reopen({
    * Save the current state of the model
    *
    * NOTE: This is needed when manually pushing data
-   * to the store and using Ember < 2.10
+   * to the store and ussing Ember < 2.10
+   *
+   * options like => {except: 'company'}
+   *
+   * @param {Object} options
    */
-  saveChanges() {
+  saveChanges(options) {
     Tracker.setupTracking(this);
     Tracker.triggerIsDirtyReset(this);
-    Tracker.saveChanges(this);
+    Tracker.saveChanges(this, options);
+  },
+
+  saveTrackerChanges(options) {
+    this.saveChanges(options);
   },
 
   /**

@@ -103,11 +103,10 @@ export default class Tracker {
    * @param {Object} data rollback data
    */
   static normalize(model, data) {
-    let modelClass = model.store.modelFor(model.constructor.modelName);
     let container = this.container(model);
     let serializer = container.lookup('serializer:-rest');
     serializer.set('store', model.store);
-    return serializer.normalize(modelClass, data);
+    return serializer.normalize(model.constructor, data);
   }
 
   /**
@@ -376,12 +375,13 @@ export default class Tracker {
    * Save change tracker attributes
    *
    * @param {DS.Model} model
+   * @param {Object} options
+   *    except array of keys to exclude
    */
-  static saveChanges(model) {
+  static saveChanges(model, {except = []} = {}) {
     let metaInfo = this.metaInfo(model);
-    Object.keys(metaInfo).forEach((key) => {
-      Tracker.saveKey(model, key);
-    });
+    let keys = Object.keys(metaInfo).filter(key=>!except.includes(key));
+    keys.forEach(key => Tracker.saveKey(model, key));
   }
 
   /**
@@ -445,7 +445,7 @@ export default class Tracker {
       }
     });
 
-    model.eachAttribute((name) => {
+    model.eachAttribute(name => {
       return attrs.push(name);
     });
 

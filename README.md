@@ -282,13 +282,12 @@ Usage:
 ```           
  
 ## Known Issues
-  - Ember less than 2.10 AND you are using auto track mode
-   - When pushing data to the store directly to create a model ( usually done when using 
-     websockets .. but same issue if using factory guy) you need to call ```model.saveChanges()``` 
-     manually after creating that new model   
-  - Testing 
-    - In unit / integration tests you have to manually initialize change-tracker 
-      if you are testing anything that requires the addon to be enabled
+ - When pushing data to the store directly to create a model ( usually done when using 
+   websockets .. but same issue if using factory guy) you need to call ```model.saveChanges()``` 
+   manually after creating that new model   
+ - Testing 
+   - In unit / integration tests you have to manually initialize change-tracker 
+     if you are testing anything that requires the addon to be enabled
 
 For example:
  

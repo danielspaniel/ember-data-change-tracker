@@ -176,49 +176,70 @@ module('Unit | Model', function(hooks) {
       assert.deepEqual(user.savedTrackerValue('projects'), undefined, 'sets async hasMany to undefined');
       assert.deepEqual(user.savedTrackerValue('pets'), undefined, 'sets non async hasMany to undefined');
     });
+
+    test('with except keys', function(assert) {
+      let [company1, company2] = makeList('company', 2),
+          startInfo            = {e: 'Duck'},
+          newInfo              = {f: 'Goose'},
+          user                 = make('user', {info: startInfo, company: company1});
+
+      assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(startInfo), 'saveTrackerValue for info to start');
+      assert.deepEqual(user.savedTrackerValue('company'), {id: company1.id, type: 'company'}, 'saveTrackerValue for company to start');
+
+      run(() => user.setProperties({info: newInfo, company: company2}));
+
+      user.saveTrackerChanges({except: ['company']});
+
+      assert.deepEqual(user.savedTrackerValue('info'), JSON.stringify(newInfo), 'saveTrackerValue for info is updated');
+      assert.deepEqual(user.savedTrackerValue('company'), {id: company1.id, type: 'company'}, 'saveTrackerValue for company does not change');
+
+      assert.ok(user.get('isDirty'), 'user isDirty => true');
+    });
   });
 
-  test('#didChange when setting properties on newly created model', function(assert) {
-    let company  = make('company'),
-        profile  = make('profile'),
-        projects = makeList('project', 1),
-        pets     = makeList('pet', 1),
-        info     = {dude: 1};
+  module('#didChange', function() {
+    test('when setting properties on newly created model', function(assert) {
+      let company  = make('company'),
+          profile  = make('profile'),
+          projects = makeList('project', 1),
+          pets     = makeList('pet', 1),
+          info     = {dude: 1};
 
-    let params = {info, profile, company, projects, pets};
-    let user = run(() => FactoryGuy.store.createRecord('user', params));
+      let params = {info, profile, company, projects, pets};
+      let user = run(() => FactoryGuy.store.createRecord('user', params));
 
-    assert.ok(user.didChange('info'));
-    assert.ok(user.didChange('company'));
-    assert.ok(user.didChange('profile'));
-    assert.ok(user.didChange('projects'));
-    assert.ok(user.didChange('pets'));
-  });
+      assert.ok(user.didChange('info'));
+      assert.ok(user.didChange('company'));
+      assert.ok(user.didChange('profile'));
+      assert.ok(user.didChange('projects'));
+      assert.ok(user.didChange('pets'));
+    });
 
-  test('#didChange when replacing properties in existing model', function(assert) {
-    let company  = make('small-company'),
-        projects = makeList('project', 2),
-        pets     = makeList('pet', 2),
-        info     = {dude: 1};
+    test('when replacing properties in existing model', function(assert) {
+      let company  = make('small-company'),
+          projects = makeList('project', 2),
+          pets     = makeList('pet', 2),
+          info     = {dude: 1};
 
-    let tests = [
-      ['info', undefined, null, true],
-      ['info', undefined, info, true],
-      ['company', null, null, false],
-      ['company', null, company, true],
-      ['projects', [], [], false],
-      ['projects', [], projects, true],
-      ['pets', [], [], false],
-      ['pets', [], pets, true],
-    ];
+      let tests = [
+        ['info', undefined, null, true],
+        ['info', undefined, info, true],
+        ['company', null, null, false],
+        ['company', null, company, true],
+        ['projects', [], [], false],
+        ['projects', [], projects, true],
+        ['pets', [], [], false],
+        ['pets', [], pets, true],
+      ];
 
-    for (let test of tests) {
-      let [key, firstValue, nextValue, expected] = test;
-      let user = make('user', {[key]: firstValue});
-      user.saveChanges();
-      setModel(user, key, nextValue);
-      assert.equal(user.didChange(key), expected);
-    }
+      for (let test of tests) {
+        let [key, firstValue, nextValue, expected] = test;
+        let user = make('user', {[key]: firstValue});
+        user.saveChanges();
+        setModel(user, key, nextValue);
+        assert.equal(user.didChange(key), expected);
+      }
+    });
   });
 
   test('#save method resets changed if auto tracking', async function(assert) {
@@ -628,7 +649,7 @@ module('Unit | Model', function(hooks) {
         assert.equal(user.get('hasDirtyRelations'), false);
       });
 
-      test('resets on update', async function(assert) {
+      test('resets on ajax update', async function(assert) {
         let [project1, project2] = makeList('project', 2),
             [profile1, profile2] = makeList('profile', 2),
             user                 = make('user', 'empty', {profile: profile1, projects: [project1]});
@@ -645,6 +666,7 @@ module('Unit | Model', function(hooks) {
         assert.equal(user.get('hasDirtyAttributes'), false);
         assert.equal(user.get('hasDirtyRelations'), false);
       });
+
     });
 
     module('with NON auto save model', function() {

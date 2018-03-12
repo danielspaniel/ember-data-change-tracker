@@ -134,3 +134,4 @@ test('transformFn when creating new record', function(assert) {
   Ember.run(() => FactoryGuy.store.createRecord('user'));
   assert.ok(true);
 });
+
