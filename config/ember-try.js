@@ -46,6 +46,20 @@ module.exports = {
       }
     },
     {
+      name: 'ember-data-3.0',
+      bower: {
+        devDependencies: {},
+        resolutions: {}
+      },
+      npm: {
+        devDependencies: {
+          'ember-source': '3.0',
+          'ember-data': '3.0',
+          'ember-data-model-fragments': '3.0.0-beta.1'
+        }
+      }
+    },
+    {
       name: 'ember-release',
       bower: {
         devDependencies: {

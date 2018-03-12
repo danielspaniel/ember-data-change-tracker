@@ -16,12 +16,14 @@ env:
   - EMBER_TRY_SCENARIO=ember-data-2.7
   - EMBER_TRY_SCENARIO=ember-data-2.8
   - EMBER_TRY_SCENARIO=ember-data-2.10
+  - EMBER_TRY_SCENARIO=ember-data-3.0
   - EMBER_TRY_SCENARIO=ember-release
   - EMBER_TRY_SCENARIO=ember-beta
 
 matrix:
   fast_finish: true
   allow_failures:
+    - env: EMBER_TRY_SCENARIO=ember-release
     - env: EMBER_TRY_SCENARIO=ember-beta
 
 before_install:
