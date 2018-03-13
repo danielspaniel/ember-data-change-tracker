@@ -283,7 +283,7 @@ Usage:
  
 ## Known Issues
  - When pushing data to the store directly to create a model ( usually done when using 
-   websockets .. but same issue if using factory guy) you need to call ```model.saveChanges()``` 
+   websockets .. but same issue if using factory guy) you need to call ```model.saveTrackerChanges()``` 
    manually after creating that new model   
  - Testing 
    - In unit / integration tests you have to manually initialize change-tracker 
