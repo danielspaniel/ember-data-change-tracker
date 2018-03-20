@@ -110,6 +110,13 @@ Model.reopen({
     }
   }),
 
+  // when model creates, update the tracked state if using auto save
+  saveOnCreate: Ember.on('didCreate', function() {
+    if (Tracker.isAutoSaveEnabled(this) || Tracker.isIsDirtyEnabled(this)) {
+      this.saveChanges();
+    }
+  }),
+
   // There is no didReload callback on models, so have to override reload
   reload() {
     let promise = this._super();

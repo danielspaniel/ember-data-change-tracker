@@ -177,6 +177,20 @@ module('Unit | Model', function(hooks) {
       assert.deepEqual(user.savedTrackerValue('pets'), undefined, 'sets non async hasMany to undefined');
     });
 
+    test('when newly created model is saved', async function(assert) {
+      let info   = {dude: 1},
+          params = {info},
+          user   = run(() => FactoryGuy.store.createRecord('user', params));
+
+      mockCreate(user);
+      assert.ok(user.get('isDirty'), 'object attribute causes model to be dirty');
+      await run(async () => user.save());
+
+      assert.notOk(user.get('isDirty'), 'resets isDirty');
+
+      assert.notOk(Object.keys(user.modelChanges()).length, 'clears model changes');
+    });
+
     test('with except keys', function(assert) {
       let [company1, company2] = makeList('company', 2),
           startInfo            = {e: 'Duck'},
