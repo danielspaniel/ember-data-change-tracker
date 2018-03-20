@@ -1,14 +1,15 @@
 import Ember from 'ember';
 import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
-import { run } from '@ember/runloop';
+import { run, once } from '@ember/runloop';
 import FactoryGuy, {
   build, make, makeList, mockUpdate, mockFindRecord, mockReload,
-  mockDelete, manualSetup
+  mockDelete, manualSetup, mockCreate
 } from 'ember-data-factory-guy';
 import { initializer as modelInitializer } from 'ember-data-change-tracker';
 import Tracker, { ModelTrackerKey } from 'ember-data-change-tracker/tracker';
 import sinon from 'sinon';
+import EmberObject, { observer } from '@ember/object';
 
 modelInitializer();
 
@@ -27,7 +28,7 @@ module('Unit | Model', function(hooks) {
   setupTest(hooks);
 
   hooks.beforeEach(function() {
-    manualSetup(this.owner);
+    manualSetup(this);
   });
 
   test('only sets up tracking meta data once on model type', function(assert) {
@@ -208,6 +209,35 @@ module('Unit | Model', function(hooks) {
       assert.deepEqual(user.savedTrackerValue('company'), {id: company1.id, type: 'company'}, 'saveTrackerValue for company does not change');
 
       assert.ok(user.get('isDirty'), 'user isDirty => true');
+    });
+
+    test('with observer on model.isDirty', async function(assert) {
+      let [company1, company2] = makeList('company', 2),
+          [detail1, detail2]   = makeList('detail', 2),
+          project              = make('project', {details: [detail1], company: company1});
+
+      project.startTrack();
+
+      EmberObject.extend({
+        record: null,
+        init() {
+          this._super(...arguments);
+          this.isDirtyObserver();
+        },
+        isDirtyObserver: observer('record.isDirty', function() {
+          this.get('record.isDirty');
+        }),
+      }).create({record: project});
+
+      run(() => project.setProperties({title: 'Blob in Space', company: company2}));
+      project.get('details').addObject(detail2);
+
+      mockUpdate(project);
+
+      await run(async () => project.save());
+      assert.equal(project.get('isDirty'), false);
+      assert.equal(project.get('hasDirtyAttributes'), false);
+      assert.equal(project.get('hasDirtyRelations'), false);
     });
   });
 
