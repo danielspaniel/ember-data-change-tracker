@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
-import { run, once } from '@ember/runloop';
+import { run } from '@ember/runloop';
 import FactoryGuy, {
   build, make, makeList, mockUpdate, mockFindRecord, mockReload,
   mockDelete, manualSetup, mockCreate
