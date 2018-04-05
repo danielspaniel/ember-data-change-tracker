@@ -49,8 +49,10 @@ Model.reopen({
    *
    */
   rollback() {
-    let trackerInfo = Tracker.metaInfo(this);
+    const isNew = this.get('isNew');
     this.rollbackAttributes();
+    if (isNew) { return; }
+    let trackerInfo = Tracker.metaInfo(this);
     let rollbackData = Tracker.rollbackData(this, trackerInfo);
     let normalized = Tracker.normalize(this, rollbackData);
     this.store.push(normalized);
