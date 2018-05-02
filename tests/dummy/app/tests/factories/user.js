@@ -28,9 +28,6 @@ FactoryGuy.define('user', {
     },
     withProfile: {
       profile: {}
-    },
-    withProjects: {
-//      projects: FactoryGuy.hasMany('project', 2)
     }
   }
 });
