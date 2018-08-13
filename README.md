@@ -13,7 +13,7 @@ This addon aims to fill in the gaps in the change tracking / rollback that ember
  
  - Currently ember-data 
     - tracks changes for numbers/strings/date/boolean attributes
-    - has a ```changeAttributes()``` method to see what changed => [ last, current ]
+    - has a ```changedAttributes()``` method to see what changed => [ last, current ]
     - has a ```rollbackAttributes()``` method to rollback attributes
     - has a ```hasDirtyAttributes``` computed property 
   
