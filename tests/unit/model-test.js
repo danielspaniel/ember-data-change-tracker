@@ -8,7 +8,7 @@ import FactoryGuy, {
 import { initializer as modelInitializer } from 'ember-data-change-tracker';
 import Tracker, { ModelTrackerKey } from 'ember-data-change-tracker/tracker';
 import sinon from 'sinon';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject, { get, observer } from '@ember/object';
 
 modelInitializer();
 
@@ -578,8 +578,8 @@ module('Unit | Model', function(hooks) {
       let company = make('company'),
           user    = make('user', 'empty');
 
-      assert.equal(user.isDirty, false);
-      assert.equal(company.isDirty, undefined);
+      assert.equal(get(user, 'isDirty'), false);
+      assert.equal(get(company, 'isDirty'), undefined);
     });
 
     module('with auto save model', function() {
