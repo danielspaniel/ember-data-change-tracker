@@ -121,7 +121,7 @@ Model.reopen({
 
   // There is no didReload callback on models, so have to override reload
   reload() {
-    let promise = this._super();
+    let promise = this._super(...arguments);
     promise.then(() => {
       if (Tracker.isAutoSaveEnabled(this)) {
         this.saveChanges();
