@@ -380,7 +380,7 @@ export default class Tracker {
    */
   static saveChanges(model, {except = []} = {}) {
     let metaInfo = this.metaInfo(model);
-    let keys = Object.keys(metaInfo).filter(key=>!except.includes(key));
+    let keys = Object.keys(metaInfo).filter(key => !except.includes(key));
     keys.forEach(key => Tracker.saveKey(model, key));
   }
 

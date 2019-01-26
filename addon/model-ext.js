@@ -100,7 +100,6 @@ Model.reopen({
       Tracker.initializeDirtiness(this);
     }
     if (Tracker.isAutoSaveEnabled(this)) {
-      Tracker.setupTracking(this);
       this.saveChanges();
     }
   }),
