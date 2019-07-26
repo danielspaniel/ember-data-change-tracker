@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import $ from 'jquery';
 
 export const modelTransform = function(model, polymorphic) {
   if (polymorphic) {
@@ -31,7 +32,7 @@ export const relationShipTransform = {
 
 export const isEmpty = function(value) {
   if (Ember.typeOf(value) === 'object') {
-    return Ember.$.isEmptyObject(value);
+    return $.isEmptyObject(value);
   }
   return Ember.isEmpty(value);
 };
