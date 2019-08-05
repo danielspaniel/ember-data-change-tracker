@@ -11,7 +11,6 @@ module.exports = {
       mode: 'ci',
       args: [
         '--headless',
-        '--disable-gpu',
         '--disable-dev-shm-usage',
         '--disable-software-rasterizer',
         '--mute-audio',
