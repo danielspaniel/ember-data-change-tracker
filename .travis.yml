@@ -12,7 +12,7 @@ cache:
   yarn: true
 
 env:
-  - EMBER_TRY_SCENARIO=ember-release
+  - EMBER_TRY_SCENARIO=ember-3.8
   - EMBER_TRY_SCENARIO=ember-beta
 
 matrix:
