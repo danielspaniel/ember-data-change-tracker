@@ -50,8 +50,8 @@
     "ember-export-application-global": "^2.0.0",
     "ember-load-initializers": "^2.0.0",
     "ember-resolver": "5.0.1",
-    "ember-sinon": "2.2.0",
-    "ember-source": "3.6",
+    "ember-sinon": "4.0.0",
+    "ember-source": "3.8",
     "ember-source-channel-url": "^1.1.0",
     "ember-try": "^0.2.23",
     "loader.js": "4.7.0"
