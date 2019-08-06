@@ -13,20 +13,20 @@ module.exports = function() {
       useYarn: true,
       scenarios: [
         {
-          name: 'ember-release',
-          npm: {
-            devDependencies: {
-              'ember-data': 'release',
-              'ember-source': urls[0],
-            }
-          }
-        },
-        {
           name: 'ember-3.8',
           npm: {
             devDependencies: {
               'ember-data': '3.8.0',
               'ember-source': '3.8.0',
+            }
+          }
+        },
+        {
+          name: 'ember-release',
+          npm: {
+            devDependencies: {
+              'ember-data': 'release',
+              'ember-source': urls[0],
             }
           }
         },
