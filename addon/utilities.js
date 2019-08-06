@@ -31,7 +31,7 @@ export const relationShipTransform = {
 
 export const isEmpty = function(value) {
   if (Ember.typeOf(value) === 'object') {
-    return Ember.$.isEmptyObject(value);
+    return Object.keys(value).length === 0;
   }
   return Ember.isEmpty(value);
 };
