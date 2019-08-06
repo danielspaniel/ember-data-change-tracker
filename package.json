@@ -43,7 +43,7 @@
     "ember-cli-release": "^0.2.9",
     "ember-cli-sri": "^2.1.1",
     "ember-cli-uglify": "^1.2.0",
-    "ember-data": "3.8.0",
+    "ember-data": "3.8",
     "ember-data-factory-guy": "3.9.4",
     "ember-data-model-fragments": "4.0.0",
     "ember-disable-prototype-extensions": "^1.1.0",
