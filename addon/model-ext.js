@@ -94,7 +94,7 @@ Model.reopen({
   },
 
   // save state when model is loaded or created if using auto save
-  setupTrackerMetaData: Ember.on('ready', function() {
+  setupTrackerMetaData() {
     if (Tracker.isIsDirtyEnabled(this)) {
       // this is experimental
       Tracker.initializeDirtiness(this);
@@ -102,21 +102,21 @@ Model.reopen({
     if (Tracker.isAutoSaveEnabled(this)) {
       this.saveChanges();
     }
-  }),
+  },
 
   // when model updates, update the tracked state if using auto save
-  saveOnUpdate: Ember.on('didUpdate', function() {
+  saveOnUpdate() {
     if (Tracker.isAutoSaveEnabled(this) || Tracker.isIsDirtyEnabled(this)) {
       this.saveChanges();
     }
-  }),
+  },
 
   // when model creates, update the tracked state if using auto save
-  saveOnCreate: Ember.on('didCreate', function() {
+  saveOnCreate() {
     if (Tracker.isAutoSaveEnabled(this) || Tracker.isIsDirtyEnabled(this)) {
       this.saveChanges();
     }
-  }),
+  },
 
   // There is no didReload callback on models, so have to override reload
   reload() {
@@ -130,8 +130,34 @@ Model.reopen({
   },
 
   // when model deletes, remove any tracked state
-  clearSavedAttributes: Ember.on('didDelete', function() {
+  clearSavedAttributes() {
     Tracker.clear(this);
-  })
+  },
 
+  // Ember Data DS.Model events
+  // http://api.emberjs.com/ember-data/3.10/classes/DS.Model/events
+  //
+  // Replaces deprecated Ember.Evented usage:
+  // https://github.com/emberjs/rfcs/blob/master/text/0329-deprecated-ember-evented-in-ember-data.md
+  // Related: https://github.com/emberjs/rfcs/pull/329
+
+  ready() {
+    this._super(...arguments);
+    this.setupTrackerMetaData();
+  },
+
+  didCreate() {
+    this._super(...arguments);
+    this.saveOnCreate();
+  },
+
+  didUpdate() {
+    this._super(...arguments);
+    this.saveOnUpdate();
+  },
+
+  didDelete() {
+    this._super(...arguments);
+    this.clearSavedAttributes();
+  },
 });
