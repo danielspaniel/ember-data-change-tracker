@@ -6,7 +6,7 @@ import FactoryGuy, {
   mockDelete, manualSetup, mockCreate, mock
 } from 'ember-data-factory-guy';
 import { initializer as modelInitializer } from 'ember-data-change-tracker';
-import Tracker, { ModelTrackerKey } from 'ember-data-change-tracker/tracker';
+import Tracker, { ModelTrackerKey, RelationshipsKnownTrackerKey } from 'ember-data-change-tracker/tracker';
 import sinon from 'sinon';
 import EmberObject, { get, observer } from '@ember/object';
 
@@ -50,10 +50,12 @@ module('Unit | Model', function(hooks) {
     let user = make('user', {info: {d: 2}});
 
     assert.ok(!!user.get(ModelTrackerKey));
+    assert.ok(!!user.get(RelationshipsKnownTrackerKey));
     mockDelete(user);
 
     await run(async () => user.destroyRecord());
     assert.ok(!user.get(ModelTrackerKey));
+    assert.ok(!user.get(RelationshipsKnownTrackerKey));
   });
 
 
@@ -395,7 +397,7 @@ module('Unit | Model', function(hooks) {
 
       project.startTrack(); // Start tracking before the full relationship is loaded
 
-      let companyJson = build('company', {id: '1', type: 'company', name: 'foo'});
+      let companyJson = build('company', {id: '14', type: 'company', name: 'foo'});
 
       mock({
         type: 'GET',
@@ -406,6 +408,11 @@ module('Unit | Model', function(hooks) {
       await project.get('company');
 
       assert.notOk(project.modelChanges().company, 'company has been loaded but not modified, should not be considered to be changed');
+
+      let company    = make('small-company');
+      setModel(project, 'company', company);
+
+      assert.ok(project.modelChanges().company, 'company has been modified');
     });
 
     test('loading lazy hasMany association via Related Resource Links', async function (assert) {
@@ -433,6 +440,11 @@ module('Unit | Model', function(hooks) {
       await project.get('details');
 
       assert.notOk(project.modelChanges().details, 'details has been loaded but not modified, should not be considered to be changed');
+
+      let detail = make('detail');
+      setModel(project, 'details', [detail]);
+
+      assert.ok(project.modelChanges().details, 'details has been modified');
     });
   });
 

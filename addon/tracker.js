@@ -1,8 +1,9 @@
 import Ember from 'ember';
-import { didModelChange, didModelsChange, relationShipTransform } from './utilities';
+import { didModelChange, didModelsChange, relationShipTransform, relationshipKnownState } from './utilities';
 
 const assign = Ember.assign || Ember.merge;
 export const ModelTrackerKey = '-change-tracker';
+export const RelationshipsKnownTrackerKey = '-change-tracker-relationships-known';
 const alreadyTrackedRegex = /^-mf-|string|boolean|date|^number$/,
       knownTrackerOpts    = Ember.A(['only', 'auto', 'except', 'trackHasMany', 'enableIsDirty']),
       defaultOpts         = {trackHasMany: true, auto: false, enableIsDirty: false};
@@ -239,7 +240,8 @@ export default class Tracker {
     constructor.eachRelationship((key, relationship) => {
       trackerKeys[key] = {
         type: relationship.kind,
-        polymorphic: relationship.options.polymorphic
+        polymorphic: relationship.options.polymorphic,
+        knownState: relationshipKnownState[relationship.kind]
       };
       if (relationship.kind === 'hasMany') {
         hasManyList.push(key);
@@ -332,6 +334,26 @@ export default class Tracker {
   }
 
   /**
+   * Determine if the key represents data that the client knows about.
+   *
+   * For relationships that are async links it may be that they are yet to be
+   * loaded and so a determination of 'changed' cannot be known
+   *
+   * @param {DS.Model} model
+   * @param {String} key attribute/association name
+   */
+  static isKnown(model, key, keyInfo) {
+    let info = keyInfo || this.metaInfo(model, key);
+    let value;
+    if (info.type === 'attribute') {
+      value = true;
+    } else {
+      value = info.knownState.isKnown(model, key);
+    }
+    return value;
+  }
+
+  /**
    * Retrieve the last known value for this model key
    *
    * @param {DS.Model} model
@@ -340,6 +362,17 @@ export default class Tracker {
    */
   static lastValue(model, key) {
     return (model.get(ModelTrackerKey) || {})[key];
+  }
+
+  /**
+   * Retrieve the last known state for this model key
+   *
+   * @param {DS.Model} model
+   * @param {String} key attribute/association name
+   * @returns {*}
+   */
+  static lastKnown(model, key) {
+    return (model.get(RelationshipsKnownTrackerKey) || {})[key];
   }
 
   /**
@@ -385,6 +418,26 @@ export default class Tracker {
   }
 
   /**
+   * Save the current relationship value into the hash only if it was previously
+   * unknown (i.e. to be loaded async via a link)
+   *
+   * @param {DS.Model} model
+   * @param {String} key association name
+   * @returns {boolean} true if the current relationship value was saved, false otherwise
+   */
+  static saveLoadedRelationship(model, key) {
+    let saved = false;
+    if (!Tracker.lastKnown(model, key)) {
+      let keyInfo = this.metaInfo(model, key);
+      if (Tracker.isKnown(model, key, keyInfo)) {
+        Tracker.saveKey(model, key);
+        saved = true;
+      }
+    }
+    return saved;
+  }
+
+  /**
    * Manually trigger the isDirty properties to refresh themselves
    *
    * @param {DS.Model} model
@@ -396,24 +449,30 @@ export default class Tracker {
 
   /**
    * Save current model key value in model's tracker hash
+   * and save the relationship state if key represents a relationship
    *
    * @param {DS.Model} model
    * @param {String} key attribute/association name
    */
   static saveKey(model, key) {
-    let tracker = model.get(ModelTrackerKey) || {},
+    let modelTracker = model.get(ModelTrackerKey) || {},
+        relationshipsKnownTracker = model.get(RelationshipsKnownTrackerKey) || {},
         isNew   = model.get('isNew');
-    tracker[key] = isNew ? undefined : this.serialize(model, key);
-    model.set(ModelTrackerKey, tracker);
+    modelTracker[key] = isNew ? undefined : this.serialize(model, key);
+    model.set(ModelTrackerKey, modelTracker);
+
+    relationshipsKnownTracker[key] = isNew ? true : this.isKnown(model, key);
+    model.set(RelationshipsKnownTrackerKey, relationshipsKnownTracker);
   }
 
   /**
-   * Remove tracker hash from the model's state
+   * Remove tracker hashes from the model's state
    *
    * @param {DS.Model} model
    */
   static clear(model) {
     model.set(ModelTrackerKey, undefined);
+    model.set(RelationshipsKnownTrackerKey, undefined);
   }
 
   /**
