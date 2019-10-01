@@ -2,11 +2,11 @@ import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
 import { run } from '@ember/runloop';
 import FactoryGuy, {
-  build, make, makeList, mockUpdate, mockFindRecord, mockReload,
-  mockDelete, manualSetup, mockCreate
+  build, buildList, make, makeList, mockUpdate, mockFindRecord, mockReload,
+  mockDelete, manualSetup, mockCreate, mock
 } from 'ember-data-factory-guy';
 import { initializer as modelInitializer } from 'ember-data-change-tracker';
-import Tracker, { ModelTrackerKey } from 'ember-data-change-tracker/tracker';
+import Tracker, { ModelTrackerKey, RelationshipsKnownTrackerKey } from 'ember-data-change-tracker/tracker';
 import sinon from 'sinon';
 import EmberObject, { get, observer } from '@ember/object';
 
@@ -50,10 +50,12 @@ module('Unit | Model', function(hooks) {
     let user = make('user', {info: {d: 2}});
 
     assert.ok(!!user.get(ModelTrackerKey));
+    assert.ok(!!user.get(RelationshipsKnownTrackerKey));
     mockDelete(user);
 
     await run(async () => user.destroyRecord());
     assert.ok(!user.get(ModelTrackerKey));
+    assert.ok(!user.get(RelationshipsKnownTrackerKey));
   });
 
 
@@ -379,6 +381,70 @@ module('Unit | Model', function(hooks) {
         setModel(user, key, nextValue);
         assert.equal(!!user.modelChanges()[key], expected, message);
       }
+    });
+
+    test('loading lazy belongsTo association via Related Resource Links', async function (assert) {
+      let json = build('project', {
+        links: {
+          company: "/projects/1/company"
+        }
+      });
+
+      mockFindRecord('project').returns({json});
+
+      let project = await run(async () => FactoryGuy.store.find('project', json.get('id')));
+      assert.notOk(project.modelChanges().company, 'company has not been loaded, should not be considered to be changed');
+
+      project.startTrack(); // Start tracking before the full relationship is loaded
+
+      let companyJson = build('company', {id: '14', type: 'company', name: 'foo'});
+
+      mock({
+        type: 'GET',
+        url: '/projects/1/company',
+        responseText: companyJson
+      });
+
+      await project.get('company');
+
+      assert.notOk(project.modelChanges().company, 'company has been loaded but not modified, should not be considered to be changed');
+
+      let company    = make('small-company');
+      setModel(project, 'company', company);
+
+      assert.ok(project.modelChanges().company, 'company has been modified');
+    });
+
+    test('loading lazy hasMany association via Related Resource Links', async function (assert) {
+      let json = build('project', {
+        links: {
+          details: "/projects/1/details"
+        }
+      });
+
+      mockFindRecord('project').returns({json});
+
+      let project = await run(async () => FactoryGuy.store.find('project', json.get('id')));
+      assert.notOk(project.modelChanges().details, 'details have not been loaded, should not be considered to be changed');
+
+      project.startTrack(); // Start tracking before the full relationship is loaded
+
+      let detailsJson = buildList('detail', 2);
+
+      mock({
+        type: 'GET',
+        url: '/projects/1/details',
+        responseText: detailsJson
+      });
+
+      await project.get('details');
+
+      assert.notOk(project.modelChanges().details, 'details has been loaded but not modified, should not be considered to be changed');
+
+      let detail = make('detail');
+      setModel(project, 'details', [detail]);
+
+      assert.ok(project.modelChanges().details, 'details has been modified');
     });
   });
 

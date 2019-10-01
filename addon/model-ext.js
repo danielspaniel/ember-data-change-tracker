@@ -104,6 +104,13 @@ Model.reopen({
     }
   },
 
+  // watch for relationships loaded with data via links
+  setupUnknownRelationshipLoadObservers() {
+    this.eachRelationship((key) => {
+      this.addObserver(key, this, 'observeUnknownRelationshipLoaded');
+    });
+  },
+
   // when model updates, update the tracked state if using auto save
   saveOnUpdate() {
     if (Tracker.isAutoSaveEnabled(this) || Tracker.isIsDirtyEnabled(this)) {
@@ -134,6 +141,15 @@ Model.reopen({
     Tracker.clear(this);
   },
 
+  observeUnknownRelationshipLoaded(sender, key/*, value, rev*/) {
+    if (Tracker.trackingIsSetup(this)) {
+      let saved = Tracker.saveLoadedRelationship(this, key);
+      if (saved) {
+        this.removeObserver(key, this, 'observeUnknownRelationshipLoaded');
+      }
+    }
+  },
+
   // Ember Data DS.Model events
   // http://api.emberjs.com/ember-data/3.10/classes/DS.Model/events
   //
@@ -144,6 +160,7 @@ Model.reopen({
   ready() {
     this._super(...arguments);
     this.setupTrackerMetaData();
+    this.setupUnknownRelationshipLoadObservers();
   },
 
   didCreate() {

@@ -20,11 +20,29 @@ export const relationShipTransform = {
   },
   hasMany: {
     serialize(model, key, options) {
-      let value = model.hasMany(key).value();
+      let relationship = model.hasMany(key).hasManyRelationship;
+      let value = relationship.currentState;
       return value && value.map(item => modelTransform(item, options.polymorphic));
     },
 
     deserialize() {
+    }
+  }
+};
+
+export const relationshipKnownState = {
+  belongsTo: {
+    isKnown(model, key) {
+      let belongsTo = model.belongsTo(key);
+      let relationship = belongsTo.belongsToRelationship;
+      return !relationship.relationshipIsStale;
+    }
+  },
+  hasMany: {
+    isKnown(model, key) {
+      let hasMany = model.hasMany(key);
+      let relationship = hasMany.hasManyRelationship;
+      return !relationship.relationshipIsStale;
     }
   }
 };

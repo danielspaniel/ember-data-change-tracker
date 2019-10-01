@@ -110,7 +110,7 @@ module('Unit | Tracker', function(hooks) {
       ['profile', profile, profile.id],
       ['company', null, null],
       ['company', company, {id: company.id, type: company.constructor.modelName}],
-      ['projects', undefined, null],
+      ['projects', undefined, []],
       ['projects', projects, A(projects).mapBy('id')],
       ['pets', pets, pets.map((p) => ({id: p.id, type: p.constructor.modelName}))],
     ];
@@ -121,6 +121,37 @@ module('Unit | Tracker', function(hooks) {
 
       let serializedValue = Tracker.serialize(user, key);
       assert.deepEqual(serializedValue, expectedSerialized);
+    }
+    Tracker.envConfig.restore();
+  });
+
+  test('#isKnown', function(assert) {
+    let envConfig = sinon.stub(Tracker, 'envConfig');
+    envConfig.returns({trackHasMany: true, auto: true});
+
+    let company = make('company');
+    let profile = make('profile');
+    let projects = makeList('project', 2);
+    let pets = makeList('pet', 2);
+
+    let tests = [
+      ['info', null, true],
+      ['info', {dude: 1}, true],
+      ['profile', null, true],
+      ['profile', profile, true],
+      ['company', null, true],
+      ['company', company, true],
+      ['projects', undefined, true],
+      ['projects', projects, true],
+      ['pets', pets, true],
+    ];
+
+    for (let test of tests) {
+      let [key, value, expectedToBeKnown] = test;
+      let user = make('user', {[key]: value});
+
+      let known = Tracker.isKnown(user, key);
+      assert.equal(known, expectedToBeKnown);
     }
     Tracker.envConfig.restore();
   });
