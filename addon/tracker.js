@@ -127,6 +127,18 @@ export default class Tracker {
   }
 
   /**
+   * Find whether this key is currently being tracked.
+   *
+   * @param {DS.Model} model
+   * @param {string} [key]
+   * @returns {boolean} true if this key is being tracked. false otherwise
+   */
+  static isTracking(model, key) {
+    let info = (model.constructor.trackerKeys || {});
+    return !!info[key];
+  }
+
+  /**
    * On the model you can set options like:
    *
    *   changeTracker: {auto: true}
