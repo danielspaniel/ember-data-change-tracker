@@ -142,7 +142,7 @@ Model.reopen({
   },
 
   observeUnknownRelationshipLoaded(sender, key/*, value, rev*/) {
-    if (Tracker.trackingIsSetup(this)) {
+    if (Tracker.trackingIsSetup(this) && Tracker.isTracking(this, key)) {
       let saved = Tracker.saveLoadedRelationship(this, key);
       if (saved) {
         this.removeObserver(key, this, 'observeUnknownRelationshipLoaded');
