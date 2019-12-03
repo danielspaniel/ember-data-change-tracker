@@ -157,6 +157,31 @@ module('Unit | Tracker', function(hooks) {
   });
 });
 
+module('Unit | performance', function(hooks){
+  setupTest(hooks);
+
+  hooks.beforeEach(function() {
+    manualSetup(this);
+  });
+  const instanceCount = 1000;
+  test('performance check :: Tracked', function(assert) {
+    let t1 = performance.now();
+    makeList('perf-model-tracked', instanceCount);
+    let t2 = performance.now(),
+    time = Math.round(t2 - t1);
+    assert.ok(true, `${instanceCount} Models: ${time}ms`)
+  });
+
+  test('performance check :: Untracked', function(assert) {
+    let t1 = performance.now();
+    makeList('perf-model-untracked', instanceCount);
+    let t2 = performance.now(),
+
+    time = Math.round(t2 - t1);
+    assert.ok(true, `${instanceCount} Models: ${time}ms`)
+  });
+})
+
 module('Unit | previously unloaded model test', function(hooks) {
   setupTest(hooks);
 

@@ -1,0 +1,60 @@
+import FactoryGuy from 'ember-data-factory-guy';
+
+const randomString = () => Math.random().toString(36).substring(2, 11) + Math.random().toString(36).substring(2, 15);
+const makeProject = (f, letter) =>  f[`projects${letter}`] = FactoryGuy.makeList('project', 1);
+
+export const defaultTraits = {
+  style: 'normal',
+  name: (f)=>`User${f.id}`,
+  propA: randomString,
+  propB: randomString,
+  propC: randomString,
+  propD: randomString,
+  propE: randomString,
+  propF: randomString,
+  propG: randomString,
+  propH: randomString,
+  propI: randomString,
+  propJ: randomString,
+  propK: randomString,
+  propL: randomString,
+  propM: randomString,
+  propN: randomString,
+  propO: randomString,
+  propP: randomString,
+  propQ: randomString,
+  propR: randomString,
+  propS: randomString,
+  propT: randomString,
+  propU: randomString,
+  propV: randomString,
+  propW: randomString,
+  propX: randomString,
+  propY: randomString,
+  propZ: randomString,
+  projectsA: (f) => makeProject(f, "A"),
+  projectsB: (f) => makeProject(f, "B"),
+  projectsC: (f) => makeProject(f, "C"),
+  projectsD: (f) => makeProject(f, "D"),
+  projectsE: (f) => makeProject(f, "E"),
+  projectsF: (f) => makeProject(f, "F"),
+  projectsG: (f) => makeProject(f, "G"),
+  projectsH: (f) => makeProject(f, "H"),
+  projectsI: (f) => makeProject(f, "I"),
+  projectsJ: (f) => makeProject(f, "J"),
+  projectsK: (f) => makeProject(f, "K"),
+  projectsL: (f) => makeProject(f, "L"),
+  projectsM: (f) => makeProject(f, "M"),
+  projectsN: (f) => makeProject(f, "N"),
+  projectsO: (f) => makeProject(f, "O"),
+  projectsP: (f) => makeProject(f, "P"),
+  projectsQ: (f) => makeProject(f, "Q"),
+  projectsR: (f) => makeProject(f, "R"),
+  projectsS: (f) => makeProject(f, "S"),
+  projectsT: (f) => makeProject(f, "T"),
+}
+
+FactoryGuy.define('perf-model-tracked', {
+  default: defaultTraits,
+});
+
