@@ -426,7 +426,7 @@ export default class Tracker {
   static saveChanges(model, {except = []} = {}) {
     let metaInfo = this.metaInfo(model);
     let keys = Object.keys(metaInfo).filter(key => !except.includes(key));
-    keys.forEach(key => Tracker.saveKey(model, key));
+    Tracker.saveKeys(model, keys);
   }
 
   /**
@@ -459,6 +459,26 @@ export default class Tracker {
     model.notifyPropertyChange('hasDirtyRelations');
   }
 
+    /**
+   * Save the value from an array of keys model's tracker hash
+   * and save the relationship states if keys represents a relationship
+   *
+   * @param {DS.Model} model
+   * @param {Array} keys to save
+   */
+
+  static saveKeys(model, keys){
+    let modelTracker = model.get(ModelTrackerKey) || {},
+    relationshipsKnownTracker = model.get(RelationshipsKnownTrackerKey) || {},
+    isNew   = model.get('isNew');
+
+    keys.forEach(key => {
+      modelTracker[key] = isNew ? undefined : this.serialize(model, key);
+      relationshipsKnownTracker[key] = isNew ? true : this.isKnown(model, key);
+    })
+    model.setProperties({[ModelTrackerKey]:modelTracker, [RelationshipsKnownTrackerKey]: relationshipsKnownTracker})
+  }
+
   /**
    * Save current model key value in model's tracker hash
    * and save the relationship state if key represents a relationship
@@ -467,14 +487,7 @@ export default class Tracker {
    * @param {String} key attribute/association name
    */
   static saveKey(model, key) {
-    let modelTracker = model.get(ModelTrackerKey) || {},
-        relationshipsKnownTracker = model.get(RelationshipsKnownTrackerKey) || {},
-        isNew   = model.get('isNew');
-    modelTracker[key] = isNew ? undefined : this.serialize(model, key);
-    model.set(ModelTrackerKey, modelTracker);
-
-    relationshipsKnownTracker[key] = isNew ? true : this.isKnown(model, key);
-    model.set(RelationshipsKnownTrackerKey, relationshipsKnownTracker);
+    this.saveKeys(model, [key]);
   }
 
   /**
