@@ -163,22 +163,29 @@ module('Unit | performance', function(hooks){
   hooks.beforeEach(function() {
     manualSetup(this);
   });
-  const instanceCount = 1000;
-  test('performance check :: Tracked', function(assert) {
-    let t1 = performance.now();
-    makeList('perf-model-tracked', instanceCount);
-    let t2 = performance.now(),
-    time = Math.round(t2 - t1);
-    assert.ok(true, `${instanceCount} Models: ${time}ms`)
-  });
 
-  test('performance check :: Untracked', function(assert) {
-    let t1 = performance.now();
-    makeList('perf-model-untracked', instanceCount);
-    let t2 = performance.now(),
+  const instanceCount = 200;
+  const iterations = 10;
+  
+  test('performance check', function(assert) {
+    const untrackedTimes = [],
+    trackedTimes = [];
 
-    time = Math.round(t2 - t1);
-    assert.ok(true, `${instanceCount} Models: ${time}ms`)
+    for (let i = 0; i < iterations; i++) {
+      let t1 = performance.now();
+      makeList('perf-model-untracked', instanceCount);
+      let t2 = performance.now();
+      makeList('perf-model-tracked', instanceCount);
+      let t3 = performance.now();
+      
+      untrackedTimes.push(Math.round(t2-t1))
+      trackedTimes.push(Math.round(t3-t2))
+    }
+    const sum = arr => arr.reduce((a,b) => a+b , 0)
+
+    assert.ok(true, `Average Untracked ${iterations} @ ${instanceCount} :: ${sum(untrackedTimes)/untrackedTimes.length} per iteration`)
+    assert.ok(true, `Average Tracked ${iterations} @ ${instanceCount} :: ${sum(trackedTimes)/trackedTimes.length} per iteration`)
+iterations
   });
 })
 
