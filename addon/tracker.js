@@ -476,10 +476,7 @@ export default class Tracker {
       modelTracker[key] = isNew ? undefined : this.serialize(model, key);
       relationshipsKnownTracker[key] = isNew ? true : this.isKnown(model, key);
     })
-    model.beginPropertyChanges();
-    model.set(ModelTrackerKey, modelTracker);
-    model.set(RelationshipsKnownTrackerKey, relationshipsKnownTracker);
-    model.endPropertyChanges();
+    model.setProperties({[ModelTrackerKey]:modelTracker, [RelationshipsKnownTrackerKey]: relationshipsKnownTracker})
   }
 
   /**

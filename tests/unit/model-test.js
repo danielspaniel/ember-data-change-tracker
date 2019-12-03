@@ -9,7 +9,7 @@ import { initializer as modelInitializer } from 'ember-data-change-tracker';
 import Tracker, { ModelTrackerKey, RelationshipsKnownTrackerKey } from 'ember-data-change-tracker/tracker';
 import sinon from 'sinon';
 import EmberObject, { get, observer } from '@ember/object';
-
+import { settled } from '@ember/test-helpers'
 modelInitializer();
 
 const setModel = (model, attr, value) => {
@@ -30,11 +30,12 @@ module('Unit | Model', function(hooks) {
     manualSetup(this);
   });
 
-  test('only sets up tracking meta data once on model type', function(assert) {
+  test('only sets up tracking meta data once on model type', async function(assert) {
     sinon.stub(Tracker, 'options').returns({auto: true});
     let getTrackerInfo = sinon.stub(Tracker, 'getTrackerInfo').returns({autoSave: true});
 
     let dog = make('dog');
+    await settled();
     assert.ok(dog.constructor.alreadySetupTrackingMeta, 'auto save set up metaData');
 
     Tracker.setupTracking(dog); // try and setup again
