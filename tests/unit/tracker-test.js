@@ -167,6 +167,7 @@ module('Unit | performance', function(hooks){
   const instanceCount = 200;
   const iterations = 10;
   
+  // This approach has limitations. Real world use cases are exponentially slower, however this is of use for baselines.
   test('performance check', function(assert) {
     const untrackedTimes = [],
     trackedTimes = [];
@@ -185,7 +186,6 @@ module('Unit | performance', function(hooks){
 
     assert.ok(true, `Average Untracked ${iterations} @ ${instanceCount} :: ${sum(untrackedTimes)/untrackedTimes.length} per iteration`)
     assert.ok(true, `Average Tracked ${iterations} @ ${instanceCount} :: ${sum(trackedTimes)/trackedTimes.length} per iteration`)
-iterations
   });
 })
 
