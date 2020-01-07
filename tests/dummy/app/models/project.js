@@ -7,5 +7,9 @@ export default Model.extend({
   title: attr('string'),
   blob: attr(),
   company: belongsTo('company', { async: true }),
-  details: hasMany('detail')
+  details: hasMany('detail'),
+  
+  init(){
+    this._super(...arguments);
+  }
 });

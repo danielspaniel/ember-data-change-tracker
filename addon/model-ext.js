@@ -4,6 +4,20 @@ import Tracker from './tracker';
 
 Model.reopen({
 
+  init(){
+    this._super(...arguments);
+    if (Tracker.isAutoSaveEnabled(this)) {
+      this.initTracking();
+    }
+    if (Tracker.isIsDirtyEnabled(this)) {
+      // this is experimental
+      Tracker.initializeDirtiness(this);
+    }
+
+    this.setupTrackerMetaData();
+    this.setupUnknownRelationshipLoadObservers();
+  },
+
   /**
    * Did an attribute/association change?
    *
@@ -60,7 +74,41 @@ Model.reopen({
 
   // alias for saveChanges method
   startTrack() {
+    this.initTracking();
     this.saveChanges();
+  },
+
+  // Ember Data DS.Model events
+  // http://api.emberjs.com/ember-data/3.10/classes/DS.Model/events
+  //
+  // Replaces deprecated Ember.Evented usage:
+  // https://github.com/emberjs/rfcs/blob/master/text/0329-deprecated-ember-evented-in-ember-data.md
+  // Related: https://github.com/emberjs/rfcs/pull/329
+
+  initTracking(){
+
+      this.didCreate = () => {
+        this._super(...arguments);
+        this.saveOnCreate();
+      }
+
+      this.didUpdate  = () => {
+        this._super(...arguments);
+        this.saveOnUpdate();
+      }
+
+      this.didDelete = () => {
+        this._super(...arguments);
+        this.clearSavedAttributes();
+      }
+
+      this.ready = () => {
+        this._super(...arguments);
+        this.setupTrackerMetaData();
+        this.setupUnknownRelationshipLoadObservers();
+      },
+
+    Tracker.setupTracking(this);
   },
 
   /**
@@ -148,33 +196,5 @@ Model.reopen({
         this.removeObserver(key, this, 'observeUnknownRelationshipLoaded');
       }
     }
-  },
-
-  // Ember Data DS.Model events
-  // http://api.emberjs.com/ember-data/3.10/classes/DS.Model/events
-  //
-  // Replaces deprecated Ember.Evented usage:
-  // https://github.com/emberjs/rfcs/blob/master/text/0329-deprecated-ember-evented-in-ember-data.md
-  // Related: https://github.com/emberjs/rfcs/pull/329
-
-  ready() {
-    this._super(...arguments);
-    this.setupTrackerMetaData();
-    this.setupUnknownRelationshipLoadObservers();
-  },
-
-  didCreate() {
-    this._super(...arguments);
-    this.saveOnCreate();
-  },
-
-  didUpdate() {
-    this._super(...arguments);
-    this.saveOnUpdate();
-  },
-
-  didDelete() {
-    this._super(...arguments);
-    this.clearSavedAttributes();
-  },
+  }
 });
