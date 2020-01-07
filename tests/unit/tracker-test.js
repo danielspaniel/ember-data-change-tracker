@@ -157,6 +157,38 @@ module('Unit | Tracker', function(hooks) {
   });
 });
 
+module('Unit | performance', function(hooks){
+  setupTest(hooks);
+
+  hooks.beforeEach(function() {
+    manualSetup(this);
+  });
+
+  const instanceCount = 200;
+  const iterations = 10;
+  
+  // This approach has limitations. Real world use cases are exponentially slower, however this is of use for baselines.
+  test('performance check', function(assert) {
+    const untrackedTimes = [],
+    trackedTimes = [];
+
+    for (let i = 0; i < iterations; i++) {
+      let t1 = performance.now();
+      makeList('perf-model-untracked', instanceCount);
+      let t2 = performance.now();
+      makeList('perf-model-tracked', instanceCount);
+      let t3 = performance.now();
+      
+      untrackedTimes.push(Math.round(t2-t1))
+      trackedTimes.push(Math.round(t3-t2))
+    }
+    const sum = arr => arr.reduce((a,b) => a+b , 0)
+
+    assert.ok(true, `Average Untracked ${iterations} @ ${instanceCount} :: ${sum(untrackedTimes)/untrackedTimes.length} per iteration`)
+    assert.ok(true, `Average Tracked ${iterations} @ ${instanceCount} :: ${sum(trackedTimes)/trackedTimes.length} per iteration`)
+  });
+})
+
 module('Unit | previously unloaded model test', function(hooks) {
   setupTest(hooks);
 
