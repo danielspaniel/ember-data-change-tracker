@@ -88,22 +88,18 @@ Model.reopen({
   initTracking(){
 
       this.didCreate = () => {
-        this._super(...arguments);
         this.saveOnCreate();
       }
 
       this.didUpdate  = () => {
-        this._super(...arguments);
         this.saveOnUpdate();
       }
 
       this.didDelete = () => {
-        this._super(...arguments);
         this.clearSavedAttributes();
       }
 
       this.ready = () => {
-        this._super(...arguments);
         this.setupTrackerMetaData();
         this.setupUnknownRelationshipLoadObservers();
       },
