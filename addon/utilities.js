@@ -11,7 +11,10 @@ export const relationShipTransform = {
   belongsTo: {
     serialize(model, key, options) {
       let relationship = model.belongsTo(key).belongsToRelationship;
-      let value = relationship.hasOwnProperty('inverseRecordData') ? relationship.inverseRecordData: relationship.canonicalState;
+      const state = relationship.canonicalState || relationship.localState;
+      let value = relationship.hasOwnProperty("inverseRecordData")
+        ? relationship.inverseRecordData
+        : state;
       return value && modelTransform(value, options.polymorphic);
     },
 
