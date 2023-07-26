@@ -11,7 +11,7 @@ export const relationShipTransform = {
   belongsTo: {
     serialize(model, key, options) {
       let relationship = model.belongsTo(key).belongsToRelationship;
-      let value = relationship.hasOwnProperty('inverseRecordData') ? relationship.inverseRecordData: relationship.canonicalState;
+      let value = relationship.state.hasReceivedData ? relationship.localState: relationship.remoteState;
       return value && modelTransform(value, options.polymorphic);
     },
 
@@ -21,7 +21,7 @@ export const relationShipTransform = {
   hasMany: {
     serialize(model, key, options) {
       let relationship = model.hasMany(key).hasManyRelationship;
-      let value = relationship.currentState;
+      let value = relationship.localState;
       return value && value.map(item => modelTransform(item, options.polymorphic));
     },
 
@@ -35,14 +35,14 @@ export const relationshipKnownState = {
     isKnown(model, key) {
       let belongsTo = model.belongsTo(key);
       let relationship = belongsTo.belongsToRelationship;
-      return !relationship.relationshipIsStale;
+      return !relationship.state.isStale;
     }
   },
   hasMany: {
     isKnown(model, key) {
       let hasMany = model.hasMany(key);
       let relationship = hasMany.hasManyRelationship;
-      return !relationship.relationshipIsStale;
+      return !relationship.state.isStale;
     }
   }
 };
