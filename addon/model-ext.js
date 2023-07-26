@@ -85,25 +85,40 @@ Model.reopen({
   // https://github.com/emberjs/rfcs/blob/master/text/0329-deprecated-ember-evented-in-ember-data.md
   // Related: https://github.com/emberjs/rfcs/pull/329
 
+  onIsNewChanged() {
+    if (this.isNew === false) {
+      this.saveOnCreate()
+      this.removeObserver('isNew', this, this.onIsNewChanged);
+    }
+  },
+
+  onIsDeletedChanged() {
+    if (this.isDeleted === true) {
+      this.clearSavedAttributes();
+    this.removeObserver('isDeleted', this, this.onIsDeletedChanged);
+    }
+  },
+
+  onIsLoadedChanged() {
+    this.setupTrackerMetaData();
+    this.setupUnknownRelationshipLoadObservers();
+    this.removeObserver('isLoaded', this, this.onIsLoadedChanged);
+  },
+
   initTracking(){
+    // sync tracker with model on events like create/update/delete/load
+    if (this.isNew) {
+      this.addObserver('isNew', this, this.onIsNewChanged)
+    }
+    this.addObserver('isDeleted', this, this.onIsDeletedChanged)
 
-      this.didCreate = () => {
-        this.saveOnCreate();
-      }
+    if (!this.isLoaded) {
+      this.addObserver('isLoaded', this, this.onIsLoadedChanged);
+    }
 
-      this.didUpdate  = () => {
-        this.saveOnUpdate();
-      }
-
-      this.didDelete = () => {
-        this.clearSavedAttributes();
-      }
-
-      this.ready = () => {
-        this.setupTrackerMetaData();
-        this.setupUnknownRelationshipLoadObservers();
-      },
-
+    // there is no didUpdate hook anymore and no appropriate model props to base on
+    // saveOnUpdate should be called after model has been saved
+    // right after model
     Tracker.setupTracking(this);
   },
 
@@ -121,7 +136,8 @@ Model.reopen({
     Tracker.setupTracking(this);
     Tracker.saveChanges(this, options);
     Tracker.triggerIsDirtyReset(this);
-  },
+ },
+
 
   saveTrackerChanges(options) {
     this.saveChanges(options);
